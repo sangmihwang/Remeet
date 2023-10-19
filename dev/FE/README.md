@@ -46,7 +46,7 @@
 # 컴포넌트 자동 완성 명령어: rafce
 
 ```js
-import React from "react";
+import React from 'react';
 
 const temp = () => {
   return <div>temp</div>;
@@ -67,7 +67,6 @@ src
 ├─ styles
 ├─ api
 ├─ utils
-├─ contexts
 ├─ types : interface, type 모음
 ├─ App.tsx
 └─ main.tsx
