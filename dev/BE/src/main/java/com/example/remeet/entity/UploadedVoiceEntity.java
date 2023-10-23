@@ -12,20 +12,22 @@ import javax.persistence.*;
 @Entity
 @Builder
 @DynamicInsert
-@Table(name = "UPLOADED_VIDEO")
-public class UploadedVideoEntity {
+@Table(name = "UPLOADED_VOICE")
+public class UploadedVoiceEntity {
 
     @Id
-    @GeneratedValue(strategy= GenerationType.IDENTITY)
-    @Column(name="video_no")
-    private Integer videoNo;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name="voice_no")
+    private Integer voiceNo;
 
     @NotNull
-    @Column(name="video_path")
-    private String videoPath;
+    @Column(name="voice_path")
+    private String voicePath;
 
     @NotNull
     @ManyToOne
-    @JoinColumn(name="model_no")
+    @Column(name="model_no")
     private ModelBoardEntity modelNo;
+
+
 }
