@@ -1,10 +1,14 @@
 package com.example.remeet.service;
 
+import com.example.remeet.dto.TokenResponseDto;
 import com.example.remeet.dto.UserDataDto;
 import com.example.remeet.dto.UserInfoDto;
 import com.example.remeet.dto.UserLoginDto;
+import com.example.remeet.entity.RefreshTokenEntity;
 import com.example.remeet.entity.UserEntity;
+import com.example.remeet.repository.RedisRepository;
 import com.example.remeet.repository.UserRepository;
+import com.example.remeet.util.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.mindrot.jbcrypt.BCrypt;
@@ -15,6 +19,8 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
+    private final RedisRepository redisRepository;
+    private final JwtTokenProvider jwtTokenProvider;
 
     public boolean isUserIdExist(String userId) {
         return userRepository.findByUserId(userId).isPresent();
@@ -24,7 +30,7 @@ public class UserService {
         UserEntity newMember = UserEntity.builder()
                 .userId(userData.getUserId())
                 .userName(userData.getUserName())
-                .password(userData.getPassword())
+                .password(BCrypt.hashpw(userData.getPassword(), BCrypt.gensalt()))
                 .profileImg(userData.getImagePath())
                 .build();
         userRepository.save(newMember);
@@ -59,8 +65,23 @@ public class UserService {
     }
 
 
-//    public void deleteRefreshToken(int userNo){
-//        refreshTokenRedisRepository.deleteById(userNo);
-//    }
+    public TokenResponseDto getTokenResponse(UserLoginDto userLoginData){
+        Integer userNo = userRepository.findByUserId(userLoginData.getUserId()).get().getUserNo();
+        String accessToken = jwtTokenProvider.createToken(userNo);
+        String refreshToken = jwtTokenProvider.createRefreshToken(userNo);
+        RefreshTokenEntity refreshTokenEntity = RefreshTokenEntity.builder()
+                .refreshToken(refreshToken)
+                .userNo(userRepository.findByUserId(userLoginData.getUserId()).get().getUserNo())
+                .build();
+        redisRepository.save(refreshTokenEntity);
+        TokenResponseDto tokenResponseDto = new TokenResponseDto();
+        tokenResponseDto.setAccessToken(accessToken);
+        tokenResponseDto.setRefreshToken(refreshToken);
+        return tokenResponseDto;
+    }
 
+    public boolean checkRefreshToken(String token){
+        if(redisRepository.findByRefreshToken(token) == null) return false; // 리프레시 토큰이 유효하다면 true 아니라면 false 반환
+        else return true;
+    }
 }

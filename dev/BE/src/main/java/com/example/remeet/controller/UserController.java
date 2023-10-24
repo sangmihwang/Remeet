@@ -1,15 +1,17 @@
 package com.example.remeet.controller;
 
-import com.example.remeet.dto.TokenResponseDto;
-import com.example.remeet.dto.UserDataDto;
-import com.example.remeet.dto.UserInfoDto;
-import com.example.remeet.dto.UserLoginDto;
-import com.example.remeet.entity.UserEntity;
+import com.example.remeet.dto.*;
 import com.example.remeet.service.UserService;
+import com.example.remeet.util.JwtTokenProvider;
+import io.jsonwebtoken.ExpiredJwtException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.HttpServletRequest;
 
 @CrossOrigin(value = "*", allowedHeaders = "*")
 @RequiredArgsConstructor
@@ -18,11 +20,12 @@ import org.springframework.web.bind.annotation.*;
 @Slf4j
 public class UserController {
     private final UserService userService;
+    private final JwtTokenProvider jwtTokenProvider;
 
     @GetMapping
-    public ResponseEntity userInfo() {
-        Integer member = 1;
-        UserInfoDto userInfoDto = userService.getUserInfoById(userService.getUserId(member));
+    public ResponseEntity userInfo(HttpServletRequest request) {
+        Integer userNo = (Integer)request.getAttribute("userNo");
+        UserInfoDto userInfoDto = userService.getUserInfoById(userService.getUserId(userNo));
 //            userInfoDto.setTokenResponse(tokenResponseDto);
         return ResponseEntity.ok(userInfoDto);
     }
@@ -52,9 +55,9 @@ public class UserController {
     }
 
     @DeleteMapping
-    public ResponseEntity deleteId(){
-        Integer member = 1;
-        userService.deleteId(member);
+    public ResponseEntity deleteId(HttpServletRequest request){
+        Integer userNo = (Integer)request.getAttribute("userNo");
+        userService.deleteId(userNo);
         return ResponseEntity.ok().build();
     }
 
@@ -62,9 +65,9 @@ public class UserController {
     public ResponseEntity<UserInfoDto> logIn(@RequestBody UserLoginDto userLoginData) {
         // 로그인 가능한 정보인지 확인
         if (userService.checkLoginData(userLoginData)) {
-//            TokenResponseDto tokenResponseDto = userService.getTokenResponse(userService.getUserNo(userLoginDto.getUserId()));
+            TokenResponseDto tokenResponseDto = userService.getTokenResponse(userLoginData);
             UserInfoDto userInfoDto = userService.getUserInfoById(userLoginData.getUserId());
-//            userInfoDto.setTokenResponse(tokenResponseDto);
+            userInfoDto.setTokenResponse(tokenResponseDto);
             return ResponseEntity.ok(userInfoDto);
         } else {
             return  ResponseEntity.status(400).build();
@@ -72,9 +75,34 @@ public class UserController {
     }
 
     @GetMapping("logout")
-    public ResponseEntity logOut() {
-        Integer member = 1;
-//        userService.deleteRefreshToken(member);
+    public ResponseEntity logOut(HttpServletRequest request) {
+        Integer userNo = (Integer)request.getAttribute("userNo");
+//        userService.deleteRefreshToken(userNo);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("reissue")
+    public ResponseEntity<AccessTokenDto> reissue(@RequestHeader HttpHeaders header){
+        log.info("request to /api/v1/user/reissue [Method: GET]");
+        AccessTokenDto accessTokenDto = new AccessTokenDto();
+        try{
+            String refreshToken = header.getFirst("X-REFRESH-TOKEN");
+            Integer userNo = Integer.valueOf(jwtTokenProvider.getUserNo(refreshToken));
+            String newAccessToken = JwtTokenProvider.createToken(userNo);
+            if(userService.checkRefreshToken(refreshToken)){
+                accessTokenDto.setToken(newAccessToken);
+                return ResponseEntity.ok(accessTokenDto);
+            }
+            else{
+                accessTokenDto.setToken("다시 로그인 해주세요.");
+                log.error("리프래시 토큰 만료 ==> 다시 로그인 ");
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(accessTokenDto);
+            }
+        }
+        catch (ExpiredJwtException e){
+            accessTokenDto.setToken("다시 로그인 해주세요.");
+            log.error("리프래시 토큰 만료 ==> 다시 로그인 ");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(accessTokenDto);
+        }
     }
 }

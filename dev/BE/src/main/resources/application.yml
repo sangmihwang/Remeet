@@ -1,7 +1,7 @@
 server:
   servlet:
     context-path: /api/v1
-  port: 8000
+  port: 8080
 
 spring:
   servlet:
@@ -31,6 +31,7 @@ spring:
     host: k9a706.p.ssafy.io
     password: 1q2w3e4r@@#
 
+
 cloud:
   aws:
     # AWS Account Credentials (AWS)
@@ -46,16 +47,12 @@ cloud:
       auto: false
 
 
+jwt:
+  secretKey: rkGU45258GGhiolLO2465TFY5345kGU45258GGhiolLO2465TFY5345seeew
+  access:
+    expiration: 36000000 # 1시간(60분) (1000L(ms -> s) * 60L(s -> m) * 60L(m -> h))
+    header: Authorization
 
-
-
-
-#jwt:
-#  secretKey: ${JWT_SECRET}
-#  access:
-#    expiration: 36000000 # 1시간(60분) (1000L(ms -> s) * 60L(s -> m) * 60L(m -> h))
-#    header: Authorization
-#
-#  refresh:
-#    expiration: 1209600000 # (1000L(ms -> s) * 60L(s -> m) * 60L(m -> h) * 24L(h -> 하루) * 14(2주))
-#    header: Authorization_refresh
+  refresh:
+    expiration: 1209600000 # (1000L(ms -> s) * 60L(s -> m) * 60L(m -> h) * 24L(h -> 하루) * 14(2주))
+    header: Authorization_refresh
