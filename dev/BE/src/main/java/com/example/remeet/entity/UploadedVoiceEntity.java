@@ -28,6 +28,5 @@ public class UploadedVoiceEntity {
     @ManyToOne
     @JoinColumn(name="model_no")
     private ModelBoardEntity modelNo;
-
-
+    
 }
