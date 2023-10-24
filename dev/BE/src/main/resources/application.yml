@@ -1,11 +1,13 @@
 server:
-  port: 8000
+  servlet:
+    context-path: /api/v1
+  port: 8080
 
 spring:
   servlet:
     multipart:
-      max-file-size: 2MB
-      max-request-size: 10MB
+      max-file-size: 20MB
+      max-request-size: 20MB
   mvc:
     pathmatch:
       matching-strategy: ant_path_matcher
@@ -24,13 +26,33 @@ spring:
     properties:
       hibernate:
         default_batch_fetch_size: 100
+  redis:
+    port: 6379
+    host: k9a706.p.ssafy.io
+    password: 1q2w3e4r@@#
 
-#jwt:
-#  secretKey: ${JWT_SECRET}
-#  access:
-#    expiration: 36000000 # 1시간(60분) (1000L(ms -> s) * 60L(s -> m) * 60L(m -> h))
-#    header: Authorization
-#
-#  refresh:
-#    expiration: 1209600000 # (1000L(ms -> s) * 60L(s -> m) * 60L(m -> h) * 24L(h -> 하루) * 14(2주))
-#    header: Authorization_refresh
+
+cloud:
+  aws:
+    # AWS Account Credentials (AWS)
+    credentials:
+      access-key: AKIAQO3J7YYNIYPNTM5E
+      secretKey: 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
+    # AWS S3 bucket Info (S3)
+    s3:
+      bucket : remmet
+    region:
+      static: ap-northeast-2
+    stack:
+      auto: false
+
+
+jwt:
+  secretKey: rkGU45258GGhiolLO2465TFY5345kGU45258GGhiolLO2465TFY5345seeew
+  access:
+    expiration: 36000000 # 1시간(60분) (1000L(ms -> s) * 60L(s -> m) * 60L(m -> h))
+    header: Authorization
+
+  refresh:
+    expiration: 1209600000 # (1000L(ms -> s) * 60L(s -> m) * 60L(m -> h) * 24L(h -> 하루) * 14(2주))
+    header: Authorization_refresh
