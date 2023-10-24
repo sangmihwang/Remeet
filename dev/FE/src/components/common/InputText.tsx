@@ -22,6 +22,7 @@ const Input = styled.input`
   color: #000;
   border: 0px solid #e8e8e8;
   outline: 0;
+  font-weight: 500;
 
   &::placeholder {
     color: #bdbdbd;
@@ -48,7 +49,6 @@ interface InputTextProps {
 const InputText = ({ placeholder, type }: InputTextProps) => {
   const [value, setValue] = useState<string>('');
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    console.log(e.target.value);
     setValue(e.target.value);
   };
   const [checkValue, setCheckValue] = useState<boolean>(false);
