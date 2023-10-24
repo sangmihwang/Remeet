@@ -94,15 +94,13 @@ public class UserController {
                 return ResponseEntity.ok(accessTokenDto);
             }
             else{
-                accessTokenDto.setToken("다시 로그인 해주세요.");
                 log.error("리프래시 토큰 만료 ==> 다시 로그인 ");
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(accessTokenDto);
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
             }
         }
         catch (ExpiredJwtException e){
-            accessTokenDto.setToken("다시 로그인 해주세요.");
             log.error("리프래시 토큰 만료 ==> 다시 로그인 ");
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(accessTokenDto);
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
     }
 }
