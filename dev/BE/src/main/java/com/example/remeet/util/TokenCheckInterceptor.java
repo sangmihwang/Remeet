@@ -25,29 +25,9 @@ public class TokenCheckInterceptor implements HandlerInterceptor {
         if(request.getMethod().equals("OPTIONS")) {
             return true;
         }
-        if(arr[arr.length-2].equals("comments") && request.getMethod().equals("GET")){
-            return true;
-        }
-        if(arr[arr.length-1].equals("review") && request.getMethod().equals("GET")){
-            return true;
-        }
-        if(arr[arr.length-2].equals("review") && request.getMethod().equals("GET")){
-            return true;
-        }
-        if(arr[arr.length-1].equals("auction") && request.getMethod().equals("GET")){
-            return true;
-        };
-        if(arr[arr.length-1].equals("sponsorship") && request.getMethod().equals("GET")){
-            return true;
-        };
-        if(arr[arr.length-1].equals("funding") && request.getMethod().equals("GET")){
-            return true;
-        };
         String jwtToken = jwtTokenProvider.getJwt();
         String uri = request.getRequestURI();
-        if (uri.contains("swagger") || uri.contains("api-docs") || uri.contains("webjars")) {
-            return true;
-        }
+        
 
         log.info("요청 주소 :" + request.getRequestURI());
         if(jwtToken != null){
