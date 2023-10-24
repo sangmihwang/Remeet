@@ -1,0 +1,36 @@
+server:
+  port: 8000
+
+spring:
+  servlet:
+    multipart:
+      max-file-size: 2MB
+      max-request-size: 10MB
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://k9a706.p.ssafy.io:3306/mydb?serverTimezone=Asia/Seoul
+    username: root
+    password: 1q2w3e4r!@
+#    url: ${DATABASE_URL}
+#    username: ${DATABASE_ID}
+#    password: ${DATABASE_PASSWORD}
+  jpa:
+    database: mysql
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        default_batch_fetch_size: 100
+
+#jwt:
+#  secretKey: ${JWT_SECRET}
+#  access:
+#    expiration: 36000000 # 1시간(60분) (1000L(ms -> s) * 60L(s -> m) * 60L(m -> h))
+#    header: Authorization
+#
+#  refresh:
+#    expiration: 1209600000 # (1000L(ms -> s) * 60L(s -> m) * 60L(m -> h) * 24L(h -> 하루) * 14(2주))
+#    header: Authorization_refresh

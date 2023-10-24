@@ -27,7 +27,7 @@ public class ProducedVoiceEntity {
     @NotNull
 //    @ManyToOne(fetch = FetchType.LAZY)
     @ManyToOne
-    @Column(name="model_no")
+    @JoinColumn(name="model_no")
     private ModelBoardEntity modelNo;
 
 
