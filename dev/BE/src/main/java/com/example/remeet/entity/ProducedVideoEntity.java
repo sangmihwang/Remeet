@@ -38,6 +38,6 @@ public class ProducedVideoEntity {
 
     @NotNull
     @ManyToOne
-    @JoinColumn(name="conversation_no")
-    private ModelBoardEntity conversationNo;
+    @JoinColumn(name="model_no")
+    private ModelBoardEntity modelNo;
 }
