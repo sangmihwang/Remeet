@@ -1,8 +1,8 @@
-import { ChangeEvent, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import styled from 'styled-components';
 
 const InputWrapper = styled.div`
-  margin: 1rem;
+  margin: 1rem auto;
   box-sizing: border-box;
   display: flex;
   align-items: center;
@@ -41,21 +41,14 @@ const DeleteButton = styled.button`
 `;
 
 interface InputTextProps {
-  //   value?: string;
+  value: string;
   placeholder: string;
   type: string;
+  onChange: (e: string) => void;
 }
 
-const InputText = ({ placeholder, type }: InputTextProps) => {
-  const [value, setValue] = useState<string>('');
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setValue(e.target.value);
-  };
+const InputText = ({ value, onChange, placeholder, type }: InputTextProps) => {
   const [checkValue, setCheckValue] = useState<boolean>(false);
-
-  const handleDeleteValue = () => {
-    setValue('');
-  };
 
   useEffect(() => {
     if (value.length > 0) {
@@ -68,12 +61,12 @@ const InputText = ({ placeholder, type }: InputTextProps) => {
   return (
     <InputWrapper>
       <Input
-        onChange={handleChange}
+        onChange={(e) => onChange(e.target.value)}
         type={type}
         placeholder={placeholder}
         value={value}
       />
-      {checkValue && <DeleteButton onClick={handleDeleteValue} />}
+      {checkValue && <DeleteButton onClick={() => onChange('')} />}
     </InputWrapper>
   );
 };

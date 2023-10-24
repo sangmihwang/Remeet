@@ -1,5 +1,5 @@
 import { Outlet, Route, Routes } from 'react-router-dom';
-import { LoginPage, MainPage } from '@/pages';
+import { LoginPage, MainPage, SignUpPage } from '@/pages';
 
 const Layout = () => {
   return <Outlet />;
@@ -10,7 +10,8 @@ const Router = () => {
     <Routes>
       <Route path="/" element={<Layout />}>
         <Route path="" element={<MainPage />} />
-        <Route path="" element={<LoginPage />} />
+        <Route path="login" element={<LoginPage />} />
+        <Route path="signup" element={<SignUpPage />} />
       </Route>
     </Routes>
   );
