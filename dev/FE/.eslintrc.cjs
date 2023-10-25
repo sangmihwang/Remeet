@@ -15,6 +15,7 @@ module.exports = {
     'plugin:react-hooks/recommended',
     'plugin:react/jsx-runtime',
     'plugin:jsx-a11y/recommended',
+    'plugin:import/recommended',
     'airbnb',
     'airbnb-typescript',
     'prettier',
@@ -35,16 +36,19 @@ module.exports = {
     'jsx-a11y',
     'react-hooks',
     'react-refresh',
+    'import',
   ],
   rules: {
-    "react/function-component-definition": [
+    'react/function-component-definition': [
       2,
       {
-        namedComponents: "arrow-function",
-        unnamedComponents: "arrow-function",
+        namedComponents: 'arrow-function',
+        unnamedComponents: 'arrow-function',
       },
     ],
-    'import/no-absolute-path': 'off',
+    'import/extensions': ['error', 'never'],
+    // 'import/no-absolute-path': 'off',
+    // 'import/prefer-default-export': 'off',
     'react/react-in-jsx-scope': 'off',
     'react-refresh/only-export-components': [
       'warn',
@@ -56,7 +60,7 @@ module.exports = {
     'react/button-has-type': 'off',
     'react/jsx-filename-extension': [
       1,
-      { extensions: ['.js', '.jsx', '.tsx'] },
+      { extensions: ['.js', '.jsx', '.tsx', 'ts'] },
     ],
   },
 };
