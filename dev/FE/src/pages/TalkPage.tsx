@@ -2,7 +2,8 @@ import styled from 'styled-components';
 import PageHeader from '@/components/navbar/PageHeader';
 import BottomNavigation from '@/components/navbar/BottomNavigation';
 import { SmallButton } from '@/components/common';
-import AudioRecorder from '@/components/talk/AudioRecorder';
+// import AudioRecorder from '@/components/talk/AudioRecorder';
+import AudioStreamer from '@/components/talk/AudioStreamer';
 
 const TitleWrapper = styled.div`
   width: 100%;
@@ -35,9 +36,10 @@ const TalkPage = () => {
         <VideoWrapper> 비디오 들어갈 자리</VideoWrapper>
       </TitleWrapper>
       <ContentWrpper>
-        <AudioRecorder />
+        {/* <AudioRecorder /> */}
         <SmallButton type={1} text="대화 내역" />
         <SmallButton type={2} text="대화 종료" />
+        <AudioStreamer />
       </ContentWrpper>
       <BottomNavigation />
     </div>
