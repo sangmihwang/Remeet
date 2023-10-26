@@ -23,8 +23,7 @@ public class UploadService {
     @Autowired
     AmazonS3Client amazonS3Client;
 
-    public List<String> upload(MultipartFile multipartFile) throws IOException {
-        List<String> imagePathList = new ArrayList<>();
+    public String upload(MultipartFile multipartFile) throws IOException {
 
         String originalName = multipartFile.getOriginalFilename(); // 파일 이름
         long size = multipartFile.getSize(); // 파일 크기
@@ -39,9 +38,8 @@ public class UploadService {
                         .withCannedAcl(CannedAccessControlList.PublicRead)
         );
 
-        String imagePath = amazonS3Client.getUrl(S3Bucket, originalName).toString(); // 접근가능한 URL 가져오기
-        imagePathList.add(imagePath);
+        String wavPath = "s3://" + S3Bucket + "/" + originalName;
 
-        return imagePathList;
+        return wavPath;
     }
 }
