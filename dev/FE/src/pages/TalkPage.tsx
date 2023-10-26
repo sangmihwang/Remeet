@@ -1,11 +1,11 @@
 import styled from 'styled-components';
 import { useRef } from 'react';
 import PageHeader from '@/components/navbar/PageHeader';
-import BottomNavigation from '@/components/navbar/BottomNavigation';
+// import BottomNavigation from '@/components/navbar/BottomNavigation';
 import { SmallButton } from '@/components/common';
 // import AudioRecorder from '@/components/talk/AudioRecorder';
-import AudioStreamer from '@/components/talk/AudioStreamer';
 import Video from '@/components/talk/Video';
+import AudioRecorder from '@/components/talk/AudioRecorder';
 
 const TitleWrapper = styled.div`
   width: 100%;
@@ -68,12 +68,11 @@ const TalkPage = () => {
         </VideoWrapper>
       </TitleWrapper>
       <ContentWrpper>
-        {/* <AudioRecorder /> */}
+        <AudioRecorder />
         <SmallButton type={1} text="대화 내역" />
         <SmallButton type={2} text="대화 종료" />
-        <AudioStreamer />
       </ContentWrpper>
-      <BottomNavigation />
+      {/* <BottomNavigation /> */}
     </div>
   );
 };
