@@ -1,4 +1,7 @@
+import axios from 'axios';
 import React, { useState, useRef } from 'react';
+
+const TESTURL = 'http://localhost:8080/api/v1/talking/stt';
 
 const AudioRecorder: React.FC = () => {
   const [recording, setRecording] = useState<boolean>(false);
@@ -19,6 +22,19 @@ const AudioRecorder: React.FC = () => {
       const newAudioBlob = new Blob(audioChunks, { type: 'audio/wav' });
       setAudioBlob(newAudioBlob);
       // You can save or send the audioBlob to the server now
+      // FormData를 만들어서 음성 파일 추가
+      const formData = new FormData();
+      formData.append('audio', newAudioBlob, 'audio.wav'); // 'audio'는 서버에서 받을 이름, 'audio.wav'는 파일 이름
+
+      // axios를 사용하여 서버에 POST 요청 보내기
+      axios
+        .post(TESTURL, formData)
+        .then((response) => {
+          console.log('Successfully uploaded audio:', response.data);
+        })
+        .catch((error) => {
+          console.error('Error uploading audio:', error);
+        });
     };
 
     mediaRecorder.start();
@@ -42,61 +58,3 @@ const AudioRecorder: React.FC = () => {
 };
 
 export default AudioRecorder;
-
-// const AudioRecorder: React.FC = () => {
-//   const [recording, setRecording] = useState<boolean>(false);
-//   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-//   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
-//   const audioChunksRef = useRef<Blob[]>([]);
-
-//   const stopRecording = () => {
-//     console.log('확인');
-//     mediaRecorderRef.current?.stop();
-//     setRecording(false);
-//   };
-
-//   const processAudioData = (event: BlobEvent) => {
-//     const audioData = new Float32Array(event.data.size);
-//     const threshold = 0.05; // Placeholder threshold
-//     const isVoiceDetected = audioData.some(
-//       (sample) => Math.abs(sample) > threshold,
-//     );
-
-//     if (isVoiceDetected) {
-//       if (!recording) {
-//         setRecording(true);
-//         setTimeout(stopRecording, 2000); // Max duration
-//       }
-//       audioChunksRef.current.push(event.data);
-//     } else if (recording) {
-//       stopRecording();
-//     }
-//   };
-
-//   const startRecording = async () => {
-//     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-//     const mediaRecorder = new MediaRecorder(stream);
-//     mediaRecorderRef.current = mediaRecorder;
-
-//     mediaRecorder.ondataavailable = processAudioData;
-//     mediaRecorder.onstop = () => {
-//       const newAudioBlob = new Blob(audioChunksRef.current, {
-//         type: 'audio/wav',
-//       });
-//       setAudioBlob(newAudioBlob);
-//     };
-
-//     mediaRecorder.start(100); // Process audio every 100ms
-//   };
-
-//   return (
-//     <div>
-//       <button onClick={startRecording} disabled={recording}>
-//         Start Detection
-//       </button>
-//       {audioBlob && <audio controls src={URL.createObjectURL(audioBlob)} />}
-//     </div>
-//   );
-// };
-
-// export default AudioRecorder;
