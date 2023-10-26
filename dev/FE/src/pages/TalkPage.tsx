@@ -3,7 +3,6 @@ import { useRef } from 'react';
 import PageHeader from '@/components/navbar/PageHeader';
 // import BottomNavigation from '@/components/navbar/BottomNavigation';
 import { SmallButton } from '@/components/common';
-// import AudioRecorder from '@/components/talk/AudioRecorder';
 import Video from '@/components/talk/Video';
 import AudioRecorder from '@/components/talk/AudioRecorder';
 
