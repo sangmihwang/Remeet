@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router';
 import styled from 'styled-components';
 
 const PageHeaderWrapper = styled.div`
@@ -51,9 +52,15 @@ interface PageHeaderProps {
 }
 
 const PageHeader = ({ content, type }: PageHeaderProps) => {
+  const navigate = useNavigate();
+  const handleReturnPage = () => {
+    navigate(-1);
+  };
   return (
     <PageHeaderWrapper>
-      <LeftBtn $inputType={type}>{content.left}</LeftBtn>
+      <LeftBtn $inputType={type} onClick={handleReturnPage}>
+        {content.left}
+      </LeftBtn>
       <Title $inputType={type}>{content.title}</Title>
       <RightBtn $inputType={type}>{content.right}</RightBtn>
     </PageHeaderWrapper>

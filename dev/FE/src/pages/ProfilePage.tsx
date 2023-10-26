@@ -1,5 +1,6 @@
 import styled from 'styled-components';
 import PageHeader from '@/components/navbar/PageHeader';
+import BottomNavigation from '@/components/navbar/BottomNavigation';
 
 const TitleWrapper = styled.div`
   width: 100%;
@@ -18,6 +19,7 @@ const ProfilePage = () => {
       <TitleWrapper>
         <PageHeader content={headerContent} type={2} />
       </TitleWrapper>
+      <BottomNavigation />
     </div>
   );
 };

@@ -15,10 +15,10 @@ const NaviWrapper = styled.div`
 
 const BottomNavigation = () => {
   const navArr = [
-    { title: '홈', $src: '/navigation/home.svg', to: '' },
-    { title: '대화하기', $src: '/navigation/chat.svg', to: 'board' },
-    { title: '영상보기', $src: '/navigation/video.svg', to: 'video' },
-    { title: '프로필', $src: '/navigation/profile.svg', to: 'profile' },
+    { title: '홈', $src: '/navigation/home.svg', to: '/' },
+    { title: '대화하기', $src: '/navigation/chat.svg', to: '/board' },
+    { title: '영상보기', $src: '/navigation/video.svg', to: '/video' },
+    { title: '프로필', $src: '/navigation/profile.svg', to: '/profile' },
   ];
   return (
     <NaviWrapper>
