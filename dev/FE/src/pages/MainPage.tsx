@@ -1,4 +1,4 @@
-import { LargeButton } from '@/components/common';
+import { Image, LargeButton } from '@/components/common';
 import BottomNavigation from '@/components/navbar/BottomNavigation';
 import PageHeader from '@/components/navbar/PageHeader';
 
@@ -12,6 +12,9 @@ const MainPage = () => {
       <LargeButton content="로 그 인" />
       <LargeButton content="회 원 가 입" />
       <LargeButton content="저장" />
+      <Image src="/dummy/갱얼쥐.jpg" />
+      <Image src="/dummy/갱얼쥐.jpg" />
+      <Image src="/dummy/갱얼쥐.jpg" />
 
       <PageHeader
         content={{ left: 'Back', title: 'Re:memories', right: 'Add' }}
