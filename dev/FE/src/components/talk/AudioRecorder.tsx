@@ -1,5 +1,6 @@
 import axios from 'axios';
 import React, { useState, useRef } from 'react';
+import AudioPlayerTest from './AudioPlayerTest';
 
 const TESTURL = 'http://localhost:8080/api/v1/talking/stt';
 
@@ -7,6 +8,7 @@ const AudioRecorder: React.FC = () => {
   const [recording, setRecording] = useState<boolean>(false);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
+  const [audioSrc, setAudioSrc] = useState<string | null>(null);
 
   const startRecording = async () => {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -31,6 +33,7 @@ const AudioRecorder: React.FC = () => {
         .post(TESTURL, formData)
         .then((response) => {
           console.log('Successfully uploaded audio:', response.data);
+          setAudioSrc(response.text);
         })
         .catch((error) => {
           console.error('Error uploading audio:', error);
@@ -53,6 +56,8 @@ const AudioRecorder: React.FC = () => {
         {recording ? 'Recording...' : 'Start Recording'}
       </button>
       {audioBlob && <audio controls src={URL.createObjectURL(audioBlob)} />}
+      <div>오디오 플레이어</div>
+      {audioSrc && <AudioPlayerTest src={audioSrc} />}
     </div>
   );
 };
