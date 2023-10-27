@@ -19,5 +19,6 @@ public class WebMvcConfig implements WebMvcConfigurer {
                 .addPathPatterns("/user")
                 .addPathPatterns("/user/logout");
 
+
     }
 }

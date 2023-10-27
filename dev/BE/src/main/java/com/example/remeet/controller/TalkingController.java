@@ -28,7 +28,7 @@ public class TalkingController {
 
     @PostMapping("stt/{voiceId}")
     public ResponseEntity<STTResponseDto> upload(@RequestPart(value = "file") MultipartFile multipartFile, @PathVariable("voiceId") String voiceId) throws Exception {
-        String wavPath = uploadService.upload(multipartFile);
+        String wavPath = talkingService.callUploadApi(multipartFile).getText();
         String msg = talkingService.callFlaskApi(wavPath).getText();
         String answer = gptService.callFlaskApi(msg).getText();
         STTResponseDto audioPath = ttsService.callFlaskApi(answer, voiceId);

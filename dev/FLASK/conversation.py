@@ -12,6 +12,57 @@ app = Flask(__name__)
 # .env 파일에서 환경 변수를 로드합니다.
 load_dotenv()
 
+AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
+AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
+REGION_NAME = 'ap-northeast-2'
+BUCKET_NAME = 'remeet'
+ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'mp4', 'wav'}
+
+
+# S3 클라이언트 설정
+s3_client = boto3.client('s3', aws_access_key_id=AWS_ACCESS_KEY_ID, aws_secret_access_key=AWS_SECRET_ACCESS_KEY, region_name=REGION_NAME )
+
+
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+
+@app.route('/api/v1/upload', methods=['POST'])
+def upload_file():
+    if 'file' not in request.files:
+        return jsonify(error='No file part'), 400
+    
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify(error='No selected file'), 400
+    
+    if file and allowed_file(file.filename):
+        folder_key = f"ASSET/seungwoo/minwoong/"
+
+        
+        # S3 버킷에서 기존 파일 목록 가져오기
+        existing_files = s3_client.list_objects_v2(Bucket=BUCKET_NAME, Prefix=folder_key)
+        existing_file_keys = [obj['Key'] for obj in existing_files.get('Contents', []) if obj['Key'].endswith('.mp4')]
+        
+        # 새 파일 이름 생성
+        existing_indices = [int(key.split('/')[-1].split('.')[0]) for key in existing_file_keys if key.split('/')[-1].split('.')[0].isdigit()]
+        next_index = 1 if not existing_indices else max(existing_indices) + 1
+        new_filename = f"{next_index}.mp4"
+        file_path = os.path.join(folder_key, new_filename)
+        
+        try:
+            # 파일을 S3에 업로드
+            s3_client.upload_fileobj(file, BUCKET_NAME, file_path)
+            return jsonify({ 'msg' : f"s3://{BUCKET_NAME}/{file_path}"}), 201
+        except Exception as e:
+            print(str(e))
+            return jsonify(error='Failed to upload file'), 500
+    else:
+        return jsonify(error='Allowed file types are txt, pdf, png, jpg, jpeg, gif, mp4, wav'), 400
+
+
 @app.route('/api/v1/videomaker', methods=['POST'])
 def videoMaker():
     text = request.json.get('answer')
@@ -47,7 +98,7 @@ def videoMaker():
 
     response = requests.post(url, json=payload, headers=headers)
 
-    print(response.text)
+    return jsonify({"msg": response.text})
 
 
 @app.route('/api/v1/tts', methods=['POST'])
@@ -62,8 +113,8 @@ def tts():
     #     voice_id = file.read().strip()
 
     # 설정 가져오기
-    with open("settings.txt", "r") as file:
-        stability, similarity_boost = map(float, file.read().split(','))
+    # with open("settings.txt", "r") as file:
+    stability, similarity_boost = 0.5,0.75
     voice_id = request.json.get('voiceId')
     text = request.json.get('answer')
     tts_url = f"https://api.elevenlabs.io/v1/text-to-speech/{voice_id}/stream"
@@ -92,8 +143,6 @@ def tts():
         print(response.text)
         exit()
 
-    # 지정된 경로에 따라 output.mp3 저장
-    # file_name_without_ext = os.path.splitext(os.path.basename(voice_id_path))[0]
     output_folder = os.path.join("samples", voice_id)
     os.makedirs(output_folder, exist_ok=True)
     OUTPUT_PATH = os.path.join(output_folder, "test_minwoong.mp3")
@@ -102,9 +151,45 @@ def tts():
         for chunk in response.iter_content(chunk_size=1024):
             if chunk:
                 f.write(chunk)
+    # 로컬 경로 받기
+    local_path = OUTPUT_PATH
 
-    print(f"Audio saved to {OUTPUT_PATH}")
-    return jsonify({"msg": OUTPUT_PATH})
+    if not local_path:
+        return jsonify({'error': 'No path provided'}), 400
+
+    # S3에 파일 업로드
+    filename = local_path.split('/')[-1]  # 경로에서 파일 이름 추출
+    
+
+    folder_key = f"ASSET/seungwoo/minwoong/"
+        
+    # S3 버킷에서 기존 파일 목록 가져오기
+    existing_files = s3_client.list_objects_v2(Bucket=BUCKET_NAME, Prefix=folder_key)
+    existing_file_keys = [obj['Key'] for obj in existing_files.get('Contents', []) if obj['Key'].endswith('.mp3')]
+    
+    # 새 파일 이름 생성
+    existing_indices = [int(key.split('/')[-1].split('.')[0]) for key in existing_file_keys if key.split('/')[-1].split('.')[0].isdigit()]
+    next_index = 1 if not existing_indices else max(existing_indices) + 1
+    new_filename = f"{next_index}.mp3"
+    file_path = os.path.join(folder_key, new_filename)
+    
+    try:
+        # 파일을 S3에 업로드
+        with open(local_path, 'rb') as file:
+            s3_client.upload_fileobj(file, BUCKET_NAME, file_path)
+        # s3_client.upload_fileobj(file, BUCKET_NAME, file_path)
+        file_url = s3_client.generate_presigned_url('get_object',
+                                             Params={'Bucket': BUCKET_NAME, 'Key': file_path},
+                                             ExpiresIn=3600)
+        return jsonify({"msg": file_url})
+    except Exception as e:
+        print(str(e))
+        return jsonify(msg='Failed to upload file'), 500
+    # 지정된 경로에 따라 output.mp3 저장
+    # file_name_without_ext = os.path.splitext(os.path.basename(voice_id_path))[0]
+
+    # print(f"Audio saved to {OUTPUT_PATH}")
+    # return jsonify({"msg": OUTPUT_PATH})
 
 
 
@@ -175,7 +260,7 @@ def answer():
         response.json().get("choices", [{}])[0].get("message", {}).get("content", "")
     )
     if "엄마:" in chat_response:
-        chat_response = chat_response.split("엄마:")[-1]
+        chat_response = chat_response.split(":")[-1]
     print(chat_response)
     practice += "엄마 :" + chat_response + "\n"
     
