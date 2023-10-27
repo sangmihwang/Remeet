@@ -3,6 +3,7 @@ import {
   BoardPage,
   LoginPage,
   MainPage,
+  ModelCreate,
   ProfilePage,
   SignUpPage,
   TalkPage,
@@ -22,6 +23,7 @@ const Router = () => {
         <Route path="/talk" element={<TalkPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/board" element={<BoardPage />} />
+        <Route path="/board/create" element={<ModelCreate />} />
       </Route>
     </Routes>
   );

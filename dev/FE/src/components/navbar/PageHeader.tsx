@@ -49,9 +49,10 @@ interface PageHeaderProps {
     right: string;
   };
   type: 1 | 2;
+  rightButtonClick?: () => void;
 }
 
-const PageHeader = ({ content, type }: PageHeaderProps) => {
+const PageHeader = ({ content, type, rightButtonClick }: PageHeaderProps) => {
   const navigate = useNavigate();
   const handleReturnPage = () => {
     navigate(-1);
@@ -62,7 +63,9 @@ const PageHeader = ({ content, type }: PageHeaderProps) => {
         {content.left}
       </LeftBtn>
       <Title $inputType={type}>{content.title}</Title>
-      <RightBtn $inputType={type}>{content.right}</RightBtn>
+      <RightBtn $inputType={type} onClick={rightButtonClick}>
+        {content.right}
+      </RightBtn>
     </PageHeaderWrapper>
   );
 };
