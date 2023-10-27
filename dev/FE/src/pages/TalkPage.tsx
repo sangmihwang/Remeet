@@ -1,5 +1,6 @@
 import styled from 'styled-components';
 import { useRef } from 'react';
+import videojs from 'video.js';
 import PageHeader from '@/components/navbar/PageHeader';
 // import BottomNavigation from '@/components/navbar/BottomNavigation';
 import { SmallButton } from '@/components/common';
