@@ -102,7 +102,8 @@ const Modal: React.FC<{
   const AnimatedModal = animated(ModalWrapper);
 
   return (
-    <AnimatedBackground style={bgStyle} onClick={onClose}>
+    <>
+      <AnimatedBackground style={bgStyle} onClick={onClose} />
       <AnimatedModal
         {...bind()}
         style={{
@@ -116,7 +117,7 @@ const Modal: React.FC<{
         <Handle />
         {children}
       </AnimatedModal>
-    </AnimatedBackground>
+    </>
   );
 };
 
