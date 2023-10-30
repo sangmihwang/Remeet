@@ -3,7 +3,11 @@ import { useState } from 'react';
 import PageHeader from '@/components/navbar/PageHeader';
 import { Image, SmallButton } from '@/components/common';
 import BottomNavigation from '@/components/navbar/BottomNavigation';
-import AudioUploadModal from '@/components/model/AudioUploadModal';
+import AudioUpload from '@/components/model/AudioUpload';
+import Modal from '@/components/common/Modal';
+import ImageUpload from '@/components/model/ImageUpload';
+import VideoUpload from '@/components/model/VideoUpload';
+import TalkUpload from '@/components/model/TalkUpload';
 
 const CreateWrapper = styled.div`
   padding-bottom: 5.25rem;
@@ -52,13 +56,33 @@ const ModelCreate = () => {
   };
 
   // const [uploadFiles, setUploadFiles] = useState(null);
-
+  const [isModal, setIsModal] = useState<boolean>(false);
+  const [isImageModal, setIsImageModal] = useState<boolean>(false);
   const [isAudioModal, setIsAudioModal] = useState<boolean>(false);
+  const [isVideoModal, setIsVideoModal] = useState<boolean>(false);
+  const [isTalkModal, setIsTalkModal] = useState<boolean>(false);
   const handleOpenAudio = () => {
     setIsAudioModal(true);
+    setIsModal(true);
+  };
+  const handleOpenImage = () => {
+    setIsModal(true);
+    setIsImageModal(true);
+  };
+  const handleOpenVideo = () => {
+    setIsModal(true);
+    setIsVideoModal(true);
+  };
+  const handleOpenTalk = () => {
+    setIsModal(true);
+    setIsTalkModal(true);
   };
   const handleCloseModal = () => {
     setIsAudioModal(false);
+    setIsModal(false);
+    setIsImageModal(false);
+    setIsVideoModal(false);
+    setIsTalkModal(false);
   };
 
   return (
@@ -73,11 +97,18 @@ const ModelCreate = () => {
       <Title>Name</Title>
       <ButtonWrapper>
         <SmallButton text="음성 올리기" onClick={handleOpenAudio} />
-        <SmallButton text="영상 올리기" />
-        <SmallButton text="대화 올리기" />
-        <SmallButton text="사진 올리기" />
+        <SmallButton text="영상 올리기" onClick={handleOpenVideo} />
+        <SmallButton text="대화 올리기" onClick={handleOpenTalk} />
+        <SmallButton text="사진 올리기" onClick={handleOpenImage} />
       </ButtonWrapper>
-      {isAudioModal && <AudioUploadModal onClose={handleCloseModal} />}
+      {isModal && (
+        <Modal onClose={handleCloseModal}>
+          {isAudioModal && <AudioUpload />}
+          {isImageModal && <ImageUpload />}
+          {isVideoModal && <VideoUpload />}
+          {isTalkModal && <TalkUpload />}
+        </Modal>
+      )}
       <BottomNavigation />
     </CreateWrapper>
   );
