@@ -1,14 +1,14 @@
-import styled from 'styled-components';
+// import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 import BottomNavigation from '@/components/navbar/BottomNavigation';
 import PageHeader from '@/components/navbar/PageHeader';
 import BoardItem from '@/components/board/BoardItem';
 
-const TitleWrapper = styled.div`
-  width: 100%;
-  height: 25rem;
-  /* background-color: var(--primary-color); */
-`;
+// const TitleWrapper = styled.div`
+//   width: 100%;
+//   height: 25rem;
+//   /* background-color: var(--primary-color); */
+// `;
 
 const BoardPage = () => {
   const headerContent = {

@@ -31,7 +31,7 @@ const AudioRecorder: React.FC = () => {
       // axios를 사용하여 서버에 POST 요청 보내기
       axios
         .post(TESTURL, formData)
-        .then((response) => {
+        .then((response: any) => {
           console.log('Successfully uploaded audio:', response.data);
           setAudioSrc(response.text);
         })
