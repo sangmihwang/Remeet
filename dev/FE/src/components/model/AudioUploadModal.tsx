@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
+import { useSpring, animated } from '@react-spring/web';
+import { useDrag } from '@use-gesture/react';
 import { LargeButton } from '../common';
 
 const BackGround = styled.div`
@@ -32,12 +34,46 @@ const Handle = styled.div`
   background-color: #e8e8e8;
   margin: 36px auto 0 auto;
 `;
+const TitleWrapper = styled.div`
+  width: 92vw;
+  height: fit-content;
+  text-align: center;
+  margin: 24px auto;
+  position: relative;
+`;
 
 const Title = styled.div`
   font-size: 1.5rem;
   font-weight: 600;
-  width: fit-content;
-  margin: 24px auto;
+  display: inline-block;
+`;
+
+const Label = styled.label`
+  width: 26px;
+  height: 26px;
+  border: 2px solid var(--primary-color);
+  border-radius: 100%;
+  background-image: url('/icon/plus_icon.svg');
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 70%;
+  position: absolute;
+  right: 0;
+`;
+
+const Input = styled.input`
+  display: none;
+`;
+
+const ListWrapper = styled.ul`
+  width: 92vw;
+  height: 50vh;
+  overflow-y: auto;
+  margin: 0 auto;
+`;
+
+const ListItem = styled.li`
+  list-style: none;
 `;
 
 interface AudioFile {
@@ -48,8 +84,12 @@ interface AudioFile {
 
 const AudioUploadModal: React.FC<{
   onClose: () => void;
-  onUpload?: (files: Blob[]) => void;
-}> = ({ onClose, onUpload }) => {
+}> = ({ onClose }) => {
+  const [{ x, y }, api] = useSpring(() => ({ x: 0, y: 0 }));
+  const bind = useDrag(({ down, movement: [mx, my] }) => {
+    api.start({ x: down ? mx : 0, y: down ? my : 0, immediate: down });
+  });
+
   const [audioFiles, setAudioFiles] = useState<AudioFile[]>([]);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -58,6 +98,7 @@ const AudioUploadModal: React.FC<{
       const url = URL.createObjectURL(file);
 
       setAudioFiles([...audioFiles, { blob: file, url, checked: true }]);
+      console.log(audioFiles);
     }
   };
 
@@ -69,33 +110,45 @@ const AudioUploadModal: React.FC<{
     );
   };
 
-  const handleSubmit = () => {
-    const selectedBlobs = audioFiles
-      .filter((file) => file.checked)
-      .map((file) => file.blob);
-    onUpload(selectedBlobs);
-  };
-
   return (
     <BackGround>
       <Modal>
+        <animated.div
+          {...bind()}
+          style={{
+            x,
+            y,
+            width: '200px',
+            height: '50px',
+            backgroundColor: '#000',
+          }}
+        />
         <Handle onClick={onClose} />
-        <Title>음성 업로드</Title>
-        {/* <button onClick={onClose}>닫기</button> */}
-        <input type="file" accept="audio/*" onChange={handleFileChange} />
-        <ul>
+        <TitleWrapper>
+          <Title>음성 업로드</Title>
+          {/* <button onClick={onClose}>닫기</button> */}
+          <Label htmlFor="AudioUploadInput">
+            <Input
+              id="AudioUploadInput"
+              type="file"
+              accept="audio/*"
+              onChange={handleFileChange}
+            />
+          </Label>
+        </TitleWrapper>
+        <ListWrapper>
           {audioFiles.map((file, index) => (
-            <li key={index}>
+            <ListItem key={index}>
+              {/* <span>{file.blob?.name ? file.blob?.name : ''}</span> */}
               <audio controls src={file.url} />
               <input
                 type="checkbox"
                 checked={file.checked}
                 onChange={() => handleCheckboxChange(index)}
               />
-            </li>
+            </ListItem>
           ))}
-        </ul>
-        <button onClick={handleSubmit}>API로 보내기</button>
+        </ListWrapper>
         <LargeButton content="저장" />
       </Modal>
     </BackGround>

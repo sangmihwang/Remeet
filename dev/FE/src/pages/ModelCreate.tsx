@@ -51,6 +51,8 @@ const ModelCreate = () => {
     right: 'Save',
   };
 
+  // const [uploadFiles, setUploadFiles] = useState(null);
+
   const [isAudioModal, setIsAudioModal] = useState<boolean>(false);
   const handleOpenAudio = () => {
     setIsAudioModal(true);

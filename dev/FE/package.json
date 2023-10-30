@@ -11,9 +11,11 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@react-spring/web": "^9.7.3",
     "@tanstack/react-query": "^5.0.0",
     "@types/dom-mediacapture-record": "^1.0.18",
     "@types/video.js": "^7.3.55",
+    "@use-gesture/react": "^10.3.0",
     "axios": "^1.5.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

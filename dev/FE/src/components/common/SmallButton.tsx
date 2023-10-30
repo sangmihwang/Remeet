@@ -1,6 +1,6 @@
 import styled from 'styled-components';
 
-const SmallBtn = styled.button<{ $type: number }>`
+const SmallBtn = styled.button<{ $type: number | undefined }>`
   box-sizing: border-box;
   /* width: 32vw; */
   height: fit-content;
