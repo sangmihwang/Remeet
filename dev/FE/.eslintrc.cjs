@@ -63,5 +63,9 @@ module.exports = {
       { extensions: ['.js', '.jsx', '.tsx', 'ts'] },
     ],
     'react/require-default-props': [0],
+    'react/jsx-props-no-spreading': 0,
+    'jsx-a11y/media-has-caption': 0,
+    'no-console': 0,
+    'react/no-array-index-key': 0,
   },
 };
