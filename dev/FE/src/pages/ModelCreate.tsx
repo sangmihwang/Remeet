@@ -55,7 +55,7 @@ const ModelCreate = () => {
     right: 'Save',
   };
 
-  // const [uploadFiles, setUploadFiles] = useState(null);
+  // Modal 관련 state 및 함수
   const [isModal, setIsModal] = useState<boolean>(false);
   const [isImageModal, setIsImageModal] = useState<boolean>(false);
   const [isAudioModal, setIsAudioModal] = useState<boolean>(false);
@@ -84,6 +84,13 @@ const ModelCreate = () => {
     setIsVideoModal(false);
     setIsTalkModal(false);
   };
+  // Modal관련 state 및 함수 끝
+
+  // UploadFile관련 state
+  const [audioFiles, setAudioFiles] = useState<AudioFile[]>([]);
+  const [videioFiles, setVideoFiles] = useState<VideoFile[]>([]);
+  const [imageFile, setImageFile] = useState<ImageFile | null>(null);
+  const [textFiles, setTextFiles] = useState<TextFile[]>([]);
 
   return (
     <CreateWrapper>
@@ -103,7 +110,12 @@ const ModelCreate = () => {
       </ButtonWrapper>
       {isModal && (
         <Modal onClose={handleCloseModal}>
-          {isAudioModal && <AudioUpload />}
+          {isAudioModal && (
+            <AudioUpload
+              currentAudioFiles={audioFiles}
+              setCurrentAudioFiles={setAudioFiles}
+            />
+          )}
           {isImageModal && <ImageUpload />}
           {isVideoModal && <VideoUpload />}
           {isTalkModal && <TalkUpload />}

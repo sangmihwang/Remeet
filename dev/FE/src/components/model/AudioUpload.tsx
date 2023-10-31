@@ -46,14 +46,16 @@ const ListItem = styled.li`
   list-style: none;
 `;
 
-interface AudioFile {
-  blob: Blob;
-  url: string;
-  checked: boolean;
+interface AudioUploadProps {
+  currentAudioFiles: AudioFile[];
+  setCurrentAudioFiles: (audioFiles: AudioFile[]) => void;
 }
 
-const AudioUpload: React.FC = () => {
-  const [audioFiles, setAudioFiles] = useState<AudioFile[]>([]);
+const AudioUpload = ({
+  currentAudioFiles,
+  setCurrentAudioFiles,
+}: AudioUploadProps) => {
+  const [audioFiles, setAudioFiles] = useState<AudioFile[]>(currentAudioFiles);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files.length > 0) {
@@ -66,11 +68,18 @@ const AudioUpload: React.FC = () => {
   };
 
   const handleCheckboxChange = (index: number) => {
+    console.log(audioFiles);
+
     setAudioFiles((prev) =>
       prev.map((file, idx) =>
         idx === index ? { ...file, checked: !file.checked } : file,
       ),
     );
+  };
+
+  const handleSaveAudioFiles = () => {
+    setAudioFiles(audioFiles.filter((file) => file.checked));
+    setCurrentAudioFiles(audioFiles.filter((file) => file.checked));
   };
 
   return (
@@ -99,7 +108,7 @@ const AudioUpload: React.FC = () => {
           </ListItem>
         ))}
       </ListWrapper>
-      <LargeButton content="저장" />
+      <LargeButton onClick={handleSaveAudioFiles} content="저장" />
     </>
   );
 };

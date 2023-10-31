@@ -20,12 +20,13 @@ const Wrapper = styled.div`
 
 interface LargeButtonProps {
   content: string;
+  onClick?: () => void;
 }
 
-const LargeButton = ({ content }: LargeButtonProps) => {
+const LargeButton = ({ content, onClick }: LargeButtonProps) => {
   return (
     <Wrapper>
-      <LargeBtn>{content}</LargeBtn>
+      <LargeBtn onClick={onClick}>{content}</LargeBtn>
     </Wrapper>
   );
 };
