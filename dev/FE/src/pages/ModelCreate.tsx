@@ -7,7 +7,7 @@ import AudioUpload from '@/components/model/AudioUpload';
 import Modal from '@/components/common/Modal';
 import ImageUpload from '@/components/model/ImageUpload';
 import VideoUpload from '@/components/model/VideoUpload';
-import TalkUpload from '@/components/model/TalkUpload';
+import TextUpload from '@/components/model/TextUpload';
 
 const CreateWrapper = styled.div`
   padding-bottom: 5.25rem;
@@ -123,7 +123,12 @@ const ModelCreate = () => {
             />
           )}
           {isVideoModal && <VideoUpload />}
-          {isTalkModal && <TalkUpload />}
+          {isTalkModal && (
+            <TextUpload
+              currentTextFiles={textFiles}
+              setCurrentTextFiles={setTextFiles}
+            />
+          )}
         </Modal>
       )}
       <BottomNavigation />
