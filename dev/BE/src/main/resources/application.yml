@@ -40,7 +40,7 @@ cloud:
       secretKey: dXzzQEZoZMaVmWwtB/nT6RUv4aLJUrLmOSb27ZKt
     # AWS S3 bucket Info (S3)
     s3:
-      bucket : remmet
+      bucket : remeet
     region:
       static: ap-northeast-2
     stack:
