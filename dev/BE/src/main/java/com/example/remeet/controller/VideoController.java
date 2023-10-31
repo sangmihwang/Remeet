@@ -8,7 +8,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @CrossOrigin(value = "*", allowedHeaders = "*")
 @RequiredArgsConstructor
@@ -19,16 +21,20 @@ public class VideoController {
     private final VideoService videoService;
 
     @GetMapping("recent")
-    public ResponseEntity<List<VideoDataDto>> recentProducedVideo(HttpServletRequest request) {
+    public ResponseEntity<Map<String, Object>> recentProducedVideo(HttpServletRequest request) {
         Integer userNo = (Integer)request.getAttribute("userNo");
         List<VideoDataDto> recentVideos = videoService.recentProducedVideo(userNo);
-        return ResponseEntity.ok(recentVideos);
+        Map<String, Object> response = new HashMap<>();
+        response.put("data", recentVideos);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("{modelNo}")
-    public ResponseEntity<List<VideoDataDto>> allProducedVideoByModel(@PathVariable("modelNo") Integer modelNo) {
+    public ResponseEntity<Map<String, Object>> allProducedVideoByModel(@PathVariable("modelNo") Integer modelNo) {
         List<VideoDataDto> videoList = videoService.allProducedVideoByModel(modelNo);
-        return ResponseEntity.ok(videoList);
+        Map<String, Object> response = new HashMap<>();
+        response.put("data", videoList);
+        return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("{proVideoNo}")
