@@ -1,13 +1,18 @@
 from __future__ import print_function
 import speech_recognition as sr
 from flask import Flask, jsonify, request
+from pydub import AudioSegment
 import requests
 import time
 import boto3
 import uuid
 import sys
+import wave
 import os
+import wavio
+import numpy as np
 from dotenv import load_dotenv
+
 app = Flask(__name__)
 # .env 파일에서 환경 변수를 로드합니다.
 load_dotenv()
@@ -18,44 +23,97 @@ REGION_NAME = 'ap-northeast-2'
 BUCKET_NAME = 'remeet'
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'mp4', 'wav'}
 
-
 # S3 클라이언트 설정
-s3_client = boto3.client('s3', aws_access_key_id=AWS_ACCESS_KEY_ID, aws_secret_access_key=AWS_SECRET_ACCESS_KEY, region_name=REGION_NAME )
-
+s3_client = boto3.client('s3', aws_access_key_id=AWS_ACCESS_KEY_ID, aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
+                         region_name=REGION_NAME)
 
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+def convert_blob_to_wav(blob_path, output_path):
+    sound = AudioSegment.from_file(blob_path, format="webm")
+    sound.export(output_path, format="wav")
+def get_wav_info(wav_filename):
+    with wave.open(wav_filename, 'rb') as wf:
+        n_channels = wf.getnchannels()
+        sampwidth = wf.getsampwidth()
+        framerate = wf.getframerate()
+        n_frames = wf.getnframes()
+        duration = n_frames / framerate
+
+        return {
+            "channels": n_channels,
+            "sampwidth": sampwidth,
+            "framerate": framerate,
+            "n_frames": n_frames,
+            "duration": duration
+        }
 
 
 @app.route('/api/v1/upload', methods=['POST'])
 def upload_file():
     if 'file' not in request.files:
         return jsonify(error='No file part'), 400
-    
+
     file = request.files['file']
     if file.filename == '':
         return jsonify(error='No selected file'), 400
-    
+
     if file and allowed_file(file.filename):
         folder_key = f"ASSET/seungwoo/minwoong/"
 
-        
+        # Blob 데이터를 임시 파일로 저장
+        temp_blob_path = "temp_blob_data.webm"  # 이 확장자는 Blob 데이터의 형식에 따라 변경될 수 있습니다.
+        file.save(temp_blob_path)
+        # 문제의 원인은 file.save(temp_blob_path)를 호출한 후에 다시 file.read()를 호출하면서 발생.
+        # file 객체의 내부 포인터가 파일의 끝에 위치하게 되므로, file.read()에서 아무 것도 읽지 못하게 되서, 이를 해결하기 위해서는 file 객체의 포인터를 다시 파일의 시작으로 돌려야함.
+        file.seek(0)
+        print(f"Uploaded file size: {os.path.getsize(temp_blob_path)} bytes")
+
+        # Blob 데이터를 WAV 형식으로 변환
+        temp_wav_path = "temp_info_check.wav"
+        convert_blob_to_wav(temp_blob_path, temp_wav_path)
+        print(f"Converted WAV file size: {os.path.getsize(temp_wav_path)} bytes")
+        os.remove(temp_blob_path)  # 임시 Blob 파일 삭제
+
+        # WAV 파일 정보 가져오기
+        wav_info = get_wav_info(temp_wav_path)
+        print(wav_info)
+
         # S3 버킷에서 기존 파일 목록 가져오기
         existing_files = s3_client.list_objects_v2(Bucket=BUCKET_NAME, Prefix=folder_key)
-        existing_file_keys = [obj['Key'] for obj in existing_files.get('Contents', []) if obj['Key'].endswith('.mp4')]
-        
+        existing_file_keys = [obj['Key'] for obj in existing_files.get('Contents', []) if obj['Key'].endswith('.wav')]
+
         # 새 파일 이름 생성
-        existing_indices = [int(key.split('/')[-1].split('.')[0]) for key in existing_file_keys if key.split('/')[-1].split('.')[0].isdigit()]
+        existing_indices = [int(key.split('/')[-1].split('.')[0]) for key in existing_file_keys if
+                            key.split('/')[-1].split('.')[0].isdigit()]
         next_index = 1 if not existing_indices else max(existing_indices) + 1
-        new_filename = f"{next_index}.mp4"
+        new_filename = f"{next_index}.wav"
         file_path = os.path.join(folder_key, new_filename)
-        
+
+        # Blob 데이터를 numpy 배열로 변환
+        data_blob = file.read()
+        print(f"Data blob length: {len(data_blob)}")
+        # data_blob의 길이를 2의 배수로 만듭니다.
+        if len(data_blob) % 2 == 1:
+            data_blob = data_blob[:-1]
+        data = np.frombuffer(data_blob, np.int16)
+        print(f"Data array shape: {data.shape}")
+
+        # # wav 파일로 저장
+        # wavio.write("temp.wav", data, 44100, sampwidth=2)  # 44100은 샘플링 레이트입니다. 필요에 따라 변경하세요.
+
+        # wav 파일로 저장
+        wavio.write("temp.wav", data, wav_info["framerate"],
+                    sampwidth=wav_info["sampwidth"])  # 원본 WAV 파일의 샘플링 레이트와 샘플 너비를 사용
+
         try:
-            # 파일을 S3에 업로드
-            s3_client.upload_fileobj(file, BUCKET_NAME, file_path)
-            return jsonify({ 'msg' : f"s3://{BUCKET_NAME}/{file_path}"}), 201
+            # 저장된 wav 파일을 S3에 업로드
+            with open("temp.wav", "rb") as wav_file:
+                s3_client.upload_fileobj(wav_file, BUCKET_NAME, file_path)
+            os.remove("temp.wav")  # 임시 파일 삭제
+            return jsonify({'msg': f"s3://{BUCKET_NAME}/{file_path}"}), 201
         except Exception as e:
             print(str(e))
             return jsonify(error='Failed to upload file'), 500
@@ -67,7 +125,6 @@ def upload_file():
 def videoMaker():
     text = request.json.get('answer')
     x_api_key = os.getenv("x-api-key")
-
 
     url = "https://api.heygen.com/v1/video.generate"
 
@@ -105,8 +162,6 @@ def videoMaker():
 def tts():
     ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY")
 
-    
-
     # voice_id 가져오기
     # voice_id_path = os.path.join("myvoice", "minwoong.txt")
     # with open(voice_id_path, "r") as file:
@@ -114,7 +169,7 @@ def tts():
 
     # 설정 가져오기
     # with open("settings.txt", "r") as file:
-    stability, similarity_boost = 0.5,0.75
+    stability, similarity_boost = 0.5, 0.75
     voice_id = request.json.get('voiceId')
     text = request.json.get('answer')
     tts_url = f"https://api.elevenlabs.io/v1/text-to-speech/{voice_id}/stream"
@@ -159,28 +214,28 @@ def tts():
 
     # S3에 파일 업로드
     filename = local_path.split('/')[-1]  # 경로에서 파일 이름 추출
-    
 
     folder_key = f"ASSET/seungwoo/minwoong/"
-        
+
     # S3 버킷에서 기존 파일 목록 가져오기
     existing_files = s3_client.list_objects_v2(Bucket=BUCKET_NAME, Prefix=folder_key)
     existing_file_keys = [obj['Key'] for obj in existing_files.get('Contents', []) if obj['Key'].endswith('.mp3')]
-    
+
     # 새 파일 이름 생성
-    existing_indices = [int(key.split('/')[-1].split('.')[0]) for key in existing_file_keys if key.split('/')[-1].split('.')[0].isdigit()]
+    existing_indices = [int(key.split('/')[-1].split('.')[0]) for key in existing_file_keys if
+                        key.split('/')[-1].split('.')[0].isdigit()]
     next_index = 1 if not existing_indices else max(existing_indices) + 1
     new_filename = f"{next_index}.mp3"
     file_path = os.path.join(folder_key, new_filename)
-    
+
     try:
         # 파일을 S3에 업로드
         with open(local_path, 'rb') as file:
             s3_client.upload_fileobj(file, BUCKET_NAME, file_path)
         # s3_client.upload_fileobj(file, BUCKET_NAME, file_path)
         file_url = s3_client.generate_presigned_url('get_object',
-                                             Params={'Bucket': BUCKET_NAME, 'Key': file_path},
-                                             ExpiresIn=3600)
+                                                    Params={'Bucket': BUCKET_NAME, 'Key': file_path},
+                                                    ExpiresIn=3600)
         return jsonify({"msg": file_url})
     except Exception as e:
         print(str(e))
@@ -190,7 +245,6 @@ def tts():
 
     # print(f"Audio saved to {OUTPUT_PATH}")
     # return jsonify({"msg": OUTPUT_PATH})
-
 
 
 @app.route('/api/v1/gpt', methods=['POST'])
@@ -263,7 +317,7 @@ def answer():
         chat_response = chat_response.split(":")[-1]
     print(chat_response)
     practice += "엄마 :" + chat_response + "\n"
-    
+
     return jsonify({"msg": chat_response})
 
 
@@ -271,26 +325,31 @@ def answer():
 def get_audio():
     job_url = request.json.get('wavPath')
     print(job_url)
-    transcribe = boto3.client('transcribe')
+    transcribe = boto3.client('transcribe', region_name=REGION_NAME)
+
+    # transcribe = boto3.client('transcribe')
     transcription_job_name = str(uuid.uuid4())
     transcribe.start_transcription_job(
         TranscriptionJobName=transcription_job_name,
-        Media = {'MediaFileUri': job_url},
-        MediaFormat = 'wav',
-        LanguageCode = 'ko-KR'
+        Media={'MediaFileUri': job_url},
+        MediaFormat='wav',
+        LanguageCode='ko-KR'
     )
 
     while True:
         status = transcribe.get_transcription_job(TranscriptionJobName=transcription_job_name)
-        if status['TranscriptionJob']['TranscriptionJobStatus'] in ['COMPLETED','FAILED']:
+        if status['TranscriptionJob']['TranscriptionJobStatus'] in ['COMPLETED', 'FAILED']:
             break
         print('Not yet')
         time.sleep(1)
     uri = status['TranscriptionJob']['Transcript']['TranscriptFileUri']
 
+    print('url: ', uri)
+
     # URI에서 JSON 데이터 가져오기
     response = requests.get(uri)
     data = response.json()
+    print('data : ', data)
     result = data["results"]["transcripts"][0]["transcript"]
     print(result)
     return jsonify({"msg": result})
@@ -298,7 +357,7 @@ def get_audio():
 
 @app.route('/api/v1/start_stt', methods=['POST'])
 def post_audio():
-# Record Audio
+    # Record Audio
     r = sr.Recognizer()
     audio_file = request.files.get('audio')
     print(audio_file)
@@ -308,7 +367,7 @@ def post_audio():
     audio_file.seek(0)
 
     with sr.AudioFile(audio_file) as source:
-        audio = r.record(source) 
+        audio = r.record(source)
     print(audio)
     # Speech recognition using Google Speech Recognition
     try:
@@ -319,14 +378,14 @@ def post_audio():
         print("You said: " + result)
         return jsonify({"transcription": result})
     except sr.UnknownValueError:
-        result ="Google Speech Recognition could not understand audio"
+        result = "Google Speech Recognition could not understand audio"
         print("You said: " + result)
         return jsonify({"transcription": result})
     except sr.RequestError as e:
-        result ="Could not request results from Google Speech Recognition service"
+        result = "Could not request results from Google Speech Recognition service"
         print("You said: " + result)
         return jsonify({"transcription": result})
-   
-    
+
+
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(port=5000, debug=True)
