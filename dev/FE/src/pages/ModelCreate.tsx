@@ -98,7 +98,7 @@ const ModelCreate = () => {
       <TitleWrapper>
         <PageHeader content={headerContent} type={2} />
         <ImageWrapper>
-          <Image src="/dummy/갱얼쥐.jpg" />
+          <Image src={imageFile ? imageFile.url : '/dummy/갱얼쥐.jpg'} />
         </ImageWrapper>
       </TitleWrapper>
       <Title>Name</Title>
@@ -116,7 +116,12 @@ const ModelCreate = () => {
               setCurrentAudioFiles={setAudioFiles}
             />
           )}
-          {isImageModal && <ImageUpload />}
+          {isImageModal && (
+            <ImageUpload
+              currentImage={imageFile}
+              setCurrentImage={setImageFile}
+            />
+          )}
           {isVideoModal && <VideoUpload />}
           {isTalkModal && <TalkUpload />}
         </Modal>

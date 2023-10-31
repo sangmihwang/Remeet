@@ -45,26 +45,30 @@ const ListItem = styled.li`
   list-style: none;
 `;
 
-const ImageUpload = () => {
-  const [audioFiles, setAudioFiles] = useState<AudioFile[]>([]);
+interface ImageUploadProps {
+  currentImage: ImageFile | null;
+  setCurrentImage: (imageFile: ImageFile | null) => void;
+}
+
+const ImageUpload = ({ currentImage, setCurrentImage }: ImageUploadProps) => {
+  const [imageFile, setImageFile] = useState<ImageFile | null>(currentImage);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files && event.target.files.length > 0) {
+    if (event.target.files) {
       const file = event.target.files[0];
       const url = URL.createObjectURL(file);
-
-      setAudioFiles([...audioFiles, { blob: file, url, checked: true }]);
-      console.log(audioFiles);
+      const newImageFile: ImageFile = {
+        blob: file,
+        url,
+      };
+      setImageFile(newImageFile);
     }
   };
 
-  const handleCheckboxChange = (index: number) => {
-    setAudioFiles((prev) =>
-      prev.map((file, idx) =>
-        idx === index ? { ...file, checked: !file.checked } : file,
-      ),
-    );
+  const handleSaveImageFile = () => {
+    setCurrentImage(imageFile);
   };
+
   return (
     <>
       <TitleWrapper>
@@ -73,25 +77,18 @@ const ImageUpload = () => {
           <Input
             id="AudioUploadInput"
             type="file"
-            accept="audio/*"
+            accept="image/*"
             onChange={handleFileChange}
           />
         </Label>
       </TitleWrapper>
       <ListWrapper>
-        {audioFiles.map((file, index) => (
-          <ListItem key={index}>
-            {/* <span>{file.blob?.name ? file.blob?.name : ''}</span> */}
-            <audio controls src={file.url} />
-            <input
-              type="checkbox"
-              checked={file.checked}
-              onChange={() => handleCheckboxChange(index)}
-            />
-          </ListItem>
-        ))}
+        <ListItem>
+          {/* <span>{file.blob?.name ? file.blob?.name : ''}</span> */}
+          {imageFile && <img src={imageFile.url} />}
+        </ListItem>
       </ListWrapper>
-      <LargeButton content="저장" />
+      <LargeButton onClick={handleSaveImageFile} content="저장" />
     </>
   );
 };

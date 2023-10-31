@@ -1,7 +1,7 @@
 interface MediaFile {
   blob: File; // File already includes 'name', 'size', etc.
   url: string;
-  checked: boolean;
+  checked?: boolean;
 }
 
 interface AudioFile extends MediaFile {}
