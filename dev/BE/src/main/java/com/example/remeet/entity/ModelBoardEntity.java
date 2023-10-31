@@ -27,11 +27,18 @@ public class ModelBoardEntity {
     private String modelName;
 
     @NotNull
+    @Column(name="gender", columnDefinition = "CHAR(1)")
+    private char gender;
+
+    @NotNull
     @Column(name="image_path")
     private String imagePath;
 
     @Column(name="voice_id")
     private String voiceId;
+
+    @Column(name="avartar_id")
+    private String avartarId;
 
     @Column(name="common_video_path")
     private String commonVideoPath;
