@@ -92,11 +92,20 @@ const ModelCreate = () => {
   const [imageFile, setImageFile] = useState<ImageFile | null>(null);
   const [textFiles, setTextFiles] = useState<TextFile[]>([]);
 
+  // API 관련
+  const handleSaveClick = () => {
+    console.log(audioFiles, videioFiles, imageFile, textFiles);
+  };
+
   return (
     <CreateWrapper>
       <HeaderBackGround />
       <TitleWrapper>
-        <PageHeader content={headerContent} type={2} />
+        <PageHeader
+          content={headerContent}
+          type={2}
+          rightButtonClick={handleSaveClick}
+        />
         <ImageWrapper>
           <Image src={imageFile ? imageFile.url : '/dummy/갱얼쥐.jpg'} />
         </ImageWrapper>
