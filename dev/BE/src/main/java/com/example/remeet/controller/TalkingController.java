@@ -1,5 +1,8 @@
 package com.example.remeet.controller;
 
+import com.example.remeet.dto.STTResponseDto;
+import com.example.remeet.service.GPTService;
+import com.example.remeet.service.TTSService;
 import com.example.remeet.service.TalkingService;
 import com.example.remeet.service.UploadService;
 import lombok.RequiredArgsConstructor;
@@ -20,11 +23,16 @@ import java.util.List;
 public class TalkingController {
     private final TalkingService talkingService;
     private final UploadService uploadService;
+    private final GPTService gptService;
+    private final TTSService ttsService;
 
-     @PostMapping("stt")
-    public ResponseEntity<Object> upload(@RequestPart(value = "file") MultipartFile multipartFile) throws Exception {
-        List<String> imagePathList = uploadService.upload(multipartFile);
-        return new ResponseEntity<Object>(imagePathList, HttpStatus.OK);
+    @PostMapping("stt/{voiceId}")
+    public ResponseEntity<STTResponseDto> upload(@RequestPart(value = "file") MultipartFile multipartFile, @PathVariable("voiceId") String voiceId) throws Exception {
+        String wavPath = talkingService.callUploadApi(multipartFile).getText();
+        String msg = talkingService.callFlaskApi(wavPath).getText();
+        String answer = gptService.callFlaskApi(msg).getText();
+        STTResponseDto audioPath = ttsService.callFlaskApi(answer, voiceId);
+        return new ResponseEntity<STTResponseDto>(audioPath, HttpStatus.OK);
     }
 
 }
