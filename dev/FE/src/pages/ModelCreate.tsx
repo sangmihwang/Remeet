@@ -122,7 +122,12 @@ const ModelCreate = () => {
               setCurrentImage={setImageFile}
             />
           )}
-          {isVideoModal && <VideoUpload />}
+          {isVideoModal && (
+            <VideoUpload
+              currentVideoFiles={videioFiles}
+              setCurrentVideoFiles={setVideoFiles}
+            />
+          )}
           {isTalkModal && (
             <TextUpload
               currentTextFiles={textFiles}
