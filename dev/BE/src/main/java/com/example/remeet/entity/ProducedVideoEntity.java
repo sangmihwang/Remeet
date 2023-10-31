@@ -14,7 +14,7 @@ import java.math.BigInteger;
 @Entity
 @Builder
 @DynamicInsert
-@Table(name = "MODEL_BOARD")
+@Table(name = "PRODUCED_VIDEO")
 public class ProducedVideoEntity {
 
     @Id

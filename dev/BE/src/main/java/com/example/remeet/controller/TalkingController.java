@@ -4,15 +4,12 @@ import com.example.remeet.dto.STTResponseDto;
 import com.example.remeet.service.GPTService;
 import com.example.remeet.service.TTSService;
 import com.example.remeet.service.TalkingService;
-import com.example.remeet.service.UploadService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.util.List;
 
 
 @CrossOrigin(value = "*", allowedHeaders = "*")
@@ -22,7 +19,6 @@ import java.util.List;
 @Slf4j
 public class TalkingController {
     private final TalkingService talkingService;
-    private final UploadService uploadService;
     private final GPTService gptService;
     private final TTSService ttsService;
 
