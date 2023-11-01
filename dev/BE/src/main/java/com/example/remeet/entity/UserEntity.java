@@ -36,4 +36,8 @@ public class UserEntity {
     @Column(name="profile_img")
     private String profileImg;
 
+    @NotNull
+    @Column(name = "user_email")
+    private String userEmail;
+
 }
