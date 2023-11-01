@@ -1,8 +1,12 @@
 package com.example.remeet.service;
 
+import com.example.remeet.dto.ModelBoardCreateDto;
+import com.example.remeet.dto.ModelBoardDetailDto;
 import com.example.remeet.dto.ModelBoardDto;
 import com.example.remeet.entity.ModelBoardEntity;
 import com.example.remeet.repository.ModelBoardRepository;
+import com.example.remeet.repository.UploadedVideoRepository;
+import com.example.remeet.repository.UploadedVoiceRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,24 +23,29 @@ public class ModelBoardService {
     @Autowired
     private ModelBoardRepository modelBoardRepository;
 
+    @Autowired
+    private UploadedVoiceRepository uploadedVoiceRepository;
+
+    @Autowired
+    private UploadedVideoRepository uploadedVideoRepository;
+
     @Transactional
-    public Integer createModelBoard(ModelBoardDto modelBoardDto) {
+    public Integer createModelBoard(ModelBoardCreateDto modelBoardCreateDto) {
         ModelBoardEntity modelBoardEntity = ModelBoardEntity.builder()
-                .modelNo(modelBoardDto.getModelNo())
-                .modelName(modelBoardDto.getModelName())
-                .imagePath(modelBoardDto.getImagePath())
-                .avatarId(modelBoardDto.getAvatarId())
-                .voiceId(modelBoardDto.getVoiceId())
-                .gender(modelBoardDto.getGender())
-                .commonVideoPath(modelBoardDto.getCommonVideoPath())
-                .conversationText(modelBoardDto.getConversationText())
-                .conversationCount(modelBoardDto.getConversationCount())
-                .latestConversationTime(modelBoardDto.getLatestConversationTime())
+                .modelName(modelBoardCreateDto.getModelName())
+                .gender(modelBoardCreateDto.getGender())
+                .imagePath(modelBoardCreateDto.getImagePath())
+                .avatarId(modelBoardCreateDto.getAvatarId())
+                .voiceId(modelBoardCreateDto.getVoiceId())
+                .commonVideoPath(modelBoardCreateDto.getCommonVideoPath())
+                .conversationText(modelBoardCreateDto.getConversationText())
+                .conversationCount(modelBoardCreateDto.getConversationCount())
                 .build();
 
         modelBoardRepository.save(modelBoardEntity);
         return modelBoardEntity.getModelNo();
     }
+
 
     @Transactional(readOnly = true)
     public List<ModelBoardDto> getAllModelBoards() {
@@ -44,22 +53,15 @@ public class ModelBoardService {
                 .map(entity -> new ModelBoardDto(
                         entity.getModelNo(),
                         entity.getModelName(),
-                        entity.getImagePath(),
-                        entity.getAvatarId(),
-                        entity.getVoiceId(),
-                        entity.getGender(),
-                        entity.getCommonVideoPath(),
-                        entity.getConversationText(),
-                        entity.getConversationCount(),
-                        entity.getLatestConversationTime()
+                        entity.getImagePath()
                 ))
                 .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
-    public Optional<ModelBoardDto> getModelBoardById(Integer modelNo) {
+    public Optional<ModelBoardDetailDto> getModelBoardDetailById(Integer modelNo) {
         return modelBoardRepository.findById(modelNo)
-                .map(entity -> new ModelBoardDto(
+                .map(entity -> new ModelBoardDetailDto(
                         entity.getModelNo(),
                         entity.getModelName(),
                         entity.getImagePath(),
@@ -72,6 +74,7 @@ public class ModelBoardService {
                         entity.getLatestConversationTime()
                 ));
     }
+
     public List<ModelBoardDto> findByOption(String option) {
         switch (option) {
             case "all":
@@ -94,14 +97,7 @@ public class ModelBoardService {
                 .map(entity -> new ModelBoardDto(
                         entity.getModelNo(),
                         entity.getModelName(),
-                        entity.getImagePath(),
-                        entity.getAvatarId(),
-                        entity.getVoiceId(),
-                        entity.getGender(),
-                        entity.getCommonVideoPath(),
-                        entity.getConversationText(),
-                        entity.getConversationCount(),
-                        entity.getLatestConversationTime()
+                        entity.getImagePath()
                 ))
                 .collect(Collectors.toList());
     }
@@ -112,14 +108,7 @@ public class ModelBoardService {
                 .map(entity -> new ModelBoardDto(
                         entity.getModelNo(),
                         entity.getModelName(),
-                        entity.getImagePath(),
-                        entity.getAvatarId(),
-                        entity.getVoiceId(),
-                        entity.getGender(),
-                        entity.getCommonVideoPath(),
-                        entity.getConversationText(),
-                        entity.getConversationCount(),
-                        entity.getLatestConversationTime()
+                        entity.getImagePath()
                 ))
                 .collect(Collectors.toList());
     }

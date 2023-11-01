@@ -12,11 +12,4 @@ public class ModelBoardDto {
     private Integer modelNo;
     private String modelName;
     private String imagePath;
-    private String avatarId;
-    private String voiceId;
-    private char gender;
-    private String commonVideoPath;
-    private String conversationText;
-    private Integer conversationCount;
-    private LocalDateTime latestConversationTime;
 }
