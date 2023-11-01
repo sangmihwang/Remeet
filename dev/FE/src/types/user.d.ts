@@ -1,8 +1,24 @@
-interface User {
-  userid: string;
+interface Login {
+  userId: string;
   password: string;
-  name: string;
+}
+
+interface User extends Login {
+  userName: string;
+  userEmail: string;
   imagePath?: string;
 }
 
-export default User;
+interface SignUpForm extends User {
+  passwordCheck: string;
+}
+
+interface UserResponse extends User {
+  userNo: number;
+  tokenResponse: {
+    accessToken: string;
+    refreshToken: string;
+  };
+}
+
+export { Login, User, SignUpForm, UserResponse };

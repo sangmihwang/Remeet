@@ -12,7 +12,7 @@ import BoardItem from '@/components/board/BoardItem';
 
 const BoardPage = () => {
   const headerContent = {
-    left: 'Back',
+    left: '',
     title: 'Re:memories',
     right: 'Add',
   };
