@@ -5,7 +5,7 @@ FROM openjdk:11-jre-slim
 EXPOSE 8000
 
 # 애플리케이션 파일을 컨테이너 내부로 복사
-COPY dev/BE/app.jar /app/app.jar
+COPY REMEET-0.0.1-SNAPSHOT.jar /app/app.jar
 
 # 작업 디렉토리 설정
 WORKDIR /app
