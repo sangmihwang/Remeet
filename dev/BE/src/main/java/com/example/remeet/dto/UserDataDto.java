@@ -8,4 +8,5 @@ public class UserDataDto {
     private String password;
     private String userName;
     private String imagePath;
+    private String userEmail;
 }

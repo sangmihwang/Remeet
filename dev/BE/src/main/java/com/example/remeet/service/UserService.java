@@ -32,6 +32,7 @@ public class UserService {
                 .userName(userData.getUserName())
                 .password(BCrypt.hashpw(userData.getPassword(), BCrypt.gensalt()))
                 .profileImg(userData.getImagePath())
+                .userEmail(userData.getUserEmail())
                 .build();
         userRepository.save(newMember);
     }

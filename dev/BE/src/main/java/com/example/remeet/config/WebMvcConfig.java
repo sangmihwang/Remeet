@@ -17,7 +17,9 @@ public class WebMvcConfig implements WebMvcConfigurer {
     public void addInterceptors(InterceptorRegistry registry){
         registry.addInterceptor(new TokenCheckInterceptor(jwtTokenProvider))
                 .addPathPatterns("/user")
-                .addPathPatterns("/user/logout");
+                .addPathPatterns("/user/logout")
+                .addPathPatterns(("/video/*"));
+
 
 
     }
