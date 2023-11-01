@@ -81,9 +81,9 @@ public class UserController {
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping("reissue")
+    @PostMapping("reissue")
     public ResponseEntity<AccessTokenDto> reissue(@RequestHeader HttpHeaders header){
-        log.info("request to /api/v1/user/reissue [Method: GET]");
+        log.info("request to /api/v1/user/reissue [Method: POST]");
         AccessTokenDto accessTokenDto = new AccessTokenDto();
         try{
             String refreshToken = header.getFirst("X-REFRESH-TOKEN");
