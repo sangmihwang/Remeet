@@ -2,7 +2,8 @@ import axios from 'axios';
 import React, { useState, useRef } from 'react';
 import AudioPlayerTest from './AudioPlayerTest';
 
-const TESTURL = 'http://localhost:8080/api/v1/talking/stt/xiwegDxmfAZs4jY54VHT';
+const TESTURL =
+  'http://k9a706.p.ssafy.io/:8080/api/v1/talking/stt/xiwegDxmfAZs4jY54VHT';
 
 const AudioRecorder: React.FC = () => {
   const [recording, setRecording] = useState<boolean>(false);
