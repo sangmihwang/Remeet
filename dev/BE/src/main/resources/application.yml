@@ -39,7 +39,7 @@ spring:
 jwt:
   secretKey: rkGU45258GGhiolLO2465TFY5345kGU45258GGhiolLO2465TFY5345seeew
   access:
-    expiration: 36000000 # 1시간(60분) (1000L(ms -> s) * 60L(s -> m) * 60L(m -> h))
+    expiration: 10000 # 1시간(60분) (1000L(ms -> s) * 60L(s -> m) * 60L(m -> h))
     header: Authorization
 
   refresh:
