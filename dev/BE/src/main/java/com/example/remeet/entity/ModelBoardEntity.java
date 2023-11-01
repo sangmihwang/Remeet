@@ -6,7 +6,7 @@ import org.hibernate.annotations.DynamicInsert;
 import org.springframework.data.annotation.CreatedDate;
 
 import javax.persistence.*;
-import java.math.BigInteger;
+import java.time.LocalDateTime;
 
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -27,11 +27,18 @@ public class ModelBoardEntity {
     private String modelName;
 
     @NotNull
+    @Column(name="gender", columnDefinition = "CHAR(1)")
+    private char gender;
+
+    @NotNull
     @Column(name="image_path")
     private String imagePath;
 
     @Column(name="voice_id")
     private String voiceId;
+
+    @Column(name="avatar_id")
+    private String avatarId;
 
     @Column(name="common_video_path")
     private String commonVideoPath;
@@ -45,7 +52,9 @@ public class ModelBoardEntity {
     private Integer conversationCount;
 
     @CreatedDate
-    private BigInteger latestConversationTime;
+    @Column(name="latest_conversation_time", columnDefinition = "TIMESTAMP")
+    private LocalDateTime latestConversationTime;
+
 
     @NotNull
     @ManyToOne
