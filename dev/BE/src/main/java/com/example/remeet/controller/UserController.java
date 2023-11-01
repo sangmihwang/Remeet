@@ -34,7 +34,7 @@ public class UserController {
     public ResponseEntity userCheckId(@RequestParam String userId) {
         // 아이디가 있는지 여부 파악
         boolean exists = userService.isUserIdExist(userId);
-        if (exists) {
+        if (!exists) {
             return ResponseEntity.ok().build();
         } else {
             return ResponseEntity.status(403).build();
