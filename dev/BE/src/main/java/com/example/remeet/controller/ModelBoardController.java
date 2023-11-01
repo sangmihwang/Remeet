@@ -59,6 +59,7 @@ public class ModelBoardController {
         ModelBoardDetailDto modelBoardDetailDto = modelBoardService.getModelBoardDetailById(modelNo)
                 .orElseThrow(() -> new IllegalArgumentException("생성 후 오류가 있음"));
 
+        
         return ResponseEntity.ok(modelBoardDetailDto);
 
     }
