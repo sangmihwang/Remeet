@@ -1,7 +1,7 @@
 server:
   servlet:
     context-path: /api/v1
-  port: 8080
+  port: 8000
 
 spring:
   servlet:
@@ -19,8 +19,8 @@ spring:
     hikari:
       maximum-pool-size: 20
   #    url: ${DATABASE_URL}
-#    username: ${DATABASE_ID}
-#    password: ${DATABASE_PASSWORD}
+  #    username: ${DATABASE_ID}
+  #    password: ${DATABASE_PASSWORD}
   jpa:
     database: mysql
     hibernate:
@@ -35,7 +35,6 @@ spring:
     port: 6379
     host: k9a706.p.ssafy.io
     password: 1q2w3e4r@@#
-
 
 jwt:
   secretKey: rkGU45258GGhiolLO2465TFY5345kGU45258GGhiolLO2465TFY5345seeew
