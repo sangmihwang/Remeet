@@ -29,6 +29,7 @@ const SignUpPage = () => {
   const [checkForm, setCheckForm] = useState({
     idCheck: true,
     passwordCheck: true,
+    allCheck: false,
   });
 
   useEffect(() => {
@@ -40,7 +41,14 @@ const SignUpPage = () => {
     }
   }, [signUpForm.password, signUpForm.passwordCheck]);
 
-  const checkIdQuery = useQuery(
+  useEffect(() => {
+    setCheckForm((prevState) => ({
+      ...prevState,
+      allCheck: !Object.values(signUpForm).includes(''),
+    }));
+  }, [signUpForm]);
+
+  useQuery(
     ['checkId', signUpForm.userId],
     () => getCheckUserId(signUpForm.userId),
     {
@@ -97,9 +105,11 @@ const SignUpPage = () => {
   });
 
   const handleSingUpClick = () => {
-    mutation.mutate(signUpForm);
-    console.log(checkIdQuery);
-    console.log(signUpForm);
+    if (checkForm.allCheck) {
+      mutation.mutate(signUpForm);
+    } else {
+      alert('항목을 전부 채워주세요');
+    }
   };
 
   const handleGoLogin = () => {

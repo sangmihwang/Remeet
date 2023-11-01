@@ -6,8 +6,10 @@ import { InputText, LargeButton } from '@/components/common';
 import PageHeader from '@/components/navbar/PageHeader';
 import { Login, UserResponse } from '@/types/user';
 import { userLogin } from '@/api/user';
+import useAuth from '@/hooks/useAuth';
 
 const LoginPage = () => {
+  const { setUserInfo } = useAuth();
   const navigate = useNavigate();
   const [loginForm, setLoginForm] = useState<Login>({
     userId: '',
@@ -31,7 +33,7 @@ const LoginPage = () => {
     userLogin,
     {
       onSuccess: (res) => {
-        console.log(res);
+        setUserInfo(res.data);
         const { accessToken, refreshToken } = res.data.tokenResponse;
         sessionStorage.setItem('accessToken', accessToken);
         sessionStorage.setItem('refreshToken', refreshToken);
@@ -58,6 +60,7 @@ const LoginPage = () => {
     title: '로그인',
     right: 'SignUp',
   };
+
   return (
     <>
       <PageHeader
