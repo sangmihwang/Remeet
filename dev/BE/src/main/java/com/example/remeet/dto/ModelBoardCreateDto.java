@@ -11,9 +11,5 @@ public class ModelBoardCreateDto {
     private String modelName;
     private char gender;
     private String imagePath;
-    private String voiceId;
-    private String avatarId;
-    private String commonVideoPath;
     private String conversationText;
-    private Integer conversationCount;
 }

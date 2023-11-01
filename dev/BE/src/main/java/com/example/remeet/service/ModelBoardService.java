@@ -4,9 +4,13 @@ import com.example.remeet.dto.ModelBoardCreateDto;
 import com.example.remeet.dto.ModelBoardDetailDto;
 import com.example.remeet.dto.ModelBoardDto;
 import com.example.remeet.entity.ModelBoardEntity;
+import com.example.remeet.entity.UploadedVideoEntity;
+import com.example.remeet.entity.UploadedVoiceEntity;
+import com.example.remeet.entity.UserEntity;
 import com.example.remeet.repository.ModelBoardRepository;
 import com.example.remeet.repository.UploadedVideoRepository;
 import com.example.remeet.repository.UploadedVoiceRepository;
+import com.example.remeet.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,22 +28,45 @@ public class ModelBoardService {
     private ModelBoardRepository modelBoardRepository;
 
     @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
     private UploadedVoiceRepository uploadedVoiceRepository;
 
     @Autowired
     private UploadedVideoRepository uploadedVideoRepository;
 
+    @Transactional(readOnly = true)
+    public List<String> getVideoPathsByModelNo(Integer modelNo) {
+        ModelBoardEntity modelBoardEntity = modelBoardRepository.findById(modelNo)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 모델입니다"));
+
+        return uploadedVideoRepository.findByModelNo(modelBoardEntity).stream()
+                .map(UploadedVideoEntity::getVideoPath)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<String> getVoicePathsByModelNo(Integer modelNo) {
+        ModelBoardEntity modelEntity = modelBoardRepository.findById(modelNo)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 모델입니다"));
+
+        return uploadedVoiceRepository.findByModelNo(modelEntity).stream()
+                .map(UploadedVoiceEntity::getVoicePath)
+                .collect(Collectors.toList());
+    }
+
     @Transactional
-    public Integer createModelBoard(ModelBoardCreateDto modelBoardCreateDto) {
+    public Integer createModelBoard(ModelBoardCreateDto modelBoardCreateDto, Integer userNo) {
+        UserEntity userEntity = userRepository.findByUserNo(userNo)
+                .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 userNo 입니다"));
+
         ModelBoardEntity modelBoardEntity = ModelBoardEntity.builder()
                 .modelName(modelBoardCreateDto.getModelName())
                 .gender(modelBoardCreateDto.getGender())
                 .imagePath(modelBoardCreateDto.getImagePath())
-                .avatarId(modelBoardCreateDto.getAvatarId())
-                .voiceId(modelBoardCreateDto.getVoiceId())
-                .commonVideoPath(modelBoardCreateDto.getCommonVideoPath())
                 .conversationText(modelBoardCreateDto.getConversationText())
-                .conversationCount(modelBoardCreateDto.getConversationCount())
+                .userNo(userEntity)
                 .build();
 
         modelBoardRepository.save(modelBoardEntity);
