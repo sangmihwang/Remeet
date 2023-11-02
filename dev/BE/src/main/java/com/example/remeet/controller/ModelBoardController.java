@@ -57,7 +57,7 @@ public class ModelBoardController {
     public ResponseEntity<ModelBoardDetailDto> createModelBoard(
             @RequestParam("modelName") String modelName,
             @RequestParam("gender") char gender,
-            @RequestParam("imagePath") String imagePath,
+            @RequestParam("imagePath") List<MultipartFile> imagePath,
             @RequestParam("kakaoName") String kakaoName,
             @RequestParam("conversationText") String conversationText,
             @RequestParam("voiceFiles") List<MultipartFile> voiceFiles,
@@ -65,11 +65,11 @@ public class ModelBoardController {
             HttpServletRequest request
     ) throws IOException {
         ModelBoardCreateDto modelBoardCreateDto = new ModelBoardCreateDto(
-                modelName, gender, imagePath, conversationText
+                modelName, gender, conversationText
         );
 
         Integer userNo = (Integer) request.getAttribute("userNo");
-        Integer modelNo = modelBoardService.createModelBoard(modelBoardCreateDto, userNo, voiceFiles, videoFiles, kakaoName);
+        Integer modelNo = modelBoardService.createModelBoard(modelBoardCreateDto, userNo, voiceFiles, videoFiles, imagePath, kakaoName);
 
         ModelBoardDetailDto modelBoardDetailDto = modelBoardService.getModelBoardDetailById(modelNo)
                 .orElseThrow(() -> new IllegalArgumentException("생성 후 오류가 있음"));

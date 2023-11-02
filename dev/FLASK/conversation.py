@@ -357,8 +357,8 @@ def get_audio():
     return jsonify({"msg": result})
 
 
-@app.route('/api/v1/upload', methods=['POST'])
-def upload_file():
+@app.route('/api/v1/upload/files', methods=['POST'])
+def upload_files():
     if 'files' not in request.files:
         return jsonify(error='No file part'), 400
 
@@ -406,7 +406,6 @@ def upload_file():
             responses.append('Invalid file type')
     return jsonify({"fileList": responses})
 
-/
 
 if __name__ == '__main__':
     app.run(port=5000, debug=True)

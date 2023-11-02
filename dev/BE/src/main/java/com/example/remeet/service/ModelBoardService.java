@@ -31,7 +31,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ModelBoardService {
 
-    private final String FLASK_API_UPROAD = "http://localhost:5000/api/v1/upload/";
+    private final String FLASK_API_UPROAD = "http://localhost:5000/api/v1/upload/files";
 
 
     private final ModelBoardRepository modelBoardRepository;
@@ -62,39 +62,38 @@ public class ModelBoardService {
 
     public List<String> uploadFilesToFlask(List<MultipartFile> Files, Integer userNo, Integer modelNo, String type) throws IOException {
         RestTemplate restTemplate = new RestTemplate();
-        List<String> uploadPaths = new ArrayList<>();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+
+        MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
 
         for (MultipartFile file : Files) {
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.MULTIPART_FORM_DATA);
-
-            MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
             body.add("files", new ByteArrayResource(file.getBytes()){
                 @Override
                 public String getFilename(){
                     return file.getOriginalFilename();
                 }
             });
-            body.add("userNo", userNo.toString());
-            body.add("modelNo", modelNo.toString());
-            body.add("type", type);
-
-            HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
-            ResponseEntity<FileUploadDto> response = restTemplate.exchange(
-                    FLASK_API_UPROAD,
-                    HttpMethod.POST,
-                    requestEntity,
-                    FileUploadDto.class
-            );
-            List<String> FileList = response.getBody().getFileList();
-            uploadPaths.addAll(FileList);
-
         }
-        return uploadPaths;
+        body.add("userNo", userNo.toString());
+        body.add("modelNo", modelNo.toString());
+        body.add("type", type);
+
+        HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
+        ResponseEntity<FileUploadDto> response = restTemplate.exchange(
+                FLASK_API_UPROAD,
+                HttpMethod.POST,
+                requestEntity,
+                FileUploadDto.class
+        );
+        List<String> FileList = response.getBody().getFileList();
+
+        return FileList;
     }
 
     @Transactional
-    public Integer createModelBoard(ModelBoardCreateDto modelBoardCreateDto, Integer userNo, List<MultipartFile> voiceFiles, List<MultipartFile> videoFiles, String kakaoName) throws IOException{
+    public Integer createModelBoard(ModelBoardCreateDto modelBoardCreateDto, Integer userNo, List<MultipartFile> voiceFiles, List<MultipartFile> videoFiles,  List<MultipartFile> imageFiles, String kakaoName) throws IOException{
         UserEntity userEntity = userRepository.findByUserNo(userNo)
                 .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 userNo 입니다"));
         // 파일내용불러오기
@@ -112,7 +111,7 @@ public class ModelBoardService {
         modelBoardRepository.save(modelBoardEntity);
 
         Integer modelNo = modelBoardEntity.getModelNo();
-        List<String> uploadedImagePaths = uploadFilesToFlask(voiceFiles, userNo, modelNo, "image");
+        List<String> uploadedImagePaths = uploadFilesToFlask(imageFiles, userNo, modelNo, "image");
         List<String> uploadedVoicePaths = uploadFilesToFlask(voiceFiles, userNo, modelNo, "voice");
         List<String> uploadedVideoPaths = uploadFilesToFlask(videoFiles, userNo, modelNo, "video");
 
