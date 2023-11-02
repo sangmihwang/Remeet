@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 
-import { LargeButton } from '../common';
+import { InputText, LargeButton } from '../common';
 
 const TitleWrapper = styled.div`
   width: 88vw;
@@ -49,11 +49,15 @@ const ListItem = styled.li`
 interface TextUploadProps {
   currentTextFiles: TextFile[];
   setCurrentTextFiles: (textFiles: TextFile[]) => void;
+  kakaoName: string;
+  setKakaoName: (text: string) => void;
 }
 
 const TextUpload = ({
   currentTextFiles,
   setCurrentTextFiles,
+  kakaoName,
+  setKakaoName,
 }: TextUploadProps) => {
   const [textFiles, setTextFiles] = useState<TextFile[]>(currentTextFiles);
 
@@ -95,6 +99,12 @@ const TextUpload = ({
         </Label>
       </TitleWrapper>
       <ListWrapper>
+        <InputText
+          value={kakaoName}
+          onChange={setKakaoName}
+          placeholder="나의 카카오 이름"
+          type="1"
+        />
         {textFiles.map((file, index) => (
           <ListItem key={index}>
             <span>{file.blob.name}</span>

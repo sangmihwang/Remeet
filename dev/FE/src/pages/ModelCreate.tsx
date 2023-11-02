@@ -1,13 +1,16 @@
 import styled from 'styled-components';
 import { useState } from 'react';
+import { useMutation } from '@tanstack/react-query';
+import { AxiosResponse } from 'axios';
 import PageHeader from '@/components/navbar/PageHeader';
-import { Image, SmallButton } from '@/components/common';
+import { Image, InputText, SmallButton } from '@/components/common';
 import BottomNavigation from '@/components/navbar/BottomNavigation';
 import AudioUpload from '@/components/model/AudioUpload';
 import Modal from '@/components/common/Modal';
 import ImageUpload from '@/components/model/ImageUpload';
 import VideoUpload from '@/components/model/VideoUpload';
 import TextUpload from '@/components/model/TextUpload';
+import { modelCreate } from '@/api/create';
 
 const CreateWrapper = styled.div`
   padding-bottom: 5.25rem;
@@ -87,14 +90,49 @@ const ModelCreate = () => {
   // Modal관련 state 및 함수 끝
 
   // UploadFile관련 state
+  const [modleName, setModelName] = useState<string>('');
+  const [kakaoName, setKakaoName] = useState<string>('');
   const [audioFiles, setAudioFiles] = useState<AudioFile[]>([]);
   const [videioFiles, setVideoFiles] = useState<VideoFile[]>([]);
   const [imageFile, setImageFile] = useState<ImageFile | null>(null);
   const [textFiles, setTextFiles] = useState<TextFile[]>([]);
 
   // API 관련
+  const mutation = useMutation<AxiosResponse, Error>(modelCreate, {
+    onSuccess: (res) => console.log(res),
+    onError: (err) => console.log(err),
+  });
+
   const handleSaveClick = () => {
     console.log(audioFiles, videioFiles, imageFile, textFiles);
+
+    const formData = new FormData();
+
+    formData.append('modelName', modleName);
+    formData.append('kakaoName', kakaoName);
+    if (imageFile) {
+      formData.append('imagePath', imageFile.blob, imageFile.blob.name);
+    }
+    if (videioFiles) {
+      videioFiles.forEach((file) => {
+        formData.append('videoFiles', file.blob, file.name);
+      });
+    }
+    if (textFiles) {
+      textFiles.forEach((file) => {
+        formData.append('conversationText', file.blob, file.name);
+      });
+    }
+    if (audioFiles) {
+      audioFiles.forEach((file) => {
+        formData.append('voiceFiles', file.blob, file.name);
+      });
+    }
+
+    for (const [key, value] of formData.entries()) {
+      console.log(`${key}:`, value);
+    }
+    console.log(Object.keys(formData.entries()));
   };
 
   return (
@@ -110,7 +148,14 @@ const ModelCreate = () => {
           <Image src={imageFile ? imageFile.url : '/dummy/갱얼쥐.jpg'} />
         </ImageWrapper>
       </TitleWrapper>
-      <Title>Name</Title>
+      <Title>
+        <InputText
+          value={modleName}
+          onChange={setModelName}
+          type="1"
+          placeholder="이름"
+        />
+      </Title>
       <ButtonWrapper>
         <SmallButton text="음성 올리기" onClick={handleOpenAudio} />
         <SmallButton text="영상 올리기" onClick={handleOpenVideo} />
@@ -139,6 +184,8 @@ const ModelCreate = () => {
           )}
           {isTalkModal && (
             <TextUpload
+              kakaoName={kakaoName}
+              setKakaoName={setKakaoName}
               currentTextFiles={textFiles}
               setCurrentTextFiles={setTextFiles}
             />
