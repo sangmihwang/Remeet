@@ -4,9 +4,11 @@ import {
   LoginPage,
   MainPage,
   ModelCreate,
+  ModelProfile,
   ProfilePage,
   SignUpPage,
   TalkPage,
+  VideoStorage,
 } from '@/pages';
 
 const Layout = () => {
@@ -20,10 +22,12 @@ const Router = () => {
         <Route path="" element={<MainPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignUpPage />} />
-        <Route path="/talk" element={<TalkPage />} />
+        <Route path="/talk/:modelNo" element={<TalkPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/board" element={<BoardPage />} />
         <Route path="/board/create" element={<ModelCreate />} />
+        <Route path="/board/:modelNo" element={<ModelProfile />} />
+        <Route path="/videostorage" element={<VideoStorage />} />
       </Route>
     </Routes>
   );
