@@ -129,11 +129,11 @@ public class ModelBoardService {
     }
 
     @Transactional
-    public Integer createModelBoard(ModelBoardCreateDto modelBoardCreateDto, Integer userNo, List<MultipartFile> voiceFiles, List<MultipartFile> videoFiles) throws IOException{
+    public Integer createModelBoard(ModelBoardCreateDto modelBoardCreateDto, Integer userNo, List<MultipartFile> voiceFiles, List<MultipartFile> videoFiles, String kakaoName) throws IOException{
         UserEntity userEntity = userRepository.findByUserNo(userNo)
                 .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 userNo 입니다"));
         // 파일내용불러오기
-        String formattedText = formatChat(modelBoardCreateDto.getConversationText());
+        String formattedText = formatChat(modelBoardCreateDto.getConversationText(), kakaoName);
         ModelBoardEntity modelBoardEntity = ModelBoardEntity.builder()
                 .modelName(modelBoardCreateDto.getModelName())
                 .gender(modelBoardCreateDto.getGender())
@@ -201,11 +201,11 @@ public class ModelBoardService {
     }
     
     // 텍스트 수정 코드
-    public String formatChat(String conversationText) {
+    public String formatChat(String conversationText, String kakaoName) {
         StringBuilder formattedText = new StringBuilder();
         String[] lines = conversationText.split("\n");
         for (String line : lines) {
-            String formattedLine = transformLine(line);
+            String formattedLine = transformLine(line, kakaoName);
             if (formattedLine != null) {
                 formattedText.append(formattedLine).append("\n");
             }
@@ -213,7 +213,7 @@ public class ModelBoardService {
         return formattedText.toString();
     }
 
-    public String transformLine(String line) {
+    public String transformLine(String line, String kakaoName) {
         Pattern pattern = Pattern.compile("\\[(.*?)\\] \\[(.*?)\\] (.*)");
         Matcher matcher = pattern.matcher(line);
 
@@ -221,10 +221,10 @@ public class ModelBoardService {
             String person = matcher.group(1);
             String message = matcher.group(3);
 
-            if ("임병국".equals(person)) {
-                return "나 : " + message;
+            if (kakaoName.equals(person)) {
+                return "상대방 : " + message;
             } else {
-                return person + " : " + message;
+                return "나 : " + message;
             }
         }
         return null;
