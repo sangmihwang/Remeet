@@ -7,9 +7,12 @@ import com.example.remeet.entity.ModelBoardEntity;
 import com.example.remeet.service.ModelBoardService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
 import javax.servlet.http.HttpServletRequest;
 
 
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -24,6 +27,7 @@ public class ModelBoardController {
         List<ModelBoardDto> modelBoardDtos = modelBoardService.findByOption(option);
         return ResponseEntity.ok(modelBoardDtos);
     }
+
 
     @GetMapping("/{modelNo}")
     public ResponseEntity<ModelBoardDetailDto> getModelBoardDetail(@PathVariable Integer modelNo){
@@ -47,15 +51,19 @@ public class ModelBoardController {
             @RequestParam("modelName") String modelName,
             @RequestParam("gender") char gender,
             @RequestParam("imagePath") String imagePath,
+//            @RequestParam("kakaoName") String kakaoName,
             @RequestParam("conversationText") String conversationText,
+            @RequestParam("voiceFiles") List<MultipartFile> voiceFiles,
+            @RequestParam("videoFiles") List<MultipartFile> videoFiles,
             HttpServletRequest request
-    ) {
+    ) throws IOException {
         ModelBoardCreateDto modelBoardCreateDto = new ModelBoardCreateDto(
                 modelName, gender, imagePath, conversationText
         );
 
         Integer userNo = (Integer) request.getAttribute("userNo");
-        Integer modelNo = modelBoardService.createModelBoard(modelBoardCreateDto, userNo);
+        Integer modelNo = modelBoardService.createModelBoard(modelBoardCreateDto, userNo, voiceFiles, videoFiles);
+
         ModelBoardDetailDto modelBoardDetailDto = modelBoardService.getModelBoardDetailById(modelNo)
                 .orElseThrow(() -> new IllegalArgumentException("생성 후 오류가 있음"));
 
