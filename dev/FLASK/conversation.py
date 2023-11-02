@@ -7,6 +7,7 @@ import time
 import boto3
 import uuid
 import wave
+import wavio
 import os
 from dotenv import load_dotenv
 from pydub import AudioSegment
@@ -354,38 +355,6 @@ def get_audio():
     result = data["results"]["transcripts"][0]["transcript"]
     print(result)
     return jsonify({"msg": result})
-
-
-@app.route('/api/v1/start_stt', methods=['POST'])
-def post_audio():
-    # Record Audio
-    r = sr.Recognizer()
-    audio_file = request.files.get('audio')
-    print(audio_file)
-    if audio_file is None:
-        return "No audio file provided", 400  # Return 400 Bad Request
-
-    audio_file.seek(0)
-
-    with sr.AudioFile(audio_file) as source:
-        audio = r.record(source)
-    print(audio)
-    # Speech recognition using Google Speech Recognition
-    try:
-        # for testing purposes, we're just using the default API key
-        # to use another API key, use `r.recognize_google(audio, key="GOOGLE_SPEECH_RECOGNITION_API_KEY")`
-        # instead of `r.recognize_google(audio)`
-        result = r.recognize_google(audio)
-        print("You said: " + result)
-        return jsonify({"transcription": result})
-    except sr.UnknownValueError:
-        result = "Google Speech Recognition could not understand audio"
-        print("You said: " + result)
-        return jsonify({"transcription": result})
-    except sr.RequestError as e:
-        result = "Could not request results from Google Speech Recognition service"
-        print("You said: " + result)
-        return jsonify({"transcription": result})
 
 
 @app.route('/api/v1/upload', methods=['POST'])
