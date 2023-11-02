@@ -5,6 +5,8 @@ import com.example.remeet.dto.ModelBoardDetailDto;
 import com.example.remeet.dto.ModelBoardDto;
 import com.example.remeet.entity.ModelBoardEntity;
 import com.example.remeet.service.ModelBoardService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -15,16 +17,21 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.List;
 
-@RestController
+@CrossOrigin(value = "*", allowedHeaders = "*")
 @RequestMapping("/model")
+@RestController
+@Slf4j
 public class ModelBoardController {
     private final ModelBoardService modelBoardService;
+
     public ModelBoardController(ModelBoardService modelBoardService) {
         this.modelBoardService = modelBoardService;
     }
+
     @GetMapping
-    public ResponseEntity<List<ModelBoardDto>> getModelBoard(@RequestParam("option") String option){
-        List<ModelBoardDto> modelBoardDtos = modelBoardService.findByOption(option);
+    public ResponseEntity<List<ModelBoardDto>> getModelBoard(HttpServletRequest request, @RequestParam("option") String option){
+        Integer userNo = (Integer)request.getAttribute("userNo");
+        List<ModelBoardDto> modelBoardDtos = modelBoardService.findByOption(option, userNo);
         return ResponseEntity.ok(modelBoardDtos);
     }
 

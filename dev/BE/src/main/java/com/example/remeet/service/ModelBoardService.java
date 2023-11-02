@@ -9,8 +9,10 @@ import com.example.remeet.repository.ModelBoardRepository;
 import com.example.remeet.repository.UploadedVideoRepository;
 import com.example.remeet.repository.UploadedVoiceRepository;
 import com.example.remeet.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,23 +27,17 @@ import java.util.stream.Collectors;
 
 
 @Service
+@RequiredArgsConstructor
 public class ModelBoardService {
 
     private final String FLASK_API_UPROAD_AUDIO = "http://localhost:5000/api/v1/upload/audio";
 
     private final String FLAST_API_UPROAD_VIDEO = "http://localhost:5000/api/v1/upload/video";
 
-    @Autowired
-    private ModelBoardRepository modelBoardRepository;
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private UploadedVoiceRepository uploadedVoiceRepository;
-
-    @Autowired
-    private UploadedVideoRepository uploadedVideoRepository;
+    private final ModelBoardRepository modelBoardRepository;
+    private final UserRepository userRepository;
+    private final UploadedVoiceRepository uploadedVoiceRepository;
+    private final UploadedVideoRepository uploadedVideoRepository;
 
 
     @Transactional(readOnly = true)
@@ -63,6 +59,7 @@ public class ModelBoardService {
                 .map(UploadedVoiceEntity::getVoicePath)
                 .collect(Collectors.toList());
     }
+
     public List<String> uploadVoiceFilesToFlask(List<MultipartFile> voiceFiles, Integer userNo, Integer modelNo) throws IOException {
         RestTemplate restTemplate = new RestTemplate();
         List<String> uploadPaths = new ArrayList<>();
@@ -170,14 +167,8 @@ public class ModelBoardService {
 
 
     @Transactional(readOnly = true)
-    public List<ModelBoardDto> getAllModelBoards() {
-        return modelBoardRepository.findAll().stream()
-                .map(entity -> new ModelBoardDto(
-                        entity.getModelNo(),
-                        entity.getModelName(),
-                        entity.getImagePath()
-                ))
-                .collect(Collectors.toList());
+    public List<ModelBoardDto> getAllModelBoards(Integer userNo) {
+        return modelBoardRepository.findByUserNo(userNo);
     }
 
     @Transactional(readOnly = true)
@@ -197,42 +188,28 @@ public class ModelBoardService {
                 ));
     }
 
-    public List<ModelBoardDto> findByOption(String option) {
+    public List<ModelBoardDto> findByOption(String option, Integer userNo) {
         switch (option) {
             case "all":
-                return findAll();
+                return findAll(userNo);
             case "recent":
-                return findRecent();
+                return findRecent(userNo);
             case "most":
-                return findMostTalked();
+                return findMostTalked(userNo);
             default:
                 throw new IllegalArgumentException("Invalid option provided: " + option);
         }
     }
-    public List<ModelBoardDto> findAll() {
-        return getAllModelBoards();
+    public List<ModelBoardDto> findAll(Integer userNo) {
+        return getAllModelBoards(userNo);
     }
 
-    public List<ModelBoardDto> findRecent() {
-        return modelBoardRepository.findAll().stream()
-                .sorted(Comparator.comparing(ModelBoardEntity::getLatestConversationTime).reversed())
-                .map(entity -> new ModelBoardDto(
-                        entity.getModelNo(),
-                        entity.getModelName(),
-                        entity.getImagePath()
-                ))
-                .collect(Collectors.toList());
+    public List<ModelBoardDto> findRecent(Integer userNo) {
+        return modelBoardRepository.findMostRecentByUserNo(userNo, PageRequest.of(0, 3));
     }
 
-    public List<ModelBoardDto> findMostTalked() {
-        return modelBoardRepository.findAll().stream()
-                .sorted(Comparator.comparing(ModelBoardEntity::getConversationCount).reversed())
-                .map(entity -> new ModelBoardDto(
-                        entity.getModelNo(),
-                        entity.getModelName(),
-                        entity.getImagePath()
-                ))
-                .collect(Collectors.toList());
+    public List<ModelBoardDto> findMostTalked(Integer userNo) {
+        return modelBoardRepository.findTopModelsByUserNo(userNo, PageRequest.of(0, 3));
     }
 
 
