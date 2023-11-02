@@ -22,7 +22,7 @@ AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
 AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
 REGION_NAME = 'ap-northeast-2'
 BUCKET_NAME = 'remeet'
-ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'mp4', 'wav', 'mp3'}
+ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'mp4', 'wav', 'mp3','mp4', 'avi', 'mov', 'flv', 'wmv'}
 
 # S3 클라이언트 설정
 s3_client = boto3.client('s3', aws_access_key_id=AWS_ACCESS_KEY_ID, aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
@@ -388,14 +388,15 @@ def post_audio():
         return jsonify({"transcription": result})
 
 
-@app.route('/api/v1/upload/audio', methods=['POST'])
-def upload_audio():
+@app.route('/api/v1/upload', methods=['POST'])
+def upload_file():
     if 'files' not in request.files:
         return jsonify(error='No file part'), 400
 
     files = request.files.getlist('files')
     userNo = request.form.get('userNo')
     modelNo = request.form.get('modelNo')
+    fileType = request.form.get('type')
     responses = []
     for file in files:
         if file.filename == '':
@@ -409,16 +410,22 @@ def upload_audio():
                 audio = AudioSegment.from_file(source_path)
                 # 필요한 경우, 샘플 레이트, 채널 등을 조정
                 audio.export(target_path, format="mp3")
-
-
-            # 파일 처리 로직...
-            new_path = f'{file.filename.split(".")[0]}'+".mp3"
-            convert_audio_to_mp3(temp_blob_path, new_path)
-            # S3 업로드 등의 추가 처리...
+            def convert_video_to_mp4(source_path, target_path):
+                if source_path == target_path:
+                    target_path = 'tmp'+target_path
+                    ffmpeg.input(source_path).output(target_path, vcodec='libx264', acodec='aac').run(overwrite_output=True)
+            if fileType == 'audio' :
+                new_path = f'{file.filename.split(".")[0]}'+".mp3"
+                convert_audio_to_mp3(temp_blob_path, new_path)
+            elif fileType == 'video':
+                new_path = f'{file.filename.split(".")[0]}.mp4'
+                convert_video_to_mp4(temp_blob_path, new_path)
+            else :
+                new_path = file.filename
             try:
                 # 저장된 pcm 파일을 S3에 업로드
-                with open(new_path, "rb") as audio_file:
-                    s3_client.upload_fileobj(audio_file, BUCKET_NAME, folder_key + new_path)
+                with open(new_path, "rb") as file:
+                    s3_client.upload_fileobj(file, BUCKET_NAME, folder_key + new_path)
                 os.remove(new_path)  # 임시 파일 삭제
                 s3_url = f'https://remeet.s3.ap-northeast-2.amazonaws.com/{folder_key + new_path}'
                 responses.append(s3_url)
@@ -428,58 +435,9 @@ def upload_audio():
             # 각 파일 처리에 대한 응답을 저장
         else:
             responses.append('Invalid file type')
-    return jsonify({"audioList": responses})
+    return jsonify({"fileList": responses})
 
-@app.route('/api/v1/upload/video', methods=['POST'])
-def upload_video():
-    if 'files' not in request.files:
-        return jsonify(error='No file part'), 400
-
-    files = request.files.getlist('files')
-    userNo = request.form.get('userNo')
-    modelNo = request.form.get('modelNo')
-    responses = []
-    
-    for file in files:
-        if file.filename == '':
-            responses.append('no filename')
-            continue
-        video_ALLOWED_EXTENSIONS = {'mp4', 'avi', 'mov', 'flv', 'wmv'}
-
-        def allowed_video(filename):
-            return '.' in filename and \
-                filename.rsplit('.', 1)[1].lower() in video_ALLOWED_EXTENSIONS
-        if file and allowed_video(file.filename):
-            folder_key = f"ASSET/{userNo}/{modelNo}/"
-            temp_blob_path = secure_filename(file.filename)  # 안전한 파일 이름 사용
-            file.save(temp_blob_path)
-
-            def convert_video_to_mp4(source_path, target_path):
-                if source_path == target_path:
-                    target_path = 'tmp'+target_path
-                    ffmpeg.input(source_path).output(target_path, vcodec='libx264', acodec='aac').run(overwrite_output=True)
-
-            
-            # 파일 처리 로직...
-            new_path = f'{file.filename.split(".")[0]}.mp4'
-            convert_video_to_mp4(temp_blob_path, new_path)
-            
-            # S3 업로드 등의 추가 처리...
-            try:
-                # 저장된 mp4 파일을 S3에 업로드
-                with open(new_path, "rb") as video_file:
-                    s3_client.upload_fileobj(video_file, BUCKET_NAME, folder_key + new_path)
-                os.remove(new_path)  # 임시 파일 삭제
-                s3_url = f'https://{BUCKET_NAME}.s3.ap-northeast-2.amazonaws.com/{folder_key + new_path}'
-                responses.append(s3_url)
-            except Exception as e:
-                responses.append(f'Failed to upload file: {e}')
-
-            # 각 파일 처리에 대한 응답을 저장
-        else:
-            responses.append('Invalid file type')
-
-    return jsonify({"videoList": responses})
+/
 
 if __name__ == '__main__':
     app.run(port=5000, debug=True)
