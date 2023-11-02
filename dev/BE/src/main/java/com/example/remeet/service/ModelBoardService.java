@@ -133,6 +133,7 @@ public class ModelBoardService {
         UserEntity userEntity = userRepository.findByUserNo(userNo)
                 .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 userNo 입니다"));
         // 파일내용불러오기
+        // 작성
         String formattedText = formatChat(modelBoardCreateDto.getConversationText(), kakaoName);
         ModelBoardEntity modelBoardEntity = ModelBoardEntity.builder()
                 .modelName(modelBoardCreateDto.getModelName())
