@@ -28,6 +28,7 @@ public class ModelBoardController {
         return ResponseEntity.ok(modelBoardDtos);
     }
 
+
     @GetMapping("/{modelNo}")
     public ResponseEntity<ModelBoardDetailDto> getModelBoardDetail(@PathVariable Integer modelNo){
         ModelBoardDetailDto modelBoardDetailDto = modelBoardService.getModelBoardDetailById(modelNo)
