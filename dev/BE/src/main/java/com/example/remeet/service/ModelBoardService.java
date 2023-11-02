@@ -10,7 +10,6 @@ import com.example.remeet.repository.UploadedVideoRepository;
 import com.example.remeet.repository.UploadedVoiceRepository;
 import com.example.remeet.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.*;
@@ -81,11 +80,11 @@ public class ModelBoardService {
             body.add("type", type);
 
             HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
-            ResponseEntity<AudioUploadDto> response = restTemplate.exchange(
+            ResponseEntity<FileUploadDto> response = restTemplate.exchange(
                     FLASK_API_UPROAD,
                     HttpMethod.POST,
                     requestEntity,
-                    AudioUploadDto.class
+                    FileUploadDto.class
             );
             List<String> FileList = response.getBody().getFileList();
             uploadPaths.addAll(FileList);
