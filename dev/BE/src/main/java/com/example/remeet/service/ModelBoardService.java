@@ -21,6 +21,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 
@@ -130,12 +132,13 @@ public class ModelBoardService {
     public Integer createModelBoard(ModelBoardCreateDto modelBoardCreateDto, Integer userNo, List<MultipartFile> voiceFiles, List<MultipartFile> videoFiles) throws IOException{
         UserEntity userEntity = userRepository.findByUserNo(userNo)
                 .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 userNo 입니다"));
-
+        // 파일내용불러오기
+        String formattedText = formatChat(modelBoardCreateDto.getConversationText());
         ModelBoardEntity modelBoardEntity = ModelBoardEntity.builder()
                 .modelName(modelBoardCreateDto.getModelName())
                 .gender(modelBoardCreateDto.getGender())
                 .imagePath(modelBoardCreateDto.getImagePath())
-                .conversationText(modelBoardCreateDto.getConversationText())
+                .conversationText(formattedText)
                 .userNo(userEntity)
                 .conversationCount(0)
                 .build();
@@ -196,7 +199,36 @@ public class ModelBoardService {
                         entity.getLatestConversationTime()
                 ));
     }
+    
+    // 텍스트 수정 코드
+    public String formatChat(String conversationText) {
+        StringBuilder formattedText = new StringBuilder();
+        String[] lines = conversationText.split("\n");
+        for (String line : lines) {
+            String formattedLine = transformLine(line);
+            if (formattedLine != null) {
+                formattedText.append(formattedLine).append("\n");
+            }
+        }
+        return formattedText.toString();
+    }
 
+    public String transformLine(String line) {
+        Pattern pattern = Pattern.compile("\\[(.*?)\\] \\[(.*?)\\] (.*)");
+        Matcher matcher = pattern.matcher(line);
+
+        if (matcher.matches()) {
+            String person = matcher.group(1);
+            String message = matcher.group(3);
+
+            if ("임병국".equals(person)) {
+                return "나 : " + message;
+            } else {
+                return person + " : " + message;
+            }
+        }
+        return null;
+    }
     public List<ModelBoardDto> findByOption(String option) {
         switch (option) {
             case "all":
