@@ -1,8 +1,6 @@
 package com.example.remeet.service;
 
-import com.example.remeet.dto.ModelBoardCreateDto;
-import com.example.remeet.dto.ModelBoardDetailDto;
-import com.example.remeet.dto.ModelBoardDto;
+import com.example.remeet.dto.*;
 import com.example.remeet.entity.ModelBoardEntity;
 import com.example.remeet.entity.UploadedVideoEntity;
 import com.example.remeet.entity.UploadedVoiceEntity;
@@ -12,17 +10,26 @@ import com.example.remeet.repository.UploadedVideoRepository;
 import com.example.remeet.repository.UploadedVoiceRepository;
 import com.example.remeet.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
-import java.util.Optional;
+import java.io.IOException;
+import java.util.*;
 import java.util.stream.Collectors;
-import java.util.Comparator;
 
 
 @Service
 public class ModelBoardService {
+
+    private final String FLASK_API_UPROAD_AUDIO = "http://localhost:5000/api/v1/upload/audio";
+
+    private final String FLAST_API_UPROAD_VIDEO = "http://localhost:5000/api/v1/upload/video";
 
     @Autowired
     private ModelBoardRepository modelBoardRepository;
@@ -35,6 +42,7 @@ public class ModelBoardService {
 
     @Autowired
     private UploadedVideoRepository uploadedVideoRepository;
+
 
     @Transactional(readOnly = true)
     public List<String> getVideoPathsByModelNo(Integer modelNo) {
@@ -55,9 +63,71 @@ public class ModelBoardService {
                 .map(UploadedVoiceEntity::getVoicePath)
                 .collect(Collectors.toList());
     }
+    public List<String> uploadVoiceFilesToFlask(List<MultipartFile> voiceFiles, Integer userNo, Integer modelNo) throws IOException {
+        RestTemplate restTemplate = new RestTemplate();
+        List<String> uploadPaths = new ArrayList<>();
+
+        for (MultipartFile file : voiceFiles) {
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+
+            MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+            body.add("files", new ByteArrayResource(file.getBytes()){
+                @Override
+                public String getFilename(){
+                    return file.getOriginalFilename();
+                }
+            });
+            body.add("userNo", userNo.toString());
+            body.add("modelNo", modelNo.toString());
+
+            HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
+            ResponseEntity<AudioUploadDto> response = restTemplate.exchange(
+                    FLASK_API_UPROAD_AUDIO,
+                    HttpMethod.POST,
+                    requestEntity,
+                    AudioUploadDto.class
+            );
+            List<String> audioList = response.getBody().getAudioList();
+            uploadPaths.addAll(audioList);
+
+        }
+        return uploadPaths;
+    }
+
+    public List<String> uploadVideoFilesToFlask(List<MultipartFile> videoFiles, Integer userNo, Integer modelNo) throws IOException {
+        RestTemplate restTemplate = new RestTemplate();
+        List<String> uploadPaths = new ArrayList<>();
+
+        for (MultipartFile file : videoFiles) {
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+
+            MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+            body.add("files", new ByteArrayResource(file.getBytes()){
+                @Override
+                public String getFilename(){
+                    return file.getOriginalFilename();
+                }
+            });
+            body.add("userNo", userNo.toString());
+            body.add("modelNo", modelNo.toString());
+
+            HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
+            ResponseEntity<VideoUploadDto> response = restTemplate.exchange(
+                    FLAST_API_UPROAD_VIDEO,
+                    HttpMethod.POST,
+                    requestEntity,
+                    VideoUploadDto.class
+            );
+            List<String> videoList = response.getBody().getVideoList();
+            uploadPaths.addAll(videoList);
+        }
+        return uploadPaths;
+    }
 
     @Transactional
-    public Integer createModelBoard(ModelBoardCreateDto modelBoardCreateDto, Integer userNo) {
+    public Integer createModelBoard(ModelBoardCreateDto modelBoardCreateDto, Integer userNo, List<MultipartFile> voiceFiles, List<MultipartFile> videoFiles) throws IOException{
         UserEntity userEntity = userRepository.findByUserNo(userNo)
                 .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 userNo 입니다"));
 
@@ -70,6 +140,30 @@ public class ModelBoardService {
                 .build();
 
         modelBoardRepository.save(modelBoardEntity);
+
+        Integer modelNo = modelBoardEntity.getModelNo();
+
+        List<String> uploadedVoicePaths = uploadVoiceFilesToFlask(voiceFiles, userNo, modelNo);
+        List<String> uploadedVideoPaths = uploadVideoFilesToFlask(videoFiles, userNo, modelNo);
+
+        for (String voicePath : uploadedVoicePaths){
+            UploadedVoiceEntity uploadedVoiceEntity = UploadedVoiceEntity.builder()
+                    .voicePath(voicePath)
+                    .modelNo(modelBoardEntity)
+                    .build();
+
+            uploadedVoiceRepository.save(uploadedVoiceEntity);
+        }
+
+        for (String videoPath : uploadedVideoPaths) {
+            UploadedVideoEntity uploadedVideoEntity = UploadedVideoEntity.builder()
+                    .videoPath(videoPath)
+                    .modelNo(modelBoardEntity)
+                    .build();
+
+            uploadedVideoRepository.save(uploadedVideoEntity);
+        }
+
         return modelBoardEntity.getModelNo();
     }
 
