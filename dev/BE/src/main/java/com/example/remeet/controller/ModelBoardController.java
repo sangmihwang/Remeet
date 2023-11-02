@@ -15,6 +15,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.List;
 
+@CrossOrigin(value = "*", allowedHeaders = "*")
 @RestController
 @RequestMapping("/model")
 public class ModelBoardController {
