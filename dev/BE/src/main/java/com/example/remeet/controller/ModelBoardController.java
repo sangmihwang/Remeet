@@ -58,7 +58,7 @@ public class ModelBoardController {
             @RequestParam("modelName") String modelName,
             @RequestParam("gender") char gender,
             @RequestParam("imagePath") String imagePath,
-//            @RequestParam("kakaoName") String kakaoName,
+            @RequestParam("kakaoName") String kakaoName,
             @RequestParam("conversationText") String conversationText,
             @RequestParam("voiceFiles") List<MultipartFile> voiceFiles,
             @RequestParam("videoFiles") List<MultipartFile> videoFiles,
@@ -69,7 +69,7 @@ public class ModelBoardController {
         );
 
         Integer userNo = (Integer) request.getAttribute("userNo");
-        Integer modelNo = modelBoardService.createModelBoard(modelBoardCreateDto, userNo, voiceFiles, videoFiles);
+        Integer modelNo = modelBoardService.createModelBoard(modelBoardCreateDto, userNo, voiceFiles, videoFiles, kakaoName);
 
         ModelBoardDetailDto modelBoardDetailDto = modelBoardService.getModelBoardDetailById(modelNo)
                 .orElseThrow(() -> new IllegalArgumentException("생성 후 오류가 있음"));
