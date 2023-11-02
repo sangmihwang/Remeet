@@ -137,6 +137,7 @@ public class ModelBoardService {
                 .imagePath(modelBoardCreateDto.getImagePath())
                 .conversationText(modelBoardCreateDto.getConversationText())
                 .userNo(userEntity)
+                .conversationCount(0)
                 .build();
 
         modelBoardRepository.save(modelBoardEntity);

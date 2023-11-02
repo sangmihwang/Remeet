@@ -50,7 +50,7 @@ public class ModelBoardController {
             @RequestParam("modelName") String modelName,
             @RequestParam("gender") char gender,
             @RequestParam("imagePath") String imagePath,
-            @RequestParam("kakaoName") String kakaoName,
+//            @RequestParam("kakaoName") String kakaoName,
             @RequestParam("conversationText") String conversationText,
             @RequestParam("voiceFiles") List<MultipartFile> voiceFiles,
             @RequestParam("videoFiles") List<MultipartFile> videoFiles,

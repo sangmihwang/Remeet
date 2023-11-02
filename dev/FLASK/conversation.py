@@ -22,7 +22,7 @@ AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
 AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
 REGION_NAME = 'ap-northeast-2'
 BUCKET_NAME = 'remeet'
-ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'mp4', 'wav'}
+ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'mp4', 'wav', 'mp3'}
 
 # S3 클라이언트 설정
 s3_client = boto3.client('s3', aws_access_key_id=AWS_ACCESS_KEY_ID, aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
@@ -444,11 +444,11 @@ def upload_video():
         if file.filename == '':
             responses.append('no filename')
             continue
-        ALLOWED_EXTENSIONS = {'mp4', 'avi', 'mov', 'flv', 'wmv'}
+        video_ALLOWED_EXTENSIONS = {'mp4', 'avi', 'mov', 'flv', 'wmv'}
 
         def allowed_video(filename):
             return '.' in filename and \
-                filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+                filename.rsplit('.', 1)[1].lower() in video_ALLOWED_EXTENSIONS
         if file and allowed_video(file.filename):
             folder_key = f"ASSET/{userNo}/{modelNo}/"
             temp_blob_path = secure_filename(file.filename)  # 안전한 파일 이름 사용
