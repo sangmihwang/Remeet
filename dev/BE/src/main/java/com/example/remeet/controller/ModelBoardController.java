@@ -15,6 +15,7 @@ import javax.servlet.http.HttpServletRequest;
 
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 @CrossOrigin(value = "*", allowedHeaders = "*")
@@ -59,17 +60,19 @@ public class ModelBoardController {
             @RequestParam("gender") char gender,
             @RequestParam("imagePath") List<MultipartFile> imagePath,
             @RequestParam("kakaoName") String kakaoName,
-            @RequestParam("conversationText") String conversationText,
+            @RequestParam("conversationText") MultipartFile conversationTextFile,
             @RequestParam("voiceFiles") List<MultipartFile> voiceFiles,
             @RequestParam("videoFiles") List<MultipartFile> videoFiles,
             HttpServletRequest request
     ) throws IOException {
+        String conversationText = new String(conversationTextFile.getBytes(), StandardCharsets.UTF_8);
+
         ModelBoardCreateDto modelBoardCreateDto = new ModelBoardCreateDto(
                 modelName, gender, conversationText
         );
 
         Integer userNo = (Integer) request.getAttribute("userNo");
-        Integer modelNo = modelBoardService.createModelBoard(modelBoardCreateDto, userNo, voiceFiles, videoFiles, imagePath, kakaoName);
+        Integer modelNo = modelBoardService.createModelBoard(modelBoardCreateDto, userNo, voiceFiles, videoFiles, kakaoName, conversationText);
 
         ModelBoardDetailDto modelBoardDetailDto = modelBoardService.getModelBoardDetailById(modelNo)
                 .orElseThrow(() -> new IllegalArgumentException("생성 후 오류가 있음"));
@@ -78,5 +81,6 @@ public class ModelBoardController {
         return ResponseEntity.ok(modelBoardDetailDto);
 
     }
+
 
 }
