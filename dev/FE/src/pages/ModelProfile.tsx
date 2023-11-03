@@ -1,24 +1,24 @@
 import styled from 'styled-components';
-import { useState, useRef } from 'react';
-import { useMutation, useQuery } from '@tanstack/react-query';
-import { AxiosResponse } from 'axios';
-import { useLocation, useParams } from 'react-router-dom';
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { useParams } from 'react-router-dom';
 import PageHeader from '@/components/navbar/PageHeader';
-import { Image, InputText, SmallButton } from '@/components/common';
+import { Image, SmallButton } from '@/components/common';
 import BottomNavigation from '@/components/navbar/BottomNavigation';
-import AudioUpload from '@/components/model/AudioUpload';
 import Modal from '@/components/common/Modal';
-import ImageUpload from '@/components/model/ImageUpload';
-import VideoUpload from '@/components/model/VideoUpload';
-import TextUpload from '@/components/model/TextUpload';
-import { modelCreate } from '@/api/create';
-import { getPeopleInfo } from '@/api/peoplelist';
-import { ModelInformation } from '@/types/peopleList';
 import { ModelConversation } from '@/types/board';
 import { getVideos } from '@/api/board';
 import VideoListItem from '@/components/profile/VideoListItem';
 import VideoContent from '@/components/profile/VideoContent';
 import { VideoInformation } from '@/types/upload';
+import {
+  AudioSavedContent,
+  ImageSavedContent,
+  TextSavedContent,
+  VideoSavedContent,
+} from '@/components/profile';
+import { ModelInformation } from '@/types/peopleList';
+import { getPeopleInfo } from '@/api/peoplelist';
 
 const CreateWrapper = styled.div`
   padding-bottom: 5.25rem;
@@ -101,11 +101,11 @@ const ModelProfile = () => {
   const headerContent = {
     left: 'Back',
     title: 'Profile',
-    right: 'Modify',
+    right: '',
   };
   const { modelNo } = useParams();
 
-  const { data: modelInfomation } = useQuery<ModelInformation>(
+  const { data: modelInfomation } = useQuery<ModelInformation | undefined>(
     ['getModelInfo'],
     () => getPeopleInfo(Number(modelNo)),
   );
@@ -214,32 +214,30 @@ const ModelProfile = () => {
               handleCloseModal={handleCloseModal}
             />
           )}
-          {/* {isAudioModal && (
-            <AudioUpload
-              currentAudioFiles={audioFiles}
-              setCurrentAudioFiles={setAudioFiles}
+          {isAudioModal && (
+            <AudioSavedContent
+              handleCloseModal={handleCloseModal}
+              audioFiles={modelInfomation?.voiceList}
             />
           )}
           {isImageModal && (
-            <ImageUpload
-              currentImage={imageFile}
-              setCurrentImage={setImageFile}
+            <ImageSavedContent
+              handleCloseModal={handleCloseModal}
+              imageUrl={modelInfomation?.imagePath}
             />
           )}
           {isVideoModal && (
-            <VideoUpload
-              currentVideoFiles={videioFiles}
-              setCurrentVideoFiles={setVideoFiles}
+            <VideoSavedContent
+              videoFiles={modelInfomation?.videoList}
+              handleCloseModal={handleCloseModal}
             />
           )}
           {isTalkModal && (
-            <TextUpload
-              kakaoName={kakaoName}
-              setKakaoName={setKakaoName}
-              currentTextFiles={textFiles}
-              setCurrentTextFiles={setTextFiles}
+            <TextSavedContent
+              textFile={modelInfomation?.conversationText}
+              handleCloseModal={handleCloseModal}
             />
-          )} */}
+          )}
         </Modal>
       )}
       <BottomNavigation />
