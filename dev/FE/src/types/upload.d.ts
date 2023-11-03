@@ -18,3 +18,17 @@ interface UploadFiles {
   images: ImageFile;
   texts: TextFile[];
 }
+
+interface VideoInformation {
+  videoSrc: string;
+  videoName: string;
+}
+
+export {
+  AudioFile,
+  VideoFile,
+  ImageFile,
+  TextFile,
+  UploadFiles,
+  VideoInformation,
+};

@@ -18,6 +18,7 @@ import { ModelConversation } from '@/types/board';
 import { getVideos } from '@/api/board';
 import VideoListItem from '@/components/profile/VideoListItem';
 import VideoContent from '@/components/profile/VideoContent';
+import { VideoInformation } from '@/types/upload';
 
 const CreateWrapper = styled.div`
   padding-bottom: 5.25rem;
@@ -116,7 +117,10 @@ const ModelProfile = () => {
   );
   console.log(videoLists);
 
-  const [videoSrc, setVideoSrc] = useState<string | null>(null);
+  const [videoInformation, setVideoInformation] = useState<VideoInformation>({
+    videoSrc: '',
+    videoName: '',
+  });
 
   const [tableStatus, setTableStatus] = useState<boolean>(false);
 
@@ -185,9 +189,10 @@ const ModelProfile = () => {
             videoLists.map((item) => {
               return (
                 <VideoListItem
+                  key={item.proVideoNo}
                   {...item}
                   setIsVideoPlayerModal={setIsVideoPlayerModal}
-                  setVideoSrc={setVideoSrc}
+                  setVideoInformation={setVideoInformation}
                   setIsModal={setIsModal}
                 />
               );
@@ -205,7 +210,7 @@ const ModelProfile = () => {
         <Modal onClose={handleCloseModal}>
           {isVideoPlayerModal && (
             <VideoContent
-              videoSrc={videoSrc}
+              videoInformation={videoInformation}
               handleCloseModal={handleCloseModal}
             />
           )}

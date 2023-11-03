@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import videojs from 'video.js';
 import { LargeButton } from '../common';
 import Video from '@/components/talk/Video';
+import { VideoInformation } from '@/types/upload';
 
 const TitleWrapper = styled.div`
   width: 88vw;
@@ -27,11 +28,14 @@ const ListWrapper = styled.ul`
 `;
 
 interface VideoContentProps {
-  videoSrc: string | null;
+  videoInformation: VideoInformation;
   handleCloseModal: () => void;
 }
 
-const VideoContent = ({ videoSrc, handleCloseModal }: VideoContentProps) => {
+const VideoContent = ({
+  videoInformation,
+  handleCloseModal,
+}: VideoContentProps) => {
   // 비디오 관련
 
   const playerRef = useRef(null);
@@ -43,7 +47,7 @@ const VideoContent = ({ videoSrc, handleCloseModal }: VideoContentProps) => {
     fluid: true,
     sources: [
       {
-        src: videoSrc,
+        src: videoInformation.videoSrc,
         type: 'video/mp4',
       },
     ],
@@ -62,14 +66,10 @@ const VideoContent = ({ videoSrc, handleCloseModal }: VideoContentProps) => {
     });
   };
 
-  const handleCloseClick = () => {
-    setIsVideoPlayerModal(false);
-    setIsModal(false);
-  };
   return (
     <>
       <TitleWrapper>
-        <Title>영상 업로드</Title>
+        <Title>{videoInformation.videoName}</Title>
       </TitleWrapper>
       <ListWrapper>
         <Video options={videoJsOptions} onReady={handlePlayerReady} />
