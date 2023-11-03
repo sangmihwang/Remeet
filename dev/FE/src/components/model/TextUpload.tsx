@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import styled from 'styled-components';
 
 import { InputText, LargeButton } from '../common';
+import { TextFile } from '@/types/upload';
 
 const TitleWrapper = styled.div`
   width: 88vw;
@@ -51,6 +52,7 @@ interface TextUploadProps {
   setCurrentTextFiles: (textFiles: TextFile[]) => void;
   kakaoName: string;
   setKakaoName: (text: string) => void;
+  handleCloseModal: () => void;
 }
 
 const TextUpload = ({
@@ -58,6 +60,7 @@ const TextUpload = ({
   setCurrentTextFiles,
   kakaoName,
   setKakaoName,
+  handleCloseModal,
 }: TextUploadProps) => {
   const [textFiles, setTextFiles] = useState<TextFile[]>(currentTextFiles);
 
@@ -83,6 +86,7 @@ const TextUpload = ({
   const handleSaveTextFiles = () => {
     setTextFiles(textFiles.filter((file) => file.checked));
     setCurrentTextFiles(textFiles.filter((file) => file.checked));
+    handleCloseModal();
   };
 
   return (

@@ -30,7 +30,7 @@ const BoardPage = () => {
     () => getPeopleList(option),
   );
 
-  console.log(peopleList);
+  console.log(peopleList, setOption('all'));
 
   const handleGoCreate = () => {
     navigate('create');

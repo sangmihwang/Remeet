@@ -11,6 +11,7 @@ import ImageUpload from '@/components/model/ImageUpload';
 import VideoUpload from '@/components/model/VideoUpload';
 import TextUpload from '@/components/model/TextUpload';
 import { modelCreate } from '@/api/create';
+import { AudioFile, ImageFile, TextFile, VideoFile } from '@/types/upload';
 
 const CreateWrapper = styled.div`
   padding-bottom: 5.25rem;
@@ -98,18 +99,17 @@ const ModelCreate = () => {
   const [textFiles, setTextFiles] = useState<TextFile[]>([]);
 
   // API 관련
-  const mutation = useMutation<AxiosResponse, Error>(modelCreate, {
+  const mutation = useMutation<AxiosResponse, Error, any>(modelCreate, {
     onSuccess: (res) => console.log(res),
     onError: (err) => console.log(err),
   });
 
   const handleSaveClick = () => {
-    console.log(audioFiles, videioFiles, imageFile, textFiles);
-
     const formData = new FormData();
 
     formData.append('modelName', modleName);
     formData.append('kakaoName', kakaoName);
+    formData.append('gender', 'F');
     if (imageFile) {
       formData.append('imagePath', imageFile.blob, imageFile.blob.name);
     }
@@ -128,9 +128,7 @@ const ModelCreate = () => {
         formData.append('voiceFiles', file.blob, file.name);
       });
     }
-    console.log(mutation);
-
-    console.log(Object.keys(formData.entries()));
+    mutation.mutate(formData);
   };
 
   return (
@@ -166,18 +164,21 @@ const ModelCreate = () => {
             <AudioUpload
               currentAudioFiles={audioFiles}
               setCurrentAudioFiles={setAudioFiles}
+              handleCloseModal={handleCloseModal}
             />
           )}
           {isImageModal && (
             <ImageUpload
               currentImage={imageFile}
               setCurrentImage={setImageFile}
+              handleCloseModal={handleCloseModal}
             />
           )}
           {isVideoModal && (
             <VideoUpload
               currentVideoFiles={videioFiles}
               setCurrentVideoFiles={setVideoFiles}
+              handleCloseModal={handleCloseModal}
             />
           )}
           {isTalkModal && (
@@ -186,6 +187,7 @@ const ModelCreate = () => {
               setKakaoName={setKakaoName}
               currentTextFiles={textFiles}
               setCurrentTextFiles={setTextFiles}
+              handleCloseModal={handleCloseModal}
             />
           )}
         </Modal>
