@@ -1,5 +1,5 @@
 // import styled from 'styled-components';
-import { useState } from 'react';
+// import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { AxiosResponse } from 'axios';
@@ -23,14 +23,13 @@ const BoardPage = () => {
   };
   const navigate = useNavigate();
 
-  const [option, setOption] = useState('all');
+  // const [option, setOption] = useState('all');
+  const option = 'all';
 
   const { data: peopleList } = useQuery<AxiosResponse<PeopleListItem[]>>(
     ['getPeopleList', option],
     () => getPeopleList(option),
   );
-
-  console.log(peopleList, setOption('all'));
 
   const handleGoCreate = () => {
     navigate('create');
