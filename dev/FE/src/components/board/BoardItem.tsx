@@ -1,3 +1,5 @@
+import { useNavigate } from 'react-router-dom';
+import { MouseEvent } from 'react';
 import styled from 'styled-components';
 
 const Wrapper = styled.div`
@@ -8,12 +10,16 @@ const Wrapper = styled.div`
   justify-content: space-between;
 `;
 
-const Imgbox = styled.div`
+const Imgbox = styled.div<{ $imagePath: string }>`
   margin: auto 0;
   width: 3.125rem;
   height: 3.125rem;
   border-radius: 8px;
   background-color: #f6f6f6;
+  background-image: url(${(props) => props.$imagePath});
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-position: center;
 `;
 
 const ContentWrapper = styled.div`
@@ -47,13 +53,27 @@ const ConversationButton = styled.button`
   }
 `;
 
-const BoardItem = () => {
+interface BoardItemProps {
+  modelNo: number;
+  modelName: string;
+  imagePath: string;
+}
+
+const BoardItem = ({ modelNo, modelName, imagePath }: BoardItemProps) => {
+  const navigate = useNavigate();
+  const handleGoModelInfo = () => {
+    navigate(`${modelNo}`);
+  };
+  const handleGoTalk = (e: MouseEvent) => {
+    e.stopPropagation();
+    navigate(`/talk/${modelNo}`);
+  };
   return (
-    <Wrapper>
-      <Imgbox />
+    <Wrapper onClick={handleGoModelInfo}>
+      <Imgbox $imagePath={imagePath} />
       <ContentWrapper>
-        <NameBox>할머니</NameBox>
-        <ConversationButton>대화</ConversationButton>
+        <NameBox>{modelName}</NameBox>
+        <ConversationButton onClick={handleGoTalk}>대화</ConversationButton>
       </ContentWrapper>
     </Wrapper>
   );

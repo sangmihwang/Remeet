@@ -1,7 +1,8 @@
 interface MediaFile {
-  blob: File; // File already includes 'name', 'size', etc.
+  blob: File;
   url: string;
   checked?: boolean;
+  name?: string;
 }
 
 interface AudioFile extends MediaFile {}
@@ -18,3 +19,17 @@ interface UploadFiles {
   images: ImageFile;
   texts: TextFile[];
 }
+
+interface VideoInformation {
+  videoSrc: string;
+  videoName: string;
+}
+
+export {
+  AudioFile,
+  VideoFile,
+  ImageFile,
+  TextFile,
+  UploadFiles,
+  VideoInformation,
+};

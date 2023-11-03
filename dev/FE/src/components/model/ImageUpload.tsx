@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import styled from 'styled-components';
 import { LargeButton } from '../common';
+import { ImageFile } from '@/types/upload';
 
 const TitleWrapper = styled.div`
   width: 88vw;
@@ -48,9 +49,14 @@ const ListItem = styled.li`
 interface ImageUploadProps {
   currentImage: ImageFile | null;
   setCurrentImage: (imageFile: ImageFile | null) => void;
+  handleCloseModal: () => void;
 }
 
-const ImageUpload = ({ currentImage, setCurrentImage }: ImageUploadProps) => {
+const ImageUpload = ({
+  currentImage,
+  setCurrentImage,
+  handleCloseModal,
+}: ImageUploadProps) => {
   const [imageFile, setImageFile] = useState<ImageFile | null>(currentImage);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -67,6 +73,7 @@ const ImageUpload = ({ currentImage, setCurrentImage }: ImageUploadProps) => {
 
   const handleSaveImageFile = () => {
     setCurrentImage(imageFile);
+    handleCloseModal();
   };
 
   return (
@@ -84,8 +91,7 @@ const ImageUpload = ({ currentImage, setCurrentImage }: ImageUploadProps) => {
       </TitleWrapper>
       <ListWrapper>
         <ListItem>
-          {/* <span>{file.blob?.name ? file.blob?.name : ''}</span> */}
-          {imageFile && <img src={imageFile.url} />}
+          {imageFile && <img src={imageFile.url} alt={imageFile.blob.name} />}
         </ListItem>
       </ListWrapper>
       <LargeButton onClick={handleSaveImageFile} content="저장" />

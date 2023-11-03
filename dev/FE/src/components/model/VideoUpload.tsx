@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import { LargeButton } from '../common';
+import { VideoFile } from '@/types/upload';
 
 const TitleWrapper = styled.div`
   width: 88vw;
@@ -48,13 +49,15 @@ const ListItem = styled.li`
 interface VideoUploadProps {
   currentVideoFiles: VideoFile[];
   setCurrentVideoFiles: (videoFiles: VideoFile[]) => void;
+  handleCloseModal: () => void;
 }
 
 const VideoUpload = ({
   currentVideoFiles,
   setCurrentVideoFiles,
+  handleCloseModal,
 }: VideoUploadProps) => {
-  const [videoFiles, setVideoFiles] = useState<TextFile[]>(currentVideoFiles);
+  const [videoFiles, setVideoFiles] = useState<VideoFile[]>(currentVideoFiles);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files.length > 0) {
@@ -78,6 +81,7 @@ const VideoUpload = ({
   const handleSaveVideoFiles = () => {
     setVideoFiles(videoFiles.filter((file) => file.checked));
     setCurrentVideoFiles(videoFiles.filter((file) => file.checked));
+    handleCloseModal();
   };
 
   return (
