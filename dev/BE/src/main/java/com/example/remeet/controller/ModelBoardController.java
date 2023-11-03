@@ -15,6 +15,7 @@ import javax.servlet.http.HttpServletRequest;
 
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 @CrossOrigin(value = "*", allowedHeaders = "*")
@@ -59,11 +60,13 @@ public class ModelBoardController {
             @RequestParam("gender") char gender,
             @RequestParam("imagePath") String imagePath,
             @RequestParam("kakaoName") String kakaoName,
-            @RequestParam("conversationText") String conversationText,
+            @RequestParam("conversationText") MultipartFile conversationTextFile,
             @RequestParam("voiceFiles") List<MultipartFile> voiceFiles,
             @RequestParam("videoFiles") List<MultipartFile> videoFiles,
             HttpServletRequest request
     ) throws IOException {
+        String conversationText = new String(conversationTextFile.getBytes(), StandardCharsets.UTF_8);
+
         ModelBoardCreateDto modelBoardCreateDto = new ModelBoardCreateDto(
                 modelName, gender, imagePath, conversationText
         );
