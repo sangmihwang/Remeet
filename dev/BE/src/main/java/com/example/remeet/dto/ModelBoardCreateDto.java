@@ -10,5 +10,4 @@ import lombok.NoArgsConstructor;
 public class ModelBoardCreateDto {
     private String modelName;
     private char gender;
-    private String conversationText;
 }
