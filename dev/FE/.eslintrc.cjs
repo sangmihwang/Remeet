@@ -67,5 +67,6 @@ module.exports = {
     'jsx-a11y/media-has-caption': 0,
     'no-console': 0,
     'react/no-array-index-key': 0,
+    // '@typescript-eslint/no-explicit-any': 0,
   },
 };

@@ -6,6 +6,7 @@ const ImageWrapper = styled.div<{ $imageUrl: string }>`
   border-radius: 100%;
   border: 4px solid #fff;
   box-shadow: 0 4px 20px #656565;
+  background-color: #fff;
   background-image: url(${(props) => props.$imageUrl});
   background-position: center;
   background-repeat: no-repeat;

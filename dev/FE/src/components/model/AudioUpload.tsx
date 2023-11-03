@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import styled from 'styled-components';
 
 import { LargeButton } from '../common';
+import { AudioFile } from '@/types/upload';
 
 const TitleWrapper = styled.div`
   width: 88vw;
@@ -49,11 +50,13 @@ const ListItem = styled.li`
 interface AudioUploadProps {
   currentAudioFiles: AudioFile[];
   setCurrentAudioFiles: (audioFiles: AudioFile[]) => void;
+  handleCloseModal: () => void;
 }
 
 const AudioUpload = ({
   currentAudioFiles,
   setCurrentAudioFiles,
+  handleCloseModal,
 }: AudioUploadProps) => {
   const [audioFiles, setAudioFiles] = useState<AudioFile[]>(currentAudioFiles);
 
@@ -80,6 +83,7 @@ const AudioUpload = ({
   const handleSaveAudioFiles = () => {
     setAudioFiles(audioFiles.filter((file) => file.checked));
     setCurrentAudioFiles(audioFiles.filter((file) => file.checked));
+    handleCloseModal();
   };
 
   return (
@@ -88,6 +92,7 @@ const AudioUpload = ({
         <Title>음성 업로드</Title>
         <Label htmlFor="AudioUploadInput">
           <Input
+            multiple
             id="AudioUploadInput"
             type="file"
             accept="audio/*"
@@ -98,7 +103,7 @@ const AudioUpload = ({
       <ListWrapper>
         {audioFiles.map((file, index) => (
           <ListItem key={index}>
-            {/* <span>{file.blob?.name ? file.blob?.name : ''}</span> */}
+            <span>{file.blob.name ? file.blob.name : ''}</span>
             <audio controls src={file.url} />
             <input
               type="checkbox"

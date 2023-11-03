@@ -76,10 +76,16 @@ const authApiInstance = () => {
   return authIntercepter(apiInstance());
 };
 
+const authFormApiInstance = () => {
+  return authIntercepter(formApiInstance());
+};
+
 const api = apiInstance();
 const formApi = formApiInstance();
 const authApi = authApiInstance();
+const authFormApi = authFormApiInstance();
 
 createAuthRefreshInterceptor(authApi, refreshAuthLogic);
+createAuthRefreshInterceptor(authFormApi, refreshAuthLogic);
 
-export { formApi, api, authApi };
+export { formApi, api, authApi, authFormApi };
