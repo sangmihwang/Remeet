@@ -22,6 +22,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -32,16 +33,14 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ModelBoardService {
 
-    private final String FLASK_API_UPROAD_AUDIO = "http://localhost:5000/api/v1/upload/audio";
+    private final String FLASK_API_UPROAD_AUDIO = "http://localhost:4000/api/v1/upload/audio";
 
-    private final String FLAST_API_UPROAD_VIDEO = "http://localhost:5000/api/v1/upload/video";
+    private final String FLAST_API_UPROAD_VIDEO = "http://localhost:4000/api/v1/upload/video";
 
     private final ModelBoardRepository modelBoardRepository;
     private final UserRepository userRepository;
     private final UploadedVoiceRepository uploadedVoiceRepository;
     private final UploadedVideoRepository uploadedVideoRepository;
-
-
     @Transactional(readOnly = true)
     public List<String> getVideoPathsByModelNo(Integer modelNo) {
         ModelBoardEntity modelBoardEntity = modelBoardRepository.findById(modelNo)
@@ -126,12 +125,12 @@ public class ModelBoardService {
     }
 
     @Transactional
-    public Integer createModelBoard(ModelBoardCreateDto modelBoardCreateDto, Integer userNo, List<MultipartFile> voiceFiles, List<MultipartFile> videoFiles, String kakaoName) throws IOException{
+    public Integer createModelBoard(ModelBoardCreateDto modelBoardCreateDto, Integer userNo, List<MultipartFile> voiceFiles, List<MultipartFile> videoFiles, String kakaoName, String conversationText) throws IOException{
         UserEntity userEntity = userRepository.findByUserNo(userNo)
                 .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 userNo 입니다"));
         // 파일내용불러오기
         // 작성
-        String formattedText = formatChat(modelBoardCreateDto.getConversationText(), kakaoName);
+        String formattedText = formatChat(conversationText, kakaoName);
         ModelBoardEntity modelBoardEntity = ModelBoardEntity.builder()
                 .modelName(modelBoardCreateDto.getModelName())
                 .gender(modelBoardCreateDto.getGender())
@@ -191,27 +190,33 @@ public class ModelBoardService {
                         entity.getLatestConversationTime()
                 ));
     }
-    
-    // 텍스트 수정 코드
+
     public String formatChat(String conversationText, String kakaoName) {
         StringBuilder formattedText = new StringBuilder();
-        String[] lines = conversationText.split("\n");
+        String[] lines = conversationText.split("\\r?\\n");
         for (String line : lines) {
             String formattedLine = transformLine(line, kakaoName);
             if (formattedLine != null) {
                 formattedText.append(formattedLine).append("\n");
             }
         }
+
+        // 마지막 줄의 개행 문자를 제거
+        if (formattedText.length() > 0) {
+            formattedText.setLength(formattedText.length() - 1);
+        }
+
         return formattedText.toString();
     }
+    
     public String transformLine(String line, String kakaoName) {
-        Pattern pattern = Pattern.compile("\\[(.*?)\\] \\[(.*?)\\] (.*)");
+        Pattern pattern = Pattern.compile("^(\\d{4}\\. \\d{1,2}\\. \\d{1,2}\\. (오전|오후) \\d{1,2}:\\d{2}, )?(.+) : (.+)$");
         Matcher matcher = pattern.matcher(line);
-
+    
         if (matcher.matches()) {
-            String person = matcher.group(1);
-            String message = matcher.group(3);
-
+            String person = matcher.group(3);
+            String message = matcher.group(4);
+    
             if (kakaoName.equals(person)) {
                 return "상대방 : " + message;
             } else {
