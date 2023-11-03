@@ -2,8 +2,6 @@ import { useNavigate } from 'react-router-dom';
 import { MouseEvent } from 'react';
 import styled from 'styled-components';
 
-const URL = import.meta.env.VITE_API_BASE_URL as string;
-
 const Wrapper = styled.div`
   width: 86vw;
   height: 4.5rem;
@@ -18,7 +16,7 @@ const Imgbox = styled.div<{ $imagePath: string }>`
   height: 3.125rem;
   border-radius: 8px;
   background-color: #f6f6f6;
-  background-image: url(${(props) => URL + props.$imagePath.slice(1)});
+  background-image: url(${(props) => props.$imagePath});
   background-repeat: no-repeat;
   background-size: contain;
   background-position: center;
