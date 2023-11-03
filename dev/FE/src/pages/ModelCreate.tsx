@@ -128,10 +128,8 @@ const ModelCreate = () => {
         formData.append('voiceFiles', file.blob, file.name);
       });
     }
+    console.log(mutation);
 
-    for (const [key, value] of formData.entries()) {
-      console.log(`${key}:`, value);
-    }
     console.log(Object.keys(formData.entries()));
   };
 
