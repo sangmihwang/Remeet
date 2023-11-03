@@ -72,7 +72,7 @@ public class ModelBoardController {
         );
 
         Integer userNo = (Integer) request.getAttribute("userNo");
-        Integer modelNo = modelBoardService.createModelBoard(modelBoardCreateDto, userNo, voiceFiles, videoFiles, kakaoName);
+        Integer modelNo = modelBoardService.createModelBoard(modelBoardCreateDto, userNo, voiceFiles, videoFiles, kakaoName, conversationText);
 
         ModelBoardDetailDto modelBoardDetailDto = modelBoardService.getModelBoardDetailById(modelNo)
                 .orElseThrow(() -> new IllegalArgumentException("생성 후 오류가 있음"));
@@ -81,5 +81,6 @@ public class ModelBoardController {
         return ResponseEntity.ok(modelBoardDetailDto);
 
     }
+
 
 }
