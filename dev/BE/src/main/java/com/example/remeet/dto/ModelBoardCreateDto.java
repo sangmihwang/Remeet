@@ -10,6 +10,5 @@ import lombok.NoArgsConstructor;
 public class ModelBoardCreateDto {
     private String modelName;
     private char gender;
-    private String imagePath;
     private String conversationText;
 }

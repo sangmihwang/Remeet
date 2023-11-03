@@ -10,7 +10,6 @@ import com.example.remeet.repository.UploadedVideoRepository;
 import com.example.remeet.repository.UploadedVoiceRepository;
 import com.example.remeet.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.*;
@@ -33,10 +32,9 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ModelBoardService {
 
-    private final String FLASK_API_UPROAD_AUDIO = "http://localhost:5000/api/v1/upload/audio";
-
-    private final String FLAST_API_UPROAD_VIDEO = "http://localhost:5000/api/v1/upload/video";
-
+    private final String FLASK_API_UPROAD = "http://localhost:5000/api/v1/upload/files";
+    private final String FLASK_API_AVATAR = "http://localhost:5000/api/v1/createAvatarID";
+    private final FlaskService flaskService;
     private final ModelBoardRepository modelBoardRepository;
     private final UserRepository userRepository;
     private final UploadedVoiceRepository uploadedVoiceRepository;
@@ -61,67 +59,36 @@ public class ModelBoardService {
                 .collect(Collectors.toList());
     }
 
-    public List<String> uploadVoiceFilesToFlask(List<MultipartFile> voiceFiles, Integer userNo, Integer modelNo) throws IOException {
+    public List<String> uploadFilesToFlask(List<MultipartFile> Files, Integer userNo, Integer modelNo, String type) throws IOException {
         RestTemplate restTemplate = new RestTemplate();
-        List<String> uploadPaths = new ArrayList<>();
 
-        for (MultipartFile file : voiceFiles) {
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.MULTIPART_FORM_DATA);
 
-            MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+        MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+
+        for (MultipartFile file : Files) {
             body.add("files", new ByteArrayResource(file.getBytes()){
                 @Override
                 public String getFilename(){
                     return file.getOriginalFilename();
                 }
             });
-            body.add("userNo", userNo.toString());
-            body.add("modelNo", modelNo.toString());
-
-            HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
-            ResponseEntity<AudioUploadDto> response = restTemplate.exchange(
-                    FLASK_API_UPROAD_AUDIO,
-                    HttpMethod.POST,
-                    requestEntity,
-                    AudioUploadDto.class
-            );
-            List<String> audioList = response.getBody().getAudioList();
-            uploadPaths.addAll(audioList);
-
         }
-        return uploadPaths;
-    }
+        body.add("userNo", userNo.toString());
+        body.add("modelNo", modelNo.toString());
+        body.add("type", type);
 
-    public List<String> uploadVideoFilesToFlask(List<MultipartFile> videoFiles, Integer userNo, Integer modelNo) throws IOException {
-        RestTemplate restTemplate = new RestTemplate();
-        List<String> uploadPaths = new ArrayList<>();
+        HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
+        ResponseEntity<FileUploadDto> response = restTemplate.exchange(
+                FLASK_API_UPROAD,
+                HttpMethod.POST,
+                requestEntity,
+                FileUploadDto.class
+        );
+        List<String> FileList = response.getBody().getFileList();
 
-        for (MultipartFile file : videoFiles) {
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.MULTIPART_FORM_DATA);
-
-            MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-            body.add("files", new ByteArrayResource(file.getBytes()){
-                @Override
-                public String getFilename(){
-                    return file.getOriginalFilename();
-                }
-            });
-            body.add("userNo", userNo.toString());
-            body.add("modelNo", modelNo.toString());
-
-            HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
-            ResponseEntity<VideoUploadDto> response = restTemplate.exchange(
-                    FLAST_API_UPROAD_VIDEO,
-                    HttpMethod.POST,
-                    requestEntity,
-                    VideoUploadDto.class
-            );
-            List<String> videoList = response.getBody().getVideoList();
-            uploadPaths.addAll(videoList);
-        }
-        return uploadPaths;
+        return FileList;
     }
 
     @Transactional
@@ -134,7 +101,7 @@ public class ModelBoardService {
         ModelBoardEntity modelBoardEntity = ModelBoardEntity.builder()
                 .modelName(modelBoardCreateDto.getModelName())
                 .gender(modelBoardCreateDto.getGender())
-                .imagePath(modelBoardCreateDto.getImagePath())
+                .imagePath("tmp")
                 .conversationText(formattedText)
                 .userNo(userEntity)
                 .conversationCount(0)
@@ -143,16 +110,25 @@ public class ModelBoardService {
         modelBoardRepository.save(modelBoardEntity);
 
         Integer modelNo = modelBoardEntity.getModelNo();
+        List<String> uploadedImagePaths = uploadFilesToFlask(imageFiles, userNo, modelNo, "image");
+        List<String> uploadedVoicePaths = uploadFilesToFlask(voiceFiles, userNo, modelNo, "voice");
+        List<String> uploadedVideoPaths = uploadFilesToFlask(videoFiles, userNo, modelNo, "video");
 
-        List<String> uploadedVoicePaths = uploadVoiceFilesToFlask(voiceFiles, userNo, modelNo);
-        List<String> uploadedVideoPaths = uploadVideoFilesToFlask(videoFiles, userNo, modelNo);
+        for (MultipartFile imageFile : imageFiles) {
+            for (String imagePath : uploadedImagePaths){
+                String avatar = flaskService.callFlaskByMultipartFile(imageFile, "avatar");
+                ModelBoardEntity resetModel = modelBoardRepository.findByModelNo(modelNo).get();
+                resetModel.setImagePath(imagePath);
+                resetModel.setAvatarId(avatar);
+                modelBoardRepository.save(resetModel);
+            }
+        }
 
         for (String voicePath : uploadedVoicePaths){
             UploadedVoiceEntity uploadedVoiceEntity = UploadedVoiceEntity.builder()
                     .voicePath(voicePath)
                     .modelNo(modelBoardEntity)
                     .build();
-
             uploadedVoiceRepository.save(uploadedVoiceEntity);
         }
 
@@ -161,17 +137,10 @@ public class ModelBoardService {
                     .videoPath(videoPath)
                     .modelNo(modelBoardEntity)
                     .build();
-
             uploadedVideoRepository.save(uploadedVideoEntity);
         }
 
         return modelBoardEntity.getModelNo();
-    }
-
-
-    @Transactional(readOnly = true)
-    public List<ModelBoardDto> getAllModelBoards(Integer userNo) {
-        return modelBoardRepository.findByUserNo(userNo);
     }
 
     @Transactional(readOnly = true)
@@ -228,27 +197,15 @@ public class ModelBoardService {
     public List<ModelBoardDto> findByOption(String option, Integer userNo) {
         switch (option) {
             case "all":
-                return findAll(userNo);
+                return modelBoardRepository.findByUserNo(userNo);
             case "recent":
-                return findRecent(userNo);
+                return modelBoardRepository.findMostRecentByUserNo(userNo, PageRequest.of(0, 3));
             case "most":
-                return findMostTalked(userNo);
+                return modelBoardRepository.findTopModelsByUserNo(userNo, PageRequest.of(0, 3));
             default:
                 throw new IllegalArgumentException("Invalid option provided: " + option);
         }
     }
-    public List<ModelBoardDto> findAll(Integer userNo) {
-        return getAllModelBoards(userNo);
-    }
-
-    public List<ModelBoardDto> findRecent(Integer userNo) {
-        return modelBoardRepository.findMostRecentByUserNo(userNo, PageRequest.of(0, 3));
-    }
-
-    public List<ModelBoardDto> findMostTalked(Integer userNo) {
-        return modelBoardRepository.findTopModelsByUserNo(userNo, PageRequest.of(0, 3));
-    }
-
 
     @Transactional
     public void deleteModelBoard(Integer modelNo) {

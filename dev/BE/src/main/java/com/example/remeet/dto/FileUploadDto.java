@@ -5,6 +5,7 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class VideoUploadDto {
-    private List<String> videoList;
+public class FileUploadDto {
+    private List<String> fileList;
+
 }

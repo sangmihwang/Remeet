@@ -7,13 +7,16 @@ import time
 import boto3
 import uuid
 import wave
+import wavio
 import os
 from dotenv import load_dotenv
 from pydub import AudioSegment
 from flask import jsonify, request
 from werkzeug.utils import secure_filename
 import ffmpeg
-
+import json
+import numpy as np
+import base64
 app = Flask(__name__)
 # .env 파일에서 환경 변수를 로드합니다.
 load_dotenv()
@@ -22,7 +25,7 @@ AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
 AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
 REGION_NAME = 'ap-northeast-2'
 BUCKET_NAME = 'remeet'
-ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'mp4', 'wav', 'mp3'}
+ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'mp4', 'wav', 'mp3','mp4', 'avi', 'mov', 'flv', 'wmv'}
 
 # S3 클라이언트 설정
 s3_client = boto3.client('s3', aws_access_key_id=AWS_ACCESS_KEY_ID, aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
@@ -120,16 +123,66 @@ def upload_file():
             return jsonify(error='Failed to upload file'), 500
     else:
         return jsonify(error='Allowed file types are txt, pdf, png, jpg, jpeg, gif, mp4, wav'), 400
+    
+@app.route('/api/v1/createAvatarID', methods=['POST'])
+def upload_avatar():
+    # Avatar로 사용할 사진 업로드
+    x_api_key = os.getenv("x-api-key")
+    if 'file' not in request.files:
+        return jsonify(error='No file part'), 400
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify(error='No selected file'), 400
+    # files = {'file': (file.filename, file, 'image/jpeg')}
 
+    resp = requests.post(
+        "https://upload.heygen.com/v1/talking_photo",
+        data=file.read(),  # 파일의 내용을 읽어서 줘야함
+        headers={"Content-Type": "image/jpeg", "x-api-key": x_api_key}
+    )
+    result = resp.json()['data']['talking_photo_id']
+    return result
+
+@app.route('/api/v1/videosource', methods=['GET'])
+def videoSource():
+    voice_name = request.json.get('modelName')
+    x_api_key = os.getenv("x-api-key")
+    hey_headers = {
+        "accept": "application/json",
+        "x-api-key": x_api_key
+    }
+    
+    # talking photo ID 전체조회
+    url_avatar = "https://api.heygen.com/v1/talking_photo.list"
+    avatar_list = requests.get(url_avatar, headers=hey_headers)
+    
+    # voice ID 전체조회
+    url_voice = "https://api.heygen.com/v1/voice.list"
+    voice_list = requests.get(url_voice, headers=hey_headers)
+    voice_json = json.loads(voice_list.text)
+
+    # voice name으로 voice ID 조회
+
+    voice_id = 'none'
+    print(voice_name)
+    voice_data = voice_json.get('data')
+    for voice in voice_data['list']:
+        if voice["display_name"] == voice_name:
+            voice_id = voice["voice_id"]
+            break
+
+    return jsonify({"voice_id" : voice_id})
 
 @app.route('/api/v1/videomaker', methods=['POST'])
 def videoMaker():
     text = request.json.get('answer')
     x_api_key = os.getenv("x-api-key")
+    voice_id = request.json.get('voiceId')
+    talking_photo_id = request.json.get('avatarId')
 
-    url = "https://api.heygen.com/v1/video.generate"
-
-    payload = {
+    # voice ID 와 talking photo ID를 선택해 input text로 영상 생성
+    url_avatar = "https://api.heygen.com/v1/video.generate"
+    payload_avatar = {
         "background": "#ffffff",
         "ratio": "16:9",
         "test": False,
@@ -140,23 +193,45 @@ def videoMaker():
                 "caption": False,
                 "input_text": text,
                 "scale": 1,
-                # 민웅 voice_id (from ElevenLabs)
-                "voice_id": "a4bad3084bef43baa412175abf2b6a8f",
+                "voice_id": voice_id,
                 "talking_photo_style": "normal",
-                # 승우 talking_photo_id
-                "talking_photo_id": "c57fccf65fdd43eb8d4e9b7939179109"
+                "talking_photo_id": talking_photo_id
             }
         ]
     }
+    # talking photo ID를 선택해 기본 영상(Silent Video) 생성
+    url_silent = "https://api.heygen.com/v2/video/generate"
+    payload_silent  = {
+        "test": False,
+        "caption": False,
+        "dimension": {
+            "width": 1920,
+            "height": 1080
+        },
+        "video_inputs": [
+            {
+                "character": {
+                    "type": "talking_photo",
+                    "talking_photo_id": talking_photo_id
+                }, 
+                "voice":{
+                    "type":"audio",
+                    "audio_url": "https://resource.heygen.com/silent.mp3"
+                }
+            }
+        ]
+    }
+
     headers = {
         "accept": "application/json",
         "content-type": "application/json",
         "x-api-key": x_api_key
     }
 
-    response = requests.post(url, json=payload, headers=headers)
-
-    return jsonify({"msg": response.text})
+    response_avatar = requests.post(url_avatar, json=payload_avatar, headers=headers)
+    response_silent = requests.post(url_silent, json=payload_silent, headers=headers)
+    
+    return jsonify({"pro_video": response_avatar.text, "common_video": response_silent.text})
 
 
 @app.route('/api/v1/tts', methods=['POST'])
@@ -356,46 +431,15 @@ def get_audio():
     return jsonify({"msg": result})
 
 
-@app.route('/api/v1/start_stt', methods=['POST'])
-def post_audio():
-    # Record Audio
-    r = sr.Recognizer()
-    audio_file = request.files.get('audio')
-    print(audio_file)
-    if audio_file is None:
-        return "No audio file provided", 400  # Return 400 Bad Request
-
-    audio_file.seek(0)
-
-    with sr.AudioFile(audio_file) as source:
-        audio = r.record(source)
-    print(audio)
-    # Speech recognition using Google Speech Recognition
-    try:
-        # for testing purposes, we're just using the default API key
-        # to use another API key, use `r.recognize_google(audio, key="GOOGLE_SPEECH_RECOGNITION_API_KEY")`
-        # instead of `r.recognize_google(audio)`
-        result = r.recognize_google(audio)
-        print("You said: " + result)
-        return jsonify({"transcription": result})
-    except sr.UnknownValueError:
-        result = "Google Speech Recognition could not understand audio"
-        print("You said: " + result)
-        return jsonify({"transcription": result})
-    except sr.RequestError as e:
-        result = "Could not request results from Google Speech Recognition service"
-        print("You said: " + result)
-        return jsonify({"transcription": result})
-
-
-@app.route('/api/v1/upload/audio', methods=['POST'])
-def upload_audio():
+@app.route('/api/v1/upload/files', methods=['POST'])
+def upload_files():
     if 'files' not in request.files:
         return jsonify(error='No file part'), 400
 
     files = request.files.getlist('files')
     userNo = request.form.get('userNo')
     modelNo = request.form.get('modelNo')
+    fileType = request.form.get('type')
     responses = []
     for file in files:
         if file.filename == '':
@@ -409,16 +453,22 @@ def upload_audio():
                 audio = AudioSegment.from_file(source_path)
                 # 필요한 경우, 샘플 레이트, 채널 등을 조정
                 audio.export(target_path, format="mp3")
-
-
-            # 파일 처리 로직...
-            new_path = f'{file.filename.split(".")[0]}'+".mp3"
-            convert_audio_to_mp3(temp_blob_path, new_path)
-            # S3 업로드 등의 추가 처리...
+            def convert_video_to_mp4(source_path, target_path):
+                if source_path == target_path:
+                    target_path = 'tmp'+target_path
+                    ffmpeg.input(source_path).output(target_path, vcodec='libx264', acodec='aac').run(overwrite_output=True)
+            if fileType == 'audio' :
+                new_path = f'{file.filename.split(".")[0]}'+".mp3"
+                convert_audio_to_mp3(temp_blob_path, new_path)
+            elif fileType == 'video':
+                new_path = f'{file.filename.split(".")[0]}.mp4'
+                convert_video_to_mp4(temp_blob_path, new_path)
+            else :
+                new_path = file.filename
             try:
                 # 저장된 pcm 파일을 S3에 업로드
-                with open(new_path, "rb") as audio_file:
-                    s3_client.upload_fileobj(audio_file, BUCKET_NAME, folder_key + new_path)
+                with open(new_path, "rb") as file:
+                    s3_client.upload_fileobj(file, BUCKET_NAME, folder_key + new_path)
                 os.remove(new_path)  # 임시 파일 삭제
                 s3_url = f'https://remeet.s3.ap-northeast-2.amazonaws.com/{folder_key + new_path}'
                 responses.append(s3_url)
@@ -428,58 +478,8 @@ def upload_audio():
             # 각 파일 처리에 대한 응답을 저장
         else:
             responses.append('Invalid file type')
-    return jsonify({"audioList": responses})
+    return jsonify({"fileList": responses})
 
-@app.route('/api/v1/upload/video', methods=['POST'])
-def upload_video():
-    if 'files' not in request.files:
-        return jsonify(error='No file part'), 400
-
-    files = request.files.getlist('files')
-    userNo = request.form.get('userNo')
-    modelNo = request.form.get('modelNo')
-    responses = []
-    
-    for file in files:
-        if file.filename == '':
-            responses.append('no filename')
-            continue
-        video_ALLOWED_EXTENSIONS = {'mp4', 'avi', 'mov', 'flv', 'wmv'}
-
-        def allowed_video(filename):
-            return '.' in filename and \
-                filename.rsplit('.', 1)[1].lower() in video_ALLOWED_EXTENSIONS
-        if file and allowed_video(file.filename):
-            folder_key = f"ASSET/{userNo}/{modelNo}/"
-            temp_blob_path = secure_filename(file.filename)  # 안전한 파일 이름 사용
-            file.save(temp_blob_path)
-
-            def convert_video_to_mp4(source_path, target_path):
-                if source_path == target_path:
-                    target_path = 'tmp'+target_path
-                    ffmpeg.input(source_path).output(target_path, vcodec='libx264', acodec='aac').run(overwrite_output=True)
-
-            
-            # 파일 처리 로직...
-            new_path = f'{file.filename.split(".")[0]}.mp4'
-            convert_video_to_mp4(temp_blob_path, new_path)
-            
-            # S3 업로드 등의 추가 처리...
-            try:
-                # 저장된 mp4 파일을 S3에 업로드
-                with open(new_path, "rb") as video_file:
-                    s3_client.upload_fileobj(video_file, BUCKET_NAME, folder_key + new_path)
-                os.remove(new_path)  # 임시 파일 삭제
-                s3_url = f'https://{BUCKET_NAME}.s3.ap-northeast-2.amazonaws.com/{folder_key + new_path}'
-                responses.append(s3_url)
-            except Exception as e:
-                responses.append(f'Failed to upload file: {e}')
-
-            # 각 파일 처리에 대한 응답을 저장
-        else:
-            responses.append('Invalid file type')
-
-    return jsonify({"videoList": responses})
 
 if __name__ == '__main__':
     app.run(port=5000, debug=True)

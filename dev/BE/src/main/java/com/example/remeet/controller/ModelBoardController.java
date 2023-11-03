@@ -58,7 +58,7 @@ public class ModelBoardController {
     public ResponseEntity<ModelBoardDetailDto> createModelBoard(
             @RequestParam("modelName") String modelName,
             @RequestParam("gender") char gender,
-            @RequestParam("imagePath") String imagePath,
+            @RequestParam("imagePath") List<MultipartFile> imagePath,
             @RequestParam("kakaoName") String kakaoName,
             @RequestParam("conversationText") MultipartFile conversationTextFile,
             @RequestParam("voiceFiles") List<MultipartFile> voiceFiles,
@@ -68,7 +68,7 @@ public class ModelBoardController {
         String conversationText = new String(conversationTextFile.getBytes(), StandardCharsets.UTF_8);
 
         ModelBoardCreateDto modelBoardCreateDto = new ModelBoardCreateDto(
-                modelName, gender, imagePath, conversationText
+                modelName, gender, conversationText
         );
 
         Integer userNo = (Integer) request.getAttribute("userNo");
