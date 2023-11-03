@@ -68,7 +68,7 @@ public class ModelBoardController {
         String conversationText = new String(conversationTextFile.getBytes(), StandardCharsets.UTF_8);
 
         ModelBoardCreateDto modelBoardCreateDto = new ModelBoardCreateDto(
-                modelName, gender, conversationText
+                modelName, gender
         );
 
         Integer userNo = (Integer) request.getAttribute("userNo");
