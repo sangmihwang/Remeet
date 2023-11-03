@@ -33,9 +33,9 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ModelBoardService {
 
-    private final String FLASK_API_UPROAD_AUDIO = "http://localhost:4000/api/v1/upload/audio";
+    private final String FLASK_API_UPROAD_AUDIO = "http://localhost:5000/api/v1/upload/audio";
 
-    private final String FLAST_API_UPROAD_VIDEO = "http://localhost:4000/api/v1/upload/video";
+    private final String FLAST_API_UPROAD_VIDEO = "http://localhost:5000/api/v1/upload/video";
 
     private final ModelBoardRepository modelBoardRepository;
     private final UserRepository userRepository;
@@ -212,7 +212,7 @@ public class ModelBoardService {
     public String transformLine(String line, String kakaoName) {
         Pattern pattern = Pattern.compile("^(\\d{4}\\. \\d{1,2}\\. \\d{1,2}\\. (오전|오후) \\d{1,2}:\\d{2}, )?(.+) : (.+)$");
         Matcher matcher = pattern.matcher(line);
-    
+
         if (matcher.matches()) {
             String person = matcher.group(3);
             String message = matcher.group(4);
