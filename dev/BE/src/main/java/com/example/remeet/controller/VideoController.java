@@ -21,20 +21,16 @@ public class VideoController {
     private final VideoService videoService;
 
     @GetMapping("recent")
-    public ResponseEntity<Map<String, Object>> recentProducedVideo(HttpServletRequest request) {
+    public ResponseEntity<List<VideoDataDto>> recentProducedVideo(HttpServletRequest request) {
         Integer userNo = (Integer)request.getAttribute("userNo");
         List<VideoDataDto> recentVideos = videoService.recentProducedVideo(userNo);
-        Map<String, Object> response = new HashMap<>();
-        response.put("data", recentVideos);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(recentVideos);
     }
 
     @GetMapping("{modelNo}")
-    public ResponseEntity<Map<String, Object>> allProducedVideoByModel(@PathVariable("modelNo") Integer modelNo) {
+    public ResponseEntity<List<VideoDataDto>> allProducedVideoByModel(@PathVariable("modelNo") Integer modelNo) {
         List<VideoDataDto> videoList = videoService.allProducedVideoByModel(modelNo);
-        Map<String, Object> response = new HashMap<>();
-        response.put("data", videoList);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(videoList);
     }
 
     @DeleteMapping("{proVideoNo}")
