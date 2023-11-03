@@ -92,7 +92,7 @@ public class ModelBoardService {
     }
 
     @Transactional
-    public Integer createModelBoard(ModelBoardCreateDto modelBoardCreateDto, Integer userNo, List<MultipartFile> voiceFiles, List<MultipartFile> videoFiles, String kakaoName, String conversationText) throws IOException{
+    public Integer createModelBoard(ModelBoardCreateDto modelBoardCreateDto, Integer userNo, List<MultipartFile> voiceFiles, List<MultipartFile> videoFiles, List<MultipartFile> imageFiles, String kakaoName, String conversationText) throws IOException{
         UserEntity userEntity = userRepository.findByUserNo(userNo)
                 .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 userNo 입니다"));
         // 파일내용불러오기
