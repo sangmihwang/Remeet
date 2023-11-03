@@ -14,7 +14,9 @@ from pydub import AudioSegment
 from flask import jsonify, request
 from werkzeug.utils import secure_filename
 import ffmpeg
-
+import json
+import numpy as np
+import base64
 app = Flask(__name__)
 # .env 파일에서 환경 변수를 로드합니다.
 load_dotenv()
@@ -121,16 +123,66 @@ def upload_file():
             return jsonify(error='Failed to upload file'), 500
     else:
         return jsonify(error='Allowed file types are txt, pdf, png, jpg, jpeg, gif, mp4, wav'), 400
+    
+@app.route('/api/v1/createAvatarID', methods=['POST'])
+def upload_avatar():
+    # Avatar로 사용할 사진 업로드
+    x_api_key = os.getenv("x-api-key")
+    if 'file' not in request.files:
+        return jsonify(error='No file part'), 400
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify(error='No selected file'), 400
+    # files = {'file': (file.filename, file, 'image/jpeg')}
 
+    resp = requests.post(
+        "https://upload.heygen.com/v1/talking_photo",
+        data=file.read(),  # 파일의 내용을 읽어서 줘야함
+        headers={"Content-Type": "image/jpeg", "x-api-key": x_api_key}
+    )
+    result = resp.json()['data']['talking_photo_id']
+    return result
+
+@app.route('/api/v1/videosource', methods=['GET'])
+def videoSource():
+    voice_name = request.json.get('modelName')
+    x_api_key = os.getenv("x-api-key")
+    hey_headers = {
+        "accept": "application/json",
+        "x-api-key": x_api_key
+    }
+    
+    # talking photo ID 전체조회
+    url_avatar = "https://api.heygen.com/v1/talking_photo.list"
+    avatar_list = requests.get(url_avatar, headers=hey_headers)
+    
+    # voice ID 전체조회
+    url_voice = "https://api.heygen.com/v1/voice.list"
+    voice_list = requests.get(url_voice, headers=hey_headers)
+    voice_json = json.loads(voice_list.text)
+
+    # voice name으로 voice ID 조회
+
+    voice_id = 'none'
+    print(voice_name)
+    voice_data = voice_json.get('data')
+    for voice in voice_data['list']:
+        if voice["display_name"] == voice_name:
+            voice_id = voice["voice_id"]
+            break
+
+    return jsonify({"voice_id" : voice_id})
 
 @app.route('/api/v1/videomaker', methods=['POST'])
 def videoMaker():
     text = request.json.get('answer')
     x_api_key = os.getenv("x-api-key")
+    voice_id = request.json.get('voiceId')
+    talking_photo_id = request.json.get('avatarId')
 
-    url = "https://api.heygen.com/v1/video.generate"
-
-    payload = {
+    # voice ID 와 talking photo ID를 선택해 input text로 영상 생성
+    url_avatar = "https://api.heygen.com/v1/video.generate"
+    payload_avatar = {
         "background": "#ffffff",
         "ratio": "16:9",
         "test": False,
@@ -141,23 +193,45 @@ def videoMaker():
                 "caption": False,
                 "input_text": text,
                 "scale": 1,
-                # 민웅 voice_id (from ElevenLabs)
-                "voice_id": "a4bad3084bef43baa412175abf2b6a8f",
+                "voice_id": voice_id,
                 "talking_photo_style": "normal",
-                # 승우 talking_photo_id
-                "talking_photo_id": "c57fccf65fdd43eb8d4e9b7939179109"
+                "talking_photo_id": talking_photo_id
             }
         ]
     }
+    # talking photo ID를 선택해 기본 영상(Silent Video) 생성
+    url_silent = "https://api.heygen.com/v2/video/generate"
+    payload_silent  = {
+        "test": False,
+        "caption": False,
+        "dimension": {
+            "width": 1920,
+            "height": 1080
+        },
+        "video_inputs": [
+            {
+                "character": {
+                    "type": "talking_photo",
+                    "talking_photo_id": talking_photo_id
+                }, 
+                "voice":{
+                    "type":"audio",
+                    "audio_url": "https://resource.heygen.com/silent.mp3"
+                }
+            }
+        ]
+    }
+
     headers = {
         "accept": "application/json",
         "content-type": "application/json",
         "x-api-key": x_api_key
     }
 
-    response = requests.post(url, json=payload, headers=headers)
-
-    return jsonify({"msg": response.text})
+    response_avatar = requests.post(url_avatar, json=payload_avatar, headers=headers)
+    response_silent = requests.post(url_silent, json=payload_silent, headers=headers)
+    
+    return jsonify({"pro_video": response_avatar.text, "common_video": response_silent.text})
 
 
 @app.route('/api/v1/tts', methods=['POST'])

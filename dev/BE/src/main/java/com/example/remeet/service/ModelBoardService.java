@@ -32,8 +32,8 @@ import java.util.stream.Collectors;
 public class ModelBoardService {
 
     private final String FLASK_API_UPROAD = "http://localhost:5000/api/v1/upload/files";
-
-
+    private final String FLASK_API_AVATAR = "http://localhost:5000/api/v1/createAvatarID";
+    private final FlaskService flaskService;
     private final ModelBoardRepository modelBoardRepository;
     private final UserRepository userRepository;
     private final UploadedVoiceRepository uploadedVoiceRepository;
@@ -98,6 +98,7 @@ public class ModelBoardService {
                 .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 userNo 입니다"));
         // 파일내용불러오기
         // 작성
+
         String formattedText = formatChat(modelBoardCreateDto.getConversationText(), kakaoName);
         ModelBoardEntity modelBoardEntity = ModelBoardEntity.builder()
                 .modelName(modelBoardCreateDto.getModelName())
@@ -115,10 +116,14 @@ public class ModelBoardService {
         List<String> uploadedVoicePaths = uploadFilesToFlask(voiceFiles, userNo, modelNo, "voice");
         List<String> uploadedVideoPaths = uploadFilesToFlask(videoFiles, userNo, modelNo, "video");
 
-        for (String imagePath : uploadedImagePaths){
-            ModelBoardEntity resetModel = modelBoardRepository.findByModelNo(modelNo).get();
-            resetModel.setImagePath(imagePath);
-            modelBoardRepository.save(resetModel);
+        for (MultipartFile imageFile : imageFiles) {
+            for (String imagePath : uploadedImagePaths){
+                String avatar = flaskService.callFlaskByMultipartFile(imageFile, "avatar");
+                ModelBoardEntity resetModel = modelBoardRepository.findByModelNo(modelNo).get();
+                resetModel.setImagePath(imagePath);
+                resetModel.setAvatarId(avatar);
+                modelBoardRepository.save(resetModel);
+            }
         }
 
         for (String voicePath : uploadedVoicePaths){
