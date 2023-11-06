@@ -38,6 +38,7 @@ const LoginPage = () => {
         sessionStorage.setItem('accessToken', accessToken);
         sessionStorage.setItem('refreshToken', refreshToken);
         navigate('/board');
+        console.log('??');
       },
       onError: (err) => {
         console.log(err);
