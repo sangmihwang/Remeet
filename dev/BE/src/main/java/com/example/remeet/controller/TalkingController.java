@@ -4,12 +4,17 @@ import com.example.remeet.dto.STTResponseDto;
 import com.example.remeet.service.FlaskService;
 import com.example.remeet.service.GPTService;
 import com.example.remeet.service.TTSService;
+import com.example.remeet.service.TranscribeStreamingService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.io.InputStream;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 
 @CrossOrigin(value = "*", allowedHeaders = "*")
@@ -18,16 +23,19 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 @Slf4j
 public class TalkingController {
-    private final GPTService gptService;
-    private final TTSService ttsService;
-    private final FlaskService flaskService;
+    private final TranscribeStreamingService transcribeStreamingService;
 
-    @PostMapping("stt/{voiceId}")
-    public ResponseEntity<STTResponseDto> upload(@RequestPart(value = "file") MultipartFile multipartFile, @PathVariable("voiceId") String voiceId) throws Exception {
-        String wavPath = flaskService.callFlaskByMultipartFile(multipartFile, "stt");
-        String answer = gptService.callFlaskApi(wavPath).getText();
-        STTResponseDto audioPath = ttsService.callFlaskApi(answer, voiceId);
-        return new ResponseEntity<STTResponseDto>(audioPath, HttpStatus.OK);
+    @PostMapping("transcribe")
+    public ResponseEntity<String> transcribeFile(@RequestParam("file") MultipartFile file, @RequestParam("sessionId") String sessionId) {
+        try {
+            String transcriptionResult = transcribeStreamingService.transcribe(file, sessionId);
+            System.out.println(transcriptionResult);
+            return ResponseEntity.ok(transcriptionResult);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error during transcription");
+        }
     }
+
 
 }

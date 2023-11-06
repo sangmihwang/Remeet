@@ -1,37 +1,50 @@
 import speech_recognition as sr
-from flask_socketio import SocketIO, emit
-from flask import Flask, jsonify
-import json
+from flask import Flask, request, jsonify
 import os
+from pydub import AudioSegment
+import tempfile
+from flask_cors import CORS
 
 app = Flask(__name__)
-socketio = SocketIO(app, cors_allowed_origins="*")
+CORS(app)
 
-UPLOAD_FOLDER = 'DEV'
-if not os.path.exists(UPLOAD_FOLDER):
-    os.makedirs(UPLOAD_FOLDER)
-    
-@socketio.on('stream_audio')
-def handle_audio(data):
-# Record Audio
-    r = sr.Recognizer()
-    with sr.Microphone() as source:
-        print("Say something!")
-        audio = r.listen(source)
-    # Speech recognition using Google Speech Recognition
-    try:
-        filepath = os.path.join(UPLOAD_FOLDER, "audio.wav")
-        with open(filepath, 'wb') as f:
-            f.write(audio)
-        # for testing purposes, we're just using the default API key
-        # to use another API key, use `r.recognize_google(audio, key="GOOGLE_SPEECH_RECOGNITION_API_KEY")`
-        # instead of `r.recognize_google(audio)`
-        print("You said: " + r.recognize_google(audio))
-    except sr.UnknownValueError:
-        print("Google Speech Recognition could not understand audio")
-    except sr.RequestError as e:
-        print("Could not request results from Google Speech Recognition service; {0}".format(e))
 
+@app.route('/transcribe', methods=['POST'])
+def transcribe_audio():
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file part'}), 400
+
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({'error': 'No selected file'}), 400
+
+    if file:
+        # 파일을 임시 디렉토리에 저장
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_blob_path = os.path.join(temp_dir, "temp_blob_data.webm")
+            file.save(temp_blob_path)
+
+            temp_wav_path = os.path.join(temp_dir, "temp_info_check.wav")
+
+            # 오디오 변환
+            audio = AudioSegment.from_file(temp_blob_path)
+            audio.set_frame_rate(16000).set_channels(1).set_sample_width(2).export(temp_wav_path, format="wav", codec="pcm_s16le")
+
+            # 인식기 초기화
+            r = sr.Recognizer()
+
+            with sr.AudioFile(temp_wav_path) as source:
+                audio_data = r.record(source)
+                try:
+                    text = r.recognize_google(audio_data, language='ko-KR')
+                    print(text)
+                    return jsonify({'transcription': text}), 200
+                except sr.UnknownValueError:
+                    return jsonify({'error': 'Speech Recognition could not understand the audio'}), 422
+                except sr.RequestError as e:
+                    return jsonify({'error': f'Could not request results from the Speech Recognition service; {e}'}), 503
+            # 임시 파일은 이 블록을 벗어나면 자동으로 삭제됩니다.
+    return jsonify({'error': 'Invalid file'}), 400
 
 if __name__ == '__main__':
-    socketio.run(app, debug=True)
+    app.run(debug=True)
