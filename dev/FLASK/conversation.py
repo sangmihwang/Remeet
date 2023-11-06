@@ -23,6 +23,7 @@ load_dotenv()
 
 AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
 AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
+ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY")
 REGION_NAME = 'ap-northeast-2'
 BUCKET_NAME = 'remeet'
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'mp4', 'wav', 'mp3','mp4', 'avi', 'mov', 'flv', 'wmv'}
@@ -233,20 +234,12 @@ def videoMaker():
     return jsonify({"pro_video": response_avatar.text, "common_video": response_silent.text})
 
 
-def make_tts():
-    ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY")
+def make_tts(ele_voice_id, text):
 
-    # voice_id 가져오기
-    # voice_id_path = os.path.join("myvoice", "minwoong.txt")
-    # with open(voice_id_path, "r") as file:
-    #     voice_id = file.read().strip()
-
-    # 설정 가져오기
-    # with open("settings.txt", "r") as file:
     stability, similarity_boost = 0.5, 0.75
-    voice_id = request.json.get('voiceId')
-    text = request.json.get('answer')
-    tts_url = f"https://api.elevenlabs.io/v1/text-to-speech/{voice_id}/stream"
+    # voice_id = request.json.get('voiceId')
+    # text = request.json.get('answer')
+    tts_url = f"https://api.elevenlabs.io/v1/text-to-speech/{ele_voice_id}/stream"
 
     headers = {
         "Accept": "application/json",
@@ -255,7 +248,6 @@ def make_tts():
     }
 
     data = {
-        # "text": "어떻게 얘기해야 평소 말투를 녹음할 수 있을지 감이 잘 안와요. 뉴스 스크립트 기사를 읽는게 아니라 병국님 상미님한테 말하는것처럼 자연스러운 말투를 녹음하고싶은데, 그게 좀 어려운데요?",
         "text": text,
         "model_id": "eleven_multilingual_v2",
         "voice_settings": {
@@ -272,7 +264,7 @@ def make_tts():
         print(response.text)
         exit()
 
-    output_folder = os.path.join("samples", voice_id)
+    output_folder = os.path.join("samples", ele_voice_id)
     os.makedirs(output_folder, exist_ok=True)
     OUTPUT_PATH = os.path.join(output_folder, "test_minwoong.mp3")
 
@@ -289,6 +281,7 @@ def make_tts():
     # S3에 파일 업로드
     filename = local_path.split('/')[-1]  # 경로에서 파일 이름 추출
 
+    # ASSET/{userNo}/{modelNo}/{conversationNo}/1.wav
     folder_key = f"ASSET/seungwoo/minwoong/"
 
     # S3 버킷에서 기존 파일 목록 가져오기
@@ -310,15 +303,11 @@ def make_tts():
         file_url = s3_client.generate_presigned_url('get_object',
                                                     Params={'Bucket': BUCKET_NAME, 'Key': file_path},
                                                     ExpiresIn=3600)
-        return jsonify({"msg": file_url})
+        # return jsonify({"msg": file_url})
+        return file_url
     except Exception as e:
         print(str(e))
         return jsonify(msg='Failed to upload file'), 500
-    # 지정된 경로에 따라 output.mp3 저장
-    # file_name_without_ext = os.path.splitext(os.path.basename(voice_id_path))[0]
-
-    # print(f"Audio saved to {OUTPUT_PATH}")
-    # return jsonify({"msg": OUTPUT_PATH})
 
 
 def gpt_answer():
@@ -478,6 +467,46 @@ def upload_files():
     return jsonify({"fileList": responses})
 
 
+def make_voice(model_name, gender, audio_files):
+    make_voice_url = "https://api.elevenlabs.io/v1/voices/add"
+
+    headers = {
+        "Accept": "application/json",
+        "xi-api-key": ELEVENLABS_API_KEY
+    }
+
+    data = {
+        'name': model_name,
+        'labels': f'{{"gender": "{gender}"}}',
+        'description': f'{model_name} Voice TestModel'
+    }
+
+    response = requests.post(make_voice_url, headers=headers, data=data, files=audio_files)
+    response.raise_for_status()
+
+    json_response = response.json()
+
+    if "voice_id" not in json_response:
+        raise ValueError("Error: 보이스 id를 반환하지 못함.")
+
+    return json_response["voice_id"]
+
+@app.route('api/v1/conversation/makevoice', methods=['POST'])
+def make_voice_model():
+    model_name = request.json.get('modelName')
+    gender_label = request.json.get('gender')
+    audio_files = request.files.getlist('files')
+
+    files = [('files', (file.filename, file.read(), 'audio/mpeg')) for file in audio_files]
+
+    try:
+        voice_id = make_voice(model_name, gender_label, files)
+        return jsonify({'voice_id': voice_id})
+    except Exception as e:
+        print(str(e))
+        return jsonify({'error': str(e)}), 500
+
+
 @app.route('/api/v1/conversation/video', methods=['POST'])
 def make_conversation_video():
     answer = gpt_answer()
@@ -488,10 +517,14 @@ def make_conversation_video():
 
 @app.route('/api/v1/conversation/voice', methods=['POST'])
 def make_conversation_voice():
-    answer = gpt_answer()
-    makeVoice = make_tts(answer,)
-
-    return makeVoice
+    try:
+        answer = gpt_answer()
+        ele_voice_id = request.json.get('eleVoiceId')
+        voice_url = make_tts(ele_voice_id, answer)
+        # 성공 응답을 JSON으로 포맷 후 반환
+        return jsonify({'voice_url': voice_url})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 
 if __name__ == '__main__':
