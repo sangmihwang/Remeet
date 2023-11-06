@@ -234,7 +234,7 @@ def videoMaker():
     return jsonify({"pro_video": response_avatar.text, "common_video": response_silent.text})
 
 
-def make_tts(ele_voice_id, text):
+def make_tts(ele_voice_id, text, user_no, model_no, conversation_no):
 
     stability, similarity_boost = 0.5, 0.75
     # voice_id = request.json.get('voiceId')
@@ -264,27 +264,12 @@ def make_tts(ele_voice_id, text):
         print(response.text)
         exit()
 
-    output_folder = os.path.join("samples", ele_voice_id)
+
+    output_folder = os.path.join("samples", f"{user_no}_{model_no}_{conversation_no}")
     os.makedirs(output_folder, exist_ok=True)
-    OUTPUT_PATH = os.path.join(output_folder, "test_minwoong.mp3")
-
-    with open(OUTPUT_PATH, 'wb') as f:
-        for chunk in response.iter_content(chunk_size=1024):
-            if chunk:
-                f.write(chunk)
-    # 로컬 경로 받기
-    local_path = OUTPUT_PATH
-
-    if not local_path:
-        return jsonify({'error': 'No path provided'}), 400
-
-    # S3에 파일 업로드
-    filename = local_path.split('/')[-1]  # 경로에서 파일 이름 추출
-
-    # ASSET/{userNo}/{modelNo}/{conversationNo}/1.wav
-    folder_key = f"ASSET/seungwoo/minwoong/"
 
     # S3 버킷에서 기존 파일 목록 가져오기
+    folder_key = f"ASSET/{user_no}/{model_no}/{conversation_no}"
     existing_files = s3_client.list_objects_v2(Bucket=BUCKET_NAME, Prefix=folder_key)
     existing_file_keys = [obj['Key'] for obj in existing_files.get('Contents', []) if obj['Key'].endswith('.mp3')]
 
@@ -292,22 +277,27 @@ def make_tts(ele_voice_id, text):
     existing_indices = [int(key.split('/')[-1].split('.')[0]) for key in existing_file_keys if
                         key.split('/')[-1].split('.')[0].isdigit()]
     next_index = 1 if not existing_indices else max(existing_indices) + 1
-    new_filename = f"{next_index}.mp3"
-    file_path = os.path.join(folder_key, new_filename)
+    output_file = f"{next_index}.mp3"
+    output_path = os.path.join(output_folder, output_file)
+
+    with open(output_path, 'wb') as f:
+        for chunk in response.iter_content(chunk_size=1024):
+            if chunk:
+                f.write(chunk)
+
+    file_path = os.path.join(folder_key, output_file)
 
     try:
         # 파일을 S3에 업로드
-        with open(local_path, 'rb') as file:
+        with open(output_path, 'rb') as file:
             s3_client.upload_fileobj(file, BUCKET_NAME, file_path)
-        # s3_client.upload_fileobj(file, BUCKET_NAME, file_path)
         file_url = s3_client.generate_presigned_url('get_object',
                                                     Params={'Bucket': BUCKET_NAME, 'Key': file_path},
                                                     ExpiresIn=3600)
-        # return jsonify({"msg": file_url})
-        return file_url
+        return jsonify({"file_url": file_url})
     except Exception as e:
         print(str(e))
-        return jsonify(msg='Failed to upload file'), 500
+        return jsonify({'error': 'Failed to upload file'}), 500
 
 
 def gpt_answer():
@@ -520,7 +510,10 @@ def make_conversation_voice():
     try:
         answer = gpt_answer()
         ele_voice_id = request.json.get('eleVoiceId')
-        voice_url = make_tts(ele_voice_id, answer)
+        user_no = request.json.get('userNo')
+        model_no = request.json.get('modelNo')
+        conversation_no = request.json.get('conversationNo')
+        voice_url = make_tts(ele_voice_id, answer, user_no, model_no, conversation_no)
         # 성공 응답을 JSON으로 포맷 후 반환
         return jsonify({'voice_url': voice_url})
     except Exception as e:
