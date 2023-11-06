@@ -10,8 +10,11 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
+import java.util.List;
 
 @CrossOrigin(value = "*", allowedHeaders = "*")
 @RequiredArgsConstructor
@@ -42,12 +45,16 @@ public class UserController {
     }
 
     @PostMapping("signup")
-    public ResponseEntity signUp(@RequestBody UserDataDto userData) {
+    public ResponseEntity signUp(@RequestParam("userId") String userId,
+                                 @RequestParam("password") String password,
+                                 @RequestParam("userName") String userName,
+                                 @RequestParam("imagePath") MultipartFile imagePath,
+                                 @RequestParam("userEmail") String userEmail) throws IOException {
         // 아이디가 있는지 여부 파악
-        boolean exists = userService.isUserIdExist(userData.getUserId());
+        boolean exists = userService.isUserIdExist(userId);
         if (!exists) {
             // 없으면 만들기
-            userService.signUp(userData);
+            userService.signUp(userId,password,userName,imagePath,userEmail);
             return ResponseEntity.ok().build();
         } else {
             return ResponseEntity.status(400).build();
