@@ -4,8 +4,6 @@ import { getAccessToken, getRefreshToken, setAccessToken } from '@/utils';
 
 const API_BASE_URL: string = import.meta.env.VITE_API_BASE_URL as string;
 
-console.log(API_BASE_URL);
-
 const apiInstance = () => {
   const instance = axios.create({
     baseURL: API_BASE_URL,
