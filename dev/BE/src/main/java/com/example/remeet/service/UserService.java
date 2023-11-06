@@ -31,7 +31,13 @@ public class UserService {
     }
 
     public void signUp(String userId, String password, String userName, MultipartFile imagePath, String userEmail) throws IOException {
-        String imageURL = flaskService.callFlaskByMultipartFile(imagePath, "profile");
+        String imageURL = " ";
+        if (imagePath != null && !imagePath.isEmpty()) {
+            imageURL = flaskService.callFlaskByMultipartFile(imagePath, "profile");
+        } else {
+            imageURL = "common";
+        }
+
         UserEntity newMember = UserEntity.builder()
                 .userId(userId)
                 .userName(userName)

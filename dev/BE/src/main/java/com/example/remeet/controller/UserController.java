@@ -48,7 +48,7 @@ public class UserController {
     public ResponseEntity signUp(@RequestParam("userId") String userId,
                                  @RequestParam("password") String password,
                                  @RequestParam("userName") String userName,
-                                 @RequestParam("imagePath") MultipartFile imagePath,
+                                 @RequestParam(value = "imagePath", required = false) MultipartFile imagePath,
                                  @RequestParam("userEmail") String userEmail) throws IOException {
         // 아이디가 있는지 여부 파악
         boolean exists = userService.isUserIdExist(userId);
