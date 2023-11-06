@@ -32,8 +32,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ModelBoardService {
 
-    private final String FLASK_API_UPROAD = "http://localhost:5000/api/v1/upload/files";
-    private final String FLASK_API_AVATAR = "http://localhost:5000/api/v1/createAvatarID";
+    private final String FLASK_API_UPROAD = "http://localhost:4000/api/v1/upload/files";
+    private final String FLASK_API_AVATAR = "http://localhost:4000/api/v1/createAvatarID";
     private final FlaskService flaskService;
     private final ModelBoardRepository modelBoardRepository;
     private final UserRepository userRepository;

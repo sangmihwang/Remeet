@@ -300,49 +300,16 @@ def make_tts(ele_voice_id, text, user_no, model_no, conversation_no):
         return jsonify({'error': 'Failed to upload file'}), 500
 
 
-def gpt_answer():
-    # 파읽 읽어오는 코드
-    # file = open("sample.txt", "r", encoding="utf-8")
-    # data = file.read()
-    # print(data)
-    # file.close()
-
+def gpt_answer(model_name,conversation_text, input_text):
     first_setting = """
-    난 이제 엄마랑 대화를 할 예정이야. 우리 엄마는 돌아가셨어
-    평소 엄마와 나의 대화를 보고 넌 나의 엄마가 되어 내 말에 답변을 해주면 돼
-    일단 평소 나와 엄마의 대화야
-    """
-
-    practice = """
-    나: 엄마, 주말에 친구들이랑 여행 가려고 하는데 돈 좀 빌려줄 수 있어?
-    엄마:  또 돈이 필요하구나? 얼마나 필요해?
-    나: 10만 원만 빌려줘. 꼭 다음 주에 갚을게.
-    엄마: 그래, 꼭 갚아야 해. 엄마한테 빌리는 돈도 돈이니까. 알겠지?
-    나: 알아, 엄마. 고마워.
-    엄마:  엄마한테는 굳이 감사하진 않아도 돼. 그런데 주말에 어디로 가려고 해?
-    나: 부산에 가려고 해. 바다도 보고 해운대도 가볼까 해.
-    엄마: 아, 부산 좋지. 바다도 넓고 공기도 좋아. 근데 안전하게 다녀와야 해. 알겠지?
-    나: 네, 걱정하지 마. 다들 조심히 다닐게.
-    엄마: 그래. 내 딸이 이렇게 커서 친구들이랑 여행도 가네. 시간 참 빠르다.
-    나: 엄마도 가끔은 나가서 쉬면 좋을 것 같아.
-    엄마:  엄마는 집에서도 잘 쉰다니까. 그냥 너희들이 건강하고 행복하면 그게 제일이야.
-    나: 그래도 엄마, 가끔은 외출해서 좋은 곳에 가서 휴식을 취하는 것도 필요하다고 생각해.
-    엄마: 아이고, 내 딸아. 너희들이 잘 지내고 행복하면 그게 엄마한테는 최고의 휴식이야. 그래도 말하긴, 요즘 좀 몸이 피곤하긴 해.
-    나: 그럼 주말에 스파나 마사지샵에 가서 푹 쉬면 어때?
-    엄마: 그런 곳은 처음 가봐서 좀 민망하긴 한데... 생각해볼게.
-    나: 엄마, 그런 거에 대해 너무 걱정하지 마. 오히려 좋은 경험이 될 거야.
-    엄마: 아이고, 너희들이 이렇게 걱정해주니 감사하다. 그래, 한번 시도해볼게.
-    나: 그래! 엄마가 편안하게 쉬는 모습을 보고 싶어.
-    엄마: 아, 고마워. 엄마도 너희들이 건강하고 행복하게 지내는 모습을 보면 가장 행복해.
-    """
+    너는 {0} 인척 나랑 대화를 해야해. {0}은 죽었어.
+    평소 {0}와 나의 대화가 있어.
+    """.format(model_name)
 
     last_setting = """
-    여기까지가 평소 나와 엄마의 대화야
-    이 대화에서 엄마 말투만 참고하고 다음 나오는 나의 말에 대한 대답을 한 문장으로 생성해줘 
-    """
-    input_text = request.json.get('question')
-    final_conversations = first_setting + practice + last_setting
-    practice += "나 :" + input_text + "\n"
+    여기까지가 평소 나와 {0}의 대화야, 반말인지 존댓말인지 체크해서
+    이 대화에서 {0}의 말투를 따라해서, 내 말에 {0}처럼 대답해줘
+    """.format(model_name)
 
     response = requests.post(
         "https://api.openai.com/v1/chat/completions",
@@ -353,11 +320,8 @@ def gpt_answer():
                 # system = 사용자가 입력하는 인물, 성격, 특징
                 {
                     "role": "system",
-                    "content": "너는 나의 엄마야. 나의 말에 엄마처럼 대답만 하면 돼",
+                    "content": first_setting+conversation_text+last_setting
                 },
-                # assistant = 이전대화 기록함
-                {"role": "assistant", "content": final_conversations},
-                # user = 내가 보내는 message
                 {"role": "user", "content": input_text},
             ],
         },
@@ -365,10 +329,9 @@ def gpt_answer():
     chat_response = (
         response.json().get("choices", [{}])[0].get("message", {}).get("content", "")
     )
-    if "엄마:" in chat_response:
+    if f"{model_name}:" in chat_response:
         chat_response = chat_response.split(":")[-1]
     print(chat_response)
-    practice += "엄마 :" + chat_response + "\n"
 
     return jsonify({"msg": chat_response})
 
@@ -499,7 +462,10 @@ def make_voice_model():
 
 @app.route('/api/v1/conversation/video', methods=['POST'])
 def make_conversation_video():
-    answer = gpt_answer()
+    input_text = request.json.get('question')
+    model_name = request.get_json("modelName")
+    conversation_text = request.get_json("conversationText")
+    answer = gpt_answer(model_name, conversation_text, input_text)
     makeVideo = videoMaker(answer,)
 
     return makeVideo
@@ -508,7 +474,11 @@ def make_conversation_video():
 @app.route('/api/v1/conversation/voice', methods=['POST'])
 def make_conversation_voice():
     try:
-        answer = gpt_answer()
+
+        input_text = request.json.get('question')
+        model_name = request.get_json("modelName")
+        conversation_text = request.get_json("conversationText")
+        answer = gpt_answer(model_name, conversation_text, input_text)
         ele_voice_id = request.json.get('eleVoiceId')
         user_no = request.json.get('userNo')
         model_no = request.json.get('modelNo')
