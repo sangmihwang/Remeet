@@ -294,7 +294,7 @@ def make_tts(ele_voice_id, text, user_no, model_no, conversation_no):
         file_url = s3_client.generate_presigned_url('get_object',
                                                     Params={'Bucket': BUCKET_NAME, 'Key': file_path},
                                                     ExpiresIn=3600)
-        return jsonify({"file_url": file_url})
+        return jsonify({"voicePath": file_url})
     except Exception as e:
         print(str(e))
         return jsonify({'error': 'Failed to upload file'}), 500
@@ -515,7 +515,7 @@ def make_conversation_voice():
         conversation_no = request.json.get('conversationNo')
         voice_url = make_tts(ele_voice_id, answer, user_no, model_no, conversation_no)
         # 성공 응답을 JSON으로 포맷 후 반환
-        return jsonify({'voice_url': voice_url})
+        return make_tts(ele_voice_id, answer, user_no, model_no, conversation_no)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
