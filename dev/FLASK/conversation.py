@@ -173,7 +173,6 @@ def videoSource():
 
     return jsonify({"voice_id" : voice_id})
 
-@app.route('/api/v1/videomaker', methods=['POST'])
 def videoMaker():
     text = request.json.get('answer')
     x_api_key = os.getenv("x-api-key")
@@ -234,8 +233,7 @@ def videoMaker():
     return jsonify({"pro_video": response_avatar.text, "common_video": response_silent.text})
 
 
-@app.route('/api/v1/tts', methods=['POST'])
-def tts():
+def make_tts():
     ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY")
 
     # voice_id 가져오기
@@ -323,8 +321,7 @@ def tts():
     # return jsonify({"msg": OUTPUT_PATH})
 
 
-@app.route('/api/v1/gpt', methods=['POST'])
-def answer():
+def gpt_answer():
     # 파읽 읽어오는 코드
     # file = open("sample.txt", "r", encoding="utf-8")
     # data = file.read()
@@ -479,6 +476,22 @@ def upload_files():
         else:
             responses.append('Invalid file type')
     return jsonify({"fileList": responses})
+
+
+@app.route('/api/v1/conversation/video', methods=['POST'])
+def make_conversation_video():
+    answer = gpt_answer()
+    makeVideo = videoMaker(answer,)
+
+    return makeVideo
+
+
+@app.route('/api/v1/conversation/voice', methods=['POST'])
+def make_conversation_voice():
+    answer = gpt_answer()
+    makeVoice = make_tts(answer,)
+
+    return makeVoice
 
 
 if __name__ == '__main__':
