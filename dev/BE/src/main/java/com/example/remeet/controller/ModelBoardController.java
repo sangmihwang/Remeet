@@ -84,9 +84,8 @@ public class ModelBoardController {
 
     }
 
-    // 음성 모델 ID 생성을 위한 GET 요청 처리
     @GetMapping("/makevoice/{modelNo}")
-    public ResponseEntity<?> generateVoiceIdForModel(@PathVariable Integer modelNo) {
+    public ResponseEntity<?> generateEleVoiceId(@PathVariable Integer modelNo) {
         try {
             String voiceId = modelBoardService.createVoiceModel(modelNo);
             return ResponseEntity.ok(Collections.singletonMap("ele_voice_id", voiceId));
