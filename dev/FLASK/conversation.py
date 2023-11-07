@@ -17,6 +17,7 @@ import ffmpeg
 import json
 import numpy as np
 import base64
+
 app = Flask(__name__)
 # .env 파일에서 환경 변수를 로드합니다.
 load_dotenv()
@@ -26,7 +27,7 @@ AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
 ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY")
 REGION_NAME = 'ap-northeast-2'
 BUCKET_NAME = 'remeet'
-ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'mp4', 'wav', 'mp3','mp4', 'avi', 'mov', 'flv', 'wmv'}
+ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'mp4', 'wav', 'mp3', 'mp4', 'avi', 'mov', 'flv', 'wmv'}
 
 # S3 클라이언트 설정
 s3_client = boto3.client('s3', aws_access_key_id=AWS_ACCESS_KEY_ID, aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
@@ -36,9 +37,12 @@ s3_client = boto3.client('s3', aws_access_key_id=AWS_ACCESS_KEY_ID, aws_secret_a
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+
 def convert_blob_to_wav(blob_path, output_path):
     sound = AudioSegment.from_file(blob_path, format="webm")
     sound.export(output_path, format="wav")
+
+
 def get_wav_info(wav_filename):
     with wave.open(wav_filename, 'rb') as wf:
         n_channels = wf.getnchannels()
@@ -124,7 +128,8 @@ def upload_file():
             return jsonify(error='Failed to upload file'), 500
     else:
         return jsonify(error='Allowed file types are txt, pdf, png, jpg, jpeg, gif, mp4, wav'), 400
-    
+
+
 @app.route('/api/v1/createAvatarID', methods=['POST'])
 def upload_avatar():
     # Avatar로 사용할 사진 업로드
@@ -144,6 +149,7 @@ def upload_avatar():
     result = resp.json()['data']['talking_photo_id']
     return result
 
+
 @app.route('/api/v1/videosource', methods=['GET'])
 def videoSource():
     voice_name = request.json.get('modelName')
@@ -152,11 +158,11 @@ def videoSource():
         "accept": "application/json",
         "x-api-key": x_api_key
     }
-    
+
     # talking photo ID 전체조회
     url_avatar = "https://api.heygen.com/v1/talking_photo.list"
     avatar_list = requests.get(url_avatar, headers=hey_headers)
-    
+
     # voice ID 전체조회
     url_voice = "https://api.heygen.com/v1/voice.list"
     voice_list = requests.get(url_voice, headers=hey_headers)
@@ -172,7 +178,8 @@ def videoSource():
             voice_id = voice["voice_id"]
             break
 
-    return jsonify({"voice_id" : voice_id})
+    return jsonify({"voice_id": voice_id})
+
 
 def videoMaker():
     text = request.json.get('answer')
@@ -201,7 +208,7 @@ def videoMaker():
     }
     # talking photo ID를 선택해 기본 영상(Silent Video) 생성
     url_silent = "https://api.heygen.com/v2/video/generate"
-    payload_silent  = {
+    payload_silent = {
         "test": False,
         "caption": False,
         "dimension": {
@@ -213,9 +220,9 @@ def videoMaker():
                 "character": {
                     "type": "talking_photo",
                     "talking_photo_id": talking_photo_id
-                }, 
-                "voice":{
-                    "type":"audio",
+                },
+                "voice": {
+                    "type": "audio",
                     "audio_url": "https://resource.heygen.com/silent.mp3"
                 }
             }
@@ -230,12 +237,11 @@ def videoMaker():
 
     response_avatar = requests.post(url_avatar, json=payload_avatar, headers=headers)
     response_silent = requests.post(url_silent, json=payload_silent, headers=headers)
-    
+
     return jsonify({"pro_video": response_avatar.text, "common_video": response_silent.text})
 
 
 def make_tts(ele_voice_id, text, user_no, model_no, conversation_no):
-
     stability, similarity_boost = 0.5, 0.75
     # voice_id = request.json.get('voiceId')
     # text = request.json.get('answer')
@@ -263,7 +269,6 @@ def make_tts(ele_voice_id, text, user_no, model_no, conversation_no):
         print(f"Error! HTTP Status Code: {response.status_code}")
         print(response.text)
         exit()
-
 
     output_folder = os.path.join("samples", f"{user_no}_{model_no}_{conversation_no}")
     os.makedirs(output_folder, exist_ok=True)
@@ -300,49 +305,16 @@ def make_tts(ele_voice_id, text, user_no, model_no, conversation_no):
         return jsonify({'error': 'Failed to upload file'}), 500
 
 
-def gpt_answer():
-    # 파읽 읽어오는 코드
-    # file = open("sample.txt", "r", encoding="utf-8")
-    # data = file.read()
-    # print(data)
-    # file.close()
-
+def gpt_answer(model_name, conversation_text, input_text):
     first_setting = """
-    난 이제 엄마랑 대화를 할 예정이야. 우리 엄마는 돌아가셨어
-    평소 엄마와 나의 대화를 보고 넌 나의 엄마가 되어 내 말에 답변을 해주면 돼
-    일단 평소 나와 엄마의 대화야
-    """
-
-    practice = """
-    나: 엄마, 주말에 친구들이랑 여행 가려고 하는데 돈 좀 빌려줄 수 있어?
-    엄마:  또 돈이 필요하구나? 얼마나 필요해?
-    나: 10만 원만 빌려줘. 꼭 다음 주에 갚을게.
-    엄마: 그래, 꼭 갚아야 해. 엄마한테 빌리는 돈도 돈이니까. 알겠지?
-    나: 알아, 엄마. 고마워.
-    엄마:  엄마한테는 굳이 감사하진 않아도 돼. 그런데 주말에 어디로 가려고 해?
-    나: 부산에 가려고 해. 바다도 보고 해운대도 가볼까 해.
-    엄마: 아, 부산 좋지. 바다도 넓고 공기도 좋아. 근데 안전하게 다녀와야 해. 알겠지?
-    나: 네, 걱정하지 마. 다들 조심히 다닐게.
-    엄마: 그래. 내 딸이 이렇게 커서 친구들이랑 여행도 가네. 시간 참 빠르다.
-    나: 엄마도 가끔은 나가서 쉬면 좋을 것 같아.
-    엄마:  엄마는 집에서도 잘 쉰다니까. 그냥 너희들이 건강하고 행복하면 그게 제일이야.
-    나: 그래도 엄마, 가끔은 외출해서 좋은 곳에 가서 휴식을 취하는 것도 필요하다고 생각해.
-    엄마: 아이고, 내 딸아. 너희들이 잘 지내고 행복하면 그게 엄마한테는 최고의 휴식이야. 그래도 말하긴, 요즘 좀 몸이 피곤하긴 해.
-    나: 그럼 주말에 스파나 마사지샵에 가서 푹 쉬면 어때?
-    엄마: 그런 곳은 처음 가봐서 좀 민망하긴 한데... 생각해볼게.
-    나: 엄마, 그런 거에 대해 너무 걱정하지 마. 오히려 좋은 경험이 될 거야.
-    엄마: 아이고, 너희들이 이렇게 걱정해주니 감사하다. 그래, 한번 시도해볼게.
-    나: 그래! 엄마가 편안하게 쉬는 모습을 보고 싶어.
-    엄마: 아, 고마워. 엄마도 너희들이 건강하고 행복하게 지내는 모습을 보면 가장 행복해.
-    """
+    너는 {0} 인척 나랑 대화를 해야해. {0}은 죽었어.
+    평소 {0}와 나의 대화가 있어.
+    """.format(model_name)
 
     last_setting = """
-    여기까지가 평소 나와 엄마의 대화야
-    이 대화에서 엄마 말투만 참고하고 다음 나오는 나의 말에 대한 대답을 한 문장으로 생성해줘 
-    """
-    input_text = request.json.get('question')
-    final_conversations = first_setting + practice + last_setting
-    practice += "나 :" + input_text + "\n"
+    여기까지가 평소 나와 {0}의 대화야, 무조건 반말로,
+    이 대화에서 {0}의 말투를 따라해서, 내 말에 {0}처럼 대답해줘
+    """.format(model_name)
 
     response = requests.post(
         "https://api.openai.com/v1/chat/completions",
@@ -353,11 +325,8 @@ def gpt_answer():
                 # system = 사용자가 입력하는 인물, 성격, 특징
                 {
                     "role": "system",
-                    "content": "너는 나의 엄마야. 나의 말에 엄마처럼 대답만 하면 돼",
+                    "content": first_setting + conversation_text + last_setting
                 },
-                # assistant = 이전대화 기록함
-                {"role": "assistant", "content": final_conversations},
-                # user = 내가 보내는 message
                 {"role": "user", "content": input_text},
             ],
         },
@@ -365,10 +334,9 @@ def gpt_answer():
     chat_response = (
         response.json().get("choices", [{}])[0].get("message", {}).get("content", "")
     )
-    if "엄마:" in chat_response:
+    if f"{model_name}:" in chat_response:
         chat_response = chat_response.split(":")[-1]
     print(chat_response)
-    practice += "엄마 :" + chat_response + "\n"
 
     return jsonify({"msg": chat_response})
 
@@ -425,21 +393,25 @@ def upload_files():
             folder_key = f"ASSET/{userNo}/{modelNo}/"
             temp_blob_path = secure_filename(file.filename)  # 안전한 파일 이름 사용
             file.save(temp_blob_path)
+
             def convert_audio_to_mp3(source_path, target_path):
                 audio = AudioSegment.from_file(source_path)
                 # 필요한 경우, 샘플 레이트, 채널 등을 조정
                 audio.export(target_path, format="mp3")
+
             def convert_video_to_mp4(source_path, target_path):
                 if source_path == target_path:
-                    target_path = 'tmp'+target_path
-                    ffmpeg.input(source_path).output(target_path, vcodec='libx264', acodec='aac').run(overwrite_output=True)
-            if fileType == 'audio' :
-                new_path = f'{file.filename.split(".")[0]}'+".mp3"
+                    target_path = 'tmp' + target_path
+                    ffmpeg.input(source_path).output(target_path, vcodec='libx264', acodec='aac').run(
+                        overwrite_output=True)
+
+            if fileType == 'audio':
+                new_path = f'{file.filename.split(".")[0]}' + ".mp3"
                 convert_audio_to_mp3(temp_blob_path, new_path)
             elif fileType == 'video':
                 new_path = f'{file.filename.split(".")[0]}.mp4'
                 convert_video_to_mp4(temp_blob_path, new_path)
-            else :
+            else:
                 new_path = file.filename
             try:
                 # 저장된 pcm 파일을 S3에 업로드
@@ -481,6 +453,7 @@ def make_voice(model_name, gender, audio_files):
 
     return json_response["voice_id"]
 
+
 @app.route('api/v1/conversation/makevoice', methods=['POST'])
 def make_voice_model():
     model_name = request.json.get('modelName')
@@ -499,8 +472,11 @@ def make_voice_model():
 
 @app.route('/api/v1/conversation/video', methods=['POST'])
 def make_conversation_video():
-    answer = gpt_answer()
-    makeVideo = videoMaker(answer,)
+    input_text = request.json.get('question')
+    model_name = request.get_json("modelName")
+    conversation_text = request.get_json("conversationText")
+    answer = gpt_answer(model_name, conversation_text, input_text)
+    makeVideo = videoMaker(answer, )
 
     return makeVideo
 
@@ -508,7 +484,11 @@ def make_conversation_video():
 @app.route('/api/v1/conversation/voice', methods=['POST'])
 def make_conversation_voice():
     try:
-        answer = gpt_answer()
+
+        input_text = request.json.get('question')
+        model_name = request.get_json("modelName")
+        conversation_text = request.get_json("conversationText")
+        answer = gpt_answer(model_name, conversation_text, input_text)
         ele_voice_id = request.json.get('eleVoiceId')
         user_no = request.json.get('userNo')
         model_no = request.json.get('modelNo')
