@@ -34,8 +34,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ModelBoardService {
 
-    private final String FLASK_API_UPROAD = "http://localhost:5000/api/v1/upload/files";
-    private final String FLASK_API_AVATAR = "http://localhost:5000/api/v1/createAvatarID";
+    private final String FLASK_API_UPROAD = "http://k9a706.p.ssafy.io:5000/api/v1/upload/files";
+    private final String FLASK_API_AVATAR = "http://k9a706.p.ssafy.io:5000/api/v1/createAvatarID";
     private final FlaskService flaskService;
     private final ModelBoardRepository modelBoardRepository;
     private final UserRepository userRepository;
@@ -193,7 +193,7 @@ public class ModelBoardService {
         }
 
         HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
-        String voiceApiUrl = "http://localhost:5000/api/v1/conversation/makevoice";
+        String voiceApiUrl = "http://k9a706.p.ssafy.io:5000/api/v1/conversation/makevoice";
 
         ResponseEntity<Map> response = restTemplate.postForEntity(voiceApiUrl, requestEntity, Map.class);
 

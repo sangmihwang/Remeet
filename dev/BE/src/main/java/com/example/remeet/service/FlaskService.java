@@ -18,7 +18,7 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class FlaskService {
     private RestTemplate restTemplate;
-    private final String FLASK_API_URL = "http://localhost:5000/api/v1/";
+    private final String FLASK_API_URL = "http://k9a706.p.ssafy.io:5000/api/v1/";
 
     @Autowired
     public FlaskService(RestTemplate restTemplate) {
@@ -57,7 +57,6 @@ public class FlaskService {
                 return file.getOriginalFilename();
             }
         });
-
         HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<>(body, headers);
 
         // POST 요청 보내기
@@ -65,7 +64,7 @@ public class FlaskService {
         if (type == "avatar"){
             newURL = FLASK_API_URL + "createAvatarID";
         } else if (type == "stt") {
-            newURL = FLASK_API_URL + "stt";
+            newURL = FLASK_API_URL + "transcribe";
         } else if (type == "profile") {
             newURL = FLASK_API_URL + "signup";
         }

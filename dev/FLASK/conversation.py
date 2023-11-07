@@ -499,6 +499,33 @@ def make_conversation_voice():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+# 회원가입 image 저장 API
+@app.route('/api/v1/signup', methods=['POST'])
+def signup_image():
+    app.logger.info("SIGNUP_IMAGE API ATTEMPT")
+    if 'file' not in request.files:
+        return jsonify(error='No file part'), 400
+
+    file = request.files.get('file')
+    if file.filename == '':
+        return 'nofile'
+    if file:
+        folder_key = f"PROFILE/"
+        new_path = file.filename
+        try:
+            # 저장된 pcm 파일을 S3에 업로드
+            with open(new_path, "rb") as file:
+                s3_client.upload_fileobj(file, BUCKET_NAME, folder_key + new_path)
+            os.remove(new_path)  # 임시 파일 삭제
+            s3_url = f'https://remeet.s3.ap-northeast-2.amazonaws.com/{folder_key + new_path}'
+            return s3_url
+        except Exception as e:
+            return 'nofile'
+        # 각 파일 처리에 대한 응답을 저장
+    else:
+        return 'nofile'
+
+
 # HEYGEN API 관련 : 65번째줄부터 시작 
 # GPT API 관련 : 193번째줄부터 시작 
 # ELEVENLABS API 관련 : 232번째줄부터 시작 
@@ -508,7 +535,8 @@ def make_conversation_voice():
 # AVATAR 생성 API : 433번째줄부터 시작
 # 기본 영상 생성 API : 454번째줄부터 시작
 # video 기반 대화 생성 API : 463번째줄부터 시작
-# voice 기반 대화 생성 API : 479번째줄부터 시작
+# voice 기반 대화 생성 API : 481번째줄부터 시작
+# 회원가입 image 저장 API : 502번째줄부터 시작
 
 if __name__ == '__main__':
     app.run(port=5000, debug=True)
