@@ -64,8 +64,10 @@ public class FlaskService {
         String newURL = " ";
         if (type == "avatar"){
             newURL = FLASK_API_URL + "createAvatarID";
-        } else {
+        } else if (type == "stt") {
             newURL = FLASK_API_URL + "stt";
+        } else if (type == "profile") {
+            newURL = FLASK_API_URL + "signup";
         }
 
         ResponseEntity<String> responseEntity = restTemplate.exchange(
