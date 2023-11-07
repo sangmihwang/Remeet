@@ -498,7 +498,7 @@ def make_conversation_voice():
 def signup_image():
     app.logger.info("SIGNUP_IMAGE API ATTEMPT")
     if 'file' not in request.files:
-        return jsonify(error='No file part'), 400
+        return 'No file part'
 
     file = request.files.get('file')
 
@@ -516,7 +516,7 @@ def signup_image():
             s3_url = f'https://remeet.s3.ap-northeast-2.amazonaws.com/{folder_key + new_path}'
             return s3_url
         except Exception as e:
-            return e
+            return 'error'
         # 각 파일 처리에 대한 응답을 저장
     else:
         return 'nofile'
