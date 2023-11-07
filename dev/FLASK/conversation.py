@@ -554,8 +554,8 @@ def make_common_video():
 def make_conversation_voice():
     try:
         input_text = request.json.get("question")
-        model_name = request.get_json("modelName")
-        conversation_text = request.get_json("conversationText")
+        model_name = request.json.get("modelName")
+        conversation_text = request.json.get("conversationText")
         answer = gpt_answer(model_name, conversation_text, input_text)
         ele_voice_id = request.json.get("eleVoiceId")
         user_no = request.json.get("userNo")

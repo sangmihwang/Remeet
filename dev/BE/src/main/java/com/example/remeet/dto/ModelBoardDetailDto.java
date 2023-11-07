@@ -14,7 +14,8 @@ public class ModelBoardDetailDto {
     private String modelName;
     private String imagePath;
     private String avatarId;
-    private String voiceId;
+    private String heyVoiceId;
+    private String eleVoiceId;
     private char gender;
     private String commonVideoPath;
     private String conversationText;
