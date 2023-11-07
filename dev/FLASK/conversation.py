@@ -501,10 +501,12 @@ def signup_image():
         return jsonify(error='No file part'), 400
 
     file = request.files.get('file')
-    if file.filename == '':
-        return 'nofile'
+
     if file:
         folder_key = f"PROFILE/"
+        temp_blob_path = secure_filename(file.filename)  # 안전한 파일 이름 사용
+        file.save(temp_blob_path)
+            
         new_path = file.filename
         try:
             # 저장된 pcm 파일을 S3에 업로드
@@ -514,7 +516,7 @@ def signup_image():
             s3_url = f'https://remeet.s3.ap-northeast-2.amazonaws.com/{folder_key + new_path}'
             return s3_url
         except Exception as e:
-            return 'nofile'
+            return e
         # 각 파일 처리에 대한 응답을 저장
     else:
         return 'nofile'
