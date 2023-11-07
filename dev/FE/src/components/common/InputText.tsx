@@ -29,7 +29,7 @@ const Input = styled.input`
   }
 `;
 
-const DeleteButton = styled.button`
+const DeleteButton = styled.div`
   background: url('/icon/delete_icon.svg');
   width: 1.2rem;
   height: 1.2rem;

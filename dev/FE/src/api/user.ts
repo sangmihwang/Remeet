@@ -1,6 +1,6 @@
 import { AxiosResponse } from 'axios';
 import { Login, SignUpForm, UserResponse } from '@/types/user';
-import { api, authApi } from '.';
+import { api, authApi, formApi } from '.';
 
 const userLogin = async (
   loginData: Login,
@@ -9,7 +9,7 @@ const userLogin = async (
 };
 
 const userSignUp = async (signUpForm: SignUpForm): Promise<AxiosResponse> => {
-  return api.post('user/signup', signUpForm);
+  return formApi.post('user/signup', signUpForm);
 };
 
 const getCheckUserId = async (userId: string) => {
@@ -20,4 +20,8 @@ const getUserInfo = async () => {
   return authApi.get('user');
 };
 
-export { userLogin, userSignUp, getCheckUserId, getUserInfo };
+const deleteUser = async () => {
+  return authApi.delete('user');
+};
+
+export { userLogin, userSignUp, getCheckUserId, getUserInfo, deleteUser };
