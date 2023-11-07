@@ -533,4 +533,4 @@ def signup_image():
 # 회원가입 image 저장 API : 502번째줄부터 시작
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=False)
