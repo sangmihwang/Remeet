@@ -28,7 +28,6 @@ mpmath==1.3.0
 munkres==1.1.4
 networkx==3.2.1
 numba==0.58.1
-numpy==1.26.1
 packaging==23.2
 panphon==0.20.0
 pefile==2023.2.7
@@ -57,5 +56,4 @@ torch==2.1.0
 typing_extensions==4.8.0
 unicodecsv==0.14.1
 urllib3==2.0.7
-wavio==0.0.8
 Werkzeug==3.0.1

@@ -1,24 +1,18 @@
 from __future__ import print_function
-import datetime
 import tempfile
 import speech_recognition as sr
 from flask import Flask, jsonify, request
 from pydub import AudioSegment
 import requests
-import time
 import boto3
-import uuid
 import wave
-import wavio
 import os
 from pydub import AudioSegment
 from flask import jsonify, request
 from werkzeug.utils import secure_filename
 import ffmpeg
 import json
-import numpy as np
 from flask_cors import CORS
-import logging
 
 app = Flask(__name__)
 # .env 파일에서 환경 변수를 로드합니다.
