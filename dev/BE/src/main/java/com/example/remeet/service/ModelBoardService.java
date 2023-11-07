@@ -11,6 +11,7 @@ import com.example.remeet.repository.UploadedVoiceRepository;
 import com.example.remeet.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -20,6 +21,7 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -144,6 +146,70 @@ public class ModelBoardService {
     }
 
     @Transactional(readOnly = true)
+    public String createVoiceModel(Integer modelNo) throws IOException {
+        ModelBoardEntity modelEntity = modelBoardRepository.findById(modelNo)
+                .orElseThrow(() -> new IllegalArgumentException("모델 번호에 해당하는 모델이 존재하지 않습니다."));
+
+        List<UploadedVoiceEntity> uploadedVoices = uploadedVoiceRepository.findByModelNo(modelEntity);
+
+        // 음성 파일이 없는 경우 예외 처리
+        if (uploadedVoices.isEmpty()) {
+            throw new IllegalArgumentException("음성 파일이 존재하지 않습니다.");
+        }
+
+        // ModelBoardEntity 가져오기 (모델 이름과 성별 정보에 사용)
+        ModelBoardEntity modelBoardEntity = modelBoardRepository.findById(modelNo)
+                .orElseThrow(() -> new IllegalArgumentException("모델이 존재하지 않습니다."));
+
+        // Flask 서버로 전송할 파일 리스트 생성
+        List<FileSystemResource> fileResources = uploadedVoices.stream()
+                .map(voice -> new FileSystemResource(new File(voice.getVoicePath())))
+                .collect(Collectors.toList());
+
+        String voiceId = makeVoice(modelBoardEntity, fileResources);
+
+        if (voiceId != null && !voiceId.isEmpty()) {
+            // Update the ModelBoardEntity with the new voice ID
+            modelEntity.setEleVoiceId(voiceId); // Assuming 'eleVoiceId' is the correct field to update
+            modelBoardRepository.save(modelEntity);
+        }
+
+        return voiceId;
+    }
+
+    // 기존의 makeVoice 메소드를 수정하여 FileSystemResource 리스트를 받도록 함
+    public String makeVoice(ModelBoardEntity modelBoardEntity, List<FileSystemResource> audioFiles) throws IOException {
+        RestTemplate restTemplate = new RestTemplate();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+
+        MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+        body.add("modelName", modelBoardEntity.getModelName());
+        body.add("gender", modelBoardEntity.getGender());
+
+        for (FileSystemResource fileResource : audioFiles) {
+            body.add("files", fileResource);
+        }
+
+        HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
+        String voiceApiUrl = "http://localhost:5000/api/v1/conversation/makevoice";
+
+        ResponseEntity<Map> response = restTemplate.postForEntity(voiceApiUrl, requestEntity, Map.class);
+
+        if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
+            Map responseBody = response.getBody();
+            if (responseBody.containsKey("voice_id")) {
+                return responseBody.get("voice_id").toString();
+            } else {
+                throw new RuntimeException("Voice ID not found in the response");
+            }
+        } else {
+            throw new RuntimeException("Failed to create voice model: " + response.getStatusCode());
+        }
+    }
+
+    @Transactional(readOnly = true)
     public Optional<ModelBoardDetailDto> getModelBoardDetailById(Integer modelNo) {
         return modelBoardRepository.findById(modelNo)
                 .map(entity -> new ModelBoardDetailDto(
@@ -151,7 +217,8 @@ public class ModelBoardService {
                         entity.getModelName(),
                         entity.getImagePath(),
                         entity.getAvatarId(),
-                        entity.getVoiceId(),
+                        entity.getEleVoiceId(),
+                        entity.getHeyVoiceId(),
                         entity.getGender(),
                         entity.getCommonVideoPath(),
                         entity.getConversationText(),
