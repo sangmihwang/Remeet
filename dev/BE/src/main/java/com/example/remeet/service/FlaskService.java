@@ -18,7 +18,7 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class FlaskService {
     private RestTemplate restTemplate;
-    private final String FLASK_API_URL = "http://k9a706.p.ssafy.io:5000/api/v1/";
+    private final String FLASK_API_URL = "http://localhost:5000/api/v1/";
 
     @Autowired
     public FlaskService(RestTemplate restTemplate) {

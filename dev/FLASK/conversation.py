@@ -505,9 +505,18 @@ def signup_image():
     if file:
         folder_key = f"PROFILE/"
         temp_blob_path = secure_filename(file.filename)  # 안전한 파일 이름 사용
+        type = file.filename.split('.')[-1]
         file.save(temp_blob_path)
-            
-        new_path = file.filename
+        existing_files = s3_client.list_objects_v2(Bucket=BUCKET_NAME, Prefix=folder_key)
+        existing_file_keys = [obj['Key'] for obj in existing_files.get('Contents', []) if obj['Key'].endswith(type)]
+
+        # 새 파일 이름 생성
+        existing_indices = [int(key.split('/')[-1].split('.')[0]) for key in existing_file_keys if
+                            key.split('/')[-1].split('.')[0].isdigit()]
+        next_index = 1 if not existing_indices else max(existing_indices) + 1
+
+        new_path = str(next_index)+'.' +type
+        file.save(new_path)
         try:
             # 저장된 pcm 파일을 S3에 업로드
             with open(new_path, "rb") as file:
