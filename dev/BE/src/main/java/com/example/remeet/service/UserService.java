@@ -12,7 +12,10 @@ import com.example.remeet.util.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.mindrot.jbcrypt.BCrypt;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.Optional;
 
 @Service
@@ -21,18 +24,26 @@ public class UserService {
     private final UserRepository userRepository;
     private final RedisRepository redisRepository;
     private final JwtTokenProvider jwtTokenProvider;
+    private final FlaskService flaskService;
 
     public boolean isUserIdExist(String userId) {
         return userRepository.findByUserId(userId).isPresent();
     }
 
-    public void signUp(UserDataDto userData) {
+    public void signUp(String userId, String password, String userName, MultipartFile imagePath, String userEmail) throws IOException {
+        String imageURL = " ";
+        if (imagePath != null && !imagePath.isEmpty()) {
+            imageURL = flaskService.callFlaskByMultipartFile(imagePath, "profile");
+        } else {
+            imageURL = "common";
+        }
+
         UserEntity newMember = UserEntity.builder()
-                .userId(userData.getUserId())
-                .userName(userData.getUserName())
-                .password(BCrypt.hashpw(userData.getPassword(), BCrypt.gensalt()))
-                .profileImg(userData.getImagePath())
-                .userEmail(userData.getUserEmail())
+                .userId(userId)
+                .userName(userName)
+                .password(BCrypt.hashpw(password, BCrypt.gensalt()))
+                .profileImg(imageURL)
+                .userEmail(userEmail)
                 .build();
         userRepository.save(newMember);
     }
