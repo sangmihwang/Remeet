@@ -2,21 +2,12 @@ server:
   servlet:
     context-path: /api/v1
   port: 8443
-<<<<<<< HEAD
-//  ssl:
-//    enabled: true
-//    key-store: file:/etc/letsencrypt/keystore.p12
-//    key-store-password: 1q2w3e4r1q2w3e4r
-//    key-alias: yourkeyalias
-//    key-store-type: PKCS12
-=======
 #  ssl:
 #    enabled: true
 #    key-store: file:/etc/letsencrypt/keystore.p12
 #    key-store-password: 1q2w3e4r1q2w3e4r
 #    key-alias: yourkeyalias
 #    key-store-type: PKCS12
->>>>>>> 753ef7c445056a09e8b6fbc6c2f0e9377160e025
 
 spring:
   servlet:
@@ -33,9 +24,6 @@ spring:
     password: remeetremeet706
     hikari:
       maximum-pool-size: 20
-  #    url: ${DATABASE_URL}
-  #    username: ${DATABASE_ID}
-  #    password: ${DATABASE_PASSWORD}
   jpa:
     database: mysql
     hibernate:

@@ -51,10 +51,6 @@ public class ModelBoardController {
         return ResponseEntity.ok(modelBoardService.getVideoPathsByModelNo(modelNo));
     }
 
-    @GetMapping("/voice/{modelNo}")
-    public ResponseEntity<List<String>> getVoicePathsByModelNo(@PathVariable Integer modelNo) {
-        return ResponseEntity.ok(modelBoardService.getVoicePathsByModelNo(modelNo));
-    }
 
     @PostMapping(consumes = "multipart/form-data")
     public ResponseEntity<ModelBoardDetailDto> createModelBoard(
@@ -95,5 +91,10 @@ public class ModelBoardController {
         }
     }
 
+    @DeleteMapping("{modelNo}")
+    public ResponseEntity getVoicePathsByModelNo(@PathVariable Integer modelNo) {
+        modelBoardService.deleteModelBoard(modelNo);
+        return ResponseEntity.ok().build();
+    }
 
 }
