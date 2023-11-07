@@ -20,4 +20,8 @@ const getUserInfo = async () => {
   return authApi.get('user');
 };
 
-export { userLogin, userSignUp, getCheckUserId, getUserInfo };
+const deleteUser = async () => {
+  return authApi.delete('user');
+};
+
+export { userLogin, userSignUp, getCheckUserId, getUserInfo, deleteUser };
