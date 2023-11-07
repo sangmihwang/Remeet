@@ -143,28 +143,22 @@ def upload_avatar():
     result = resp.json()['data']['talking_photo_id']
     return result
 
-@app.route('/api/v1/videosource', methods=['GET'])
-def videoSource():
-    voice_name = request.json.get('modelName')
+def getVoiceId(voice_name):
     x_api_key = os.getenv("x-api-key")
     hey_headers = {
         "accept": "application/json",
         "x-api-key": x_api_key
     }
-    
     # talking photo ID 전체조회
-    url_avatar = "https://api.heygen.com/v1/talking_photo.list"
-    avatar_list = requests.get(url_avatar, headers=hey_headers)
-    
+    # url_avatar = "https://api.heygen.com/v1/talking_photo.list"
+    # avatar_list = requests.get(url_avatar, headers=hey_headers)
     # voice ID 전체조회
     url_voice = "https://api.heygen.com/v1/voice.list"
     voice_list = requests.get(url_voice, headers=hey_headers)
     voice_json = json.loads(voice_list.text)
 
     # voice name으로 voice ID 조회
-
     voice_id = 'none'
-    print(voice_name)
     voice_data = voice_json.get('data')
     for voice in voice_data['list']:
         if voice["display_name"] == voice_name:
@@ -173,11 +167,8 @@ def videoSource():
 
     return jsonify({"voice_id" : voice_id})
 
-def videoMaker():
-    text = request.json.get('answer')
+def videoMaker(text, voice_id, avatar_id):
     x_api_key = os.getenv("x-api-key")
-    voice_id = request.json.get('voiceId')
-    talking_photo_id = request.json.get('avatarId')
 
     # voice ID 와 talking photo ID를 선택해 input text로 영상 생성
     url_avatar = "https://api.heygen.com/v1/video.generate"
@@ -194,10 +185,23 @@ def videoMaker():
                 "scale": 1,
                 "voice_id": voice_id,
                 "talking_photo_style": "normal",
-                "talking_photo_id": talking_photo_id
+                "talking_photo_id": avatar_id
             }
         ]
     }
+    headers = {
+        "accept": "application/json",
+        "content-type": "application/json",
+        "x-api-key": x_api_key
+    }
+
+    response_avatar = requests.post(url_avatar, json=payload_avatar, headers=headers)
+    return jsonify({"videoPath": response_avatar.text["data"]["video_id"]})
+
+
+def commonvideoMaker(avatar_id):
+    x_api_key = os.getenv("x-api-key")
+
     # talking photo ID를 선택해 기본 영상(Silent Video) 생성
     url_silent = "https://api.heygen.com/v2/video/generate"
     payload_silent  = {
@@ -211,7 +215,7 @@ def videoMaker():
             {
                 "character": {
                     "type": "talking_photo",
-                    "talking_photo_id": talking_photo_id
+                    "talking_photo_id": avatar_id
                 }, 
                 "voice":{
                     "type":"audio",
@@ -227,11 +231,19 @@ def videoMaker():
         "x-api-key": x_api_key
     }
 
-    response_avatar = requests.post(url_avatar, json=payload_avatar, headers=headers)
     response_silent = requests.post(url_silent, json=payload_silent, headers=headers)
-    
-    return jsonify({"pro_video": response_avatar.text, "common_video": response_silent.text})
+    return jsonify({"commonVideoPath": response_silent.text["data"]["video_id"]})
 
+def getVideoUrl(video_id):
+    url = f"https://api.heygen.com/v1/video_status.get?video_id={video_id}"
+
+    headers = {
+        "accept": "application/json",
+        "x-api-key": "Y2JhNmI1ZjQ3MjEyNDJkNGFmOTdlZDRiNzYxYmJjZjgtMTY5NzAxMDQ3Mw=="
+    }
+
+    response = requests.get(url, headers=headers)
+    return response.text["data"]["video_url"]
 
 def make_tts():
     ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY")
@@ -481,10 +493,23 @@ def upload_files():
 @app.route('/api/v1/conversation/video', methods=['POST'])
 def make_conversation_video():
     answer = gpt_answer()
-    makeVideo = videoMaker(answer,)
 
-    return makeVideo
+    voice_name = request.json.get('modelName')
+    voice = getVoiceId(voice_name)
 
+    # 대화상대의 Heygen Talking Photo ID
+    avatar = request.json.get('avatar_id')
+
+    videoPath = videoMaker(answer, voice, avatar)
+    return getVideoUrl(videoPath)
+
+@app.route('/api/v1/conversation/commonvideo', methods=['POST'])
+def make_common_video():
+
+    # 대화상대의 Heygen Talking Photo ID
+    avatar = request.json.get('avatar_id')
+    commonVideoPath = commonvideoMaker(avatar)
+    return getVideoUrl(commonVideoPath)
 
 @app.route('/api/v1/conversation/voice', methods=['POST'])
 def make_conversation_voice():
@@ -492,7 +517,6 @@ def make_conversation_voice():
     makeVoice = make_tts(answer,)
 
     return makeVoice
-
 
 if __name__ == '__main__':
     app.run(port=5000, debug=True)
