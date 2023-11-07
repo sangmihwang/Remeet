@@ -26,30 +26,14 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 REGION_NAME = "ap-northeast-2"
 BUCKET_NAME = "remeet"
-ALLOWED_EXTENSIONS = {
-    "txt",
-    "pdf",
-    "png",
-    "jpg",
-    "jpeg",
-    "gif",
-    "mp4",
-    "wav",
-    "mp3",
-    "mp4",
-    "avi",
-    "mov",
-    "flv",
-    "wmv",
-}
+ALLOWED_EXTENSIONS = { "txt", "pdf", "png", "jpg", "jpeg","gif","mp4", "wav", "mp3", "mp4", "avi","mov","flv","wmv",}
 
 # S3 클라이언트 설정
 s3_client = boto3.client(
     "s3",
     aws_access_key_id=AWS_ACCESS_KEY_ID,
     aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
-    region_name=REGION_NAME,
-)
+    region_name=REGION_NAME,)
 
 
 def allowed_file(filename):
