@@ -1,79 +1,112 @@
 import styled from 'styled-components';
-// import { useRef } from 'react';
-// import videojs from 'video.js';
+import { useRef, useState } from 'react';
+import videojs from 'video.js';
+import { useNavigate } from 'react-router-dom';
 import PageHeader from '@/components/navbar/PageHeader';
 // import BottomNavigation from '@/components/navbar/BottomNavigation';
-import { SmallButton } from '@/components/common';
-// import Video from '@/components/talk/Video';
+import { SmallButton, TalkBubble } from '@/components/common';
 import AudioRecorder from '@/components/talk/AudioRecorder';
+import Video from '@/components/talk/Video';
+import Modal from '@/components/common/Modal';
+
+const Wrapper = styled.div`
+  background-color: var(--primary-color);
+  padding-top: 1vh;
+  height: 100vh;
+`;
 
 const TitleWrapper = styled.div`
   width: 100%;
-  height: 25rem;
-  background-color: var(--primary-color);
+  height: 35vh;
 `;
 
-// const VideoWrapper = styled.div`
-//   margin: 0 auto;
-//   width: 86vw;
-//   height: 12.5rem;
-//   background-color: #fff;
-// `;
+const VideoWrapper = styled.div`
+  margin: 0 auto;
+  width: 86vw;
+  height: 12.5rem;
+  background-color: #fff;
+`;
 
 const ContentWrpper = styled.div`
   width: 100%;
+  height: 65vh;
+  background-color: #fff;
 `;
 
 const TalkPage = () => {
+  const navigate = useNavigate();
+  const [isTalkHistory, setIsTalkHistory] = useState<boolean>(false);
+
   const headerContent = {
     left: '',
     title: '할머니',
     right: '',
   };
+  const [videoSrc, setVideoSrc] = useState<string | null>(null);
 
-  // const playerRef = useRef(null);
+  const playerRef = useRef(null);
 
-  // const videoJsOptions = {
-  //   autoplay: true,
-  //   controls: true,
-  //   responsive: true,
-  //   fluid: true,
-  //   sources: [
-  //     {
-  //       src: 'https://files.movio.la/aws_pacific/avatar_tmp/6674ca1e4ec641f89df53733c121c082/9a02021389f74be8b365120c6ce083c9.mp4?Expires=1698907675&Signature=KXcrHsXUvcINsUfC4Mk9johMYZJs7Pg0x2YoC2WFJXGGpVqRzZghP-x8X6Ss7dazKfxWoSfejWqHfawt897O~K6bNQXdt20N8jSpnIxURIs1jctdh9cNilW0W6xdHAFV95Xz0opZPPb5c3GBi3hvIpkrnBhdxVKJNAtWAS2BbHEW706s~BfJcFBBFmECcR~axMX~zxutSLhBiakID-g9twF0~M5YytVXA7~YHk4fD2BnQpM0tmEX~i5ur498oGIYwGvoBESDKb2zUrB-99oPnrlx1MDXrdTFltHcEo0QK6e12QcF34vlw5j~r2redzlW-1P0gu8ddFwuHiXEEKHbzw__&Key-Pair-Id=K49TZTO9GZI6K',
-  //       type: 'video/mp4',
-  //     },
-  //   ],
-  // };
+  const videoJsOptions = {
+    autoplay: true,
+    controls: true,
+    responsive: true,
+    fluid: true,
+    sources: [
+      {
+        src: videoSrc,
+        type: 'video/mp4',
+      },
+    ],
+  };
 
-  // const handlePlayerReady = (player) => {
-  //   playerRef.current = player;
+  const handlePlayerReady = (player: any) => {
+    playerRef.current = player;
 
-  //   // You can handle player events here, for example:
-  //   player.on('waiting', () => {
-  //     videojs.log('player is waiting');
-  //   });
+    // You can handle player events here, for example:
+    player.on('waiting', () => {
+      videojs.log('player is waiting');
+    });
 
-  //   player.on('dispose', () => {
-  //     videojs.log('player will dispose');
-  //   });
-  // };
+    player.on('dispose', () => {
+      videojs.log('player will dispose');
+    });
+  };
+
+  const handleEndConversation = () => {
+    navigate('/board');
+  };
+  const handleCloseTalkHistory = () => {
+    setIsTalkHistory(false);
+  };
 
   return (
-    <div>
+    <Wrapper>
       <TitleWrapper>
         <PageHeader content={headerContent} type={2} />
-        {/* <VideoWrapper>
+        <VideoWrapper>
           <Video options={videoJsOptions} onReady={handlePlayerReady} />
-        </VideoWrapper> */}
+        </VideoWrapper>
       </TitleWrapper>
       <ContentWrpper>
-        <AudioRecorder />
-        <SmallButton type={1} text="대화 내역" />
-        <SmallButton type={2} text="대화 종료" />
+        <AudioRecorder setVideoSrc={setVideoSrc} />
+        <SmallButton
+          type={1}
+          text="대화 내역"
+          onClick={() => setIsTalkHistory(true)}
+        />
+        <SmallButton
+          type={2}
+          onClick={handleEndConversation}
+          text="대화 종료"
+        />
       </ContentWrpper>
+      {isTalkHistory && (
+        <Modal onClose={handleCloseTalkHistory}>
+          <TalkBubble />
+        </Modal>
+      )}
       {/* <BottomNavigation /> */}
-    </div>
+    </Wrapper>
   );
 };
 
