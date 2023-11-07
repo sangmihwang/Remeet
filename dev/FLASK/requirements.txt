@@ -30,8 +30,6 @@ networkx==3.2.1
 numba==0.58.1
 packaging==23.2
 panphon==0.20.0
-pefile==2023.2.7
-py2exe==0.13.0.1
 pycparser==2.21
 pydub==0.25.1
 pyinstaller==6.1.0
