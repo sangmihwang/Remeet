@@ -1,3 +1,5 @@
+import { ImageFile } from './upload';
+
 interface Login {
   userId: string;
   password: string;
@@ -6,7 +8,7 @@ interface Login {
 interface User extends Login {
   userName: string;
   userEmail: string;
-  imagePath?: string;
+  imagePath?: string | ImageFile | null;
 }
 
 interface SignUpForm extends User {

@@ -1,7 +1,10 @@
 import styled from 'styled-components';
+import { useNavigate } from 'react-router-dom';
 import PageHeader from '@/components/navbar/PageHeader';
 import BottomNavigation from '@/components/navbar/BottomNavigation';
-import { Image } from '@/components/common';
+import { Image, LargeButton } from '@/components/common';
+import useAuth from '@/hooks/useAuth';
+import { removeTokens } from '@/utils';
 
 const HeaderBackGround = styled.div`
   top: 0;
@@ -51,11 +54,22 @@ const Content = styled.div`
   font-weight: 600;
 `;
 
+const ButtonWrapper = styled.div`
+  margin: 1rem;
+`;
+
 const ProfilePage = () => {
+  const { userInfo, setUserInfo } = useAuth();
+  const navigate = useNavigate();
   const headerContent = {
     left: 'Back',
     title: 'Profile',
-    right: 'Modify',
+    right: '',
+  };
+  const handleLogout = () => {
+    setUserInfo(null);
+    removeTokens();
+    navigate('/');
   };
   return (
     <div>
@@ -63,14 +77,17 @@ const ProfilePage = () => {
       <TitleWrapper>
         <PageHeader content={headerContent} type={2} />
         <ImageWrapper>
-          <Image src="/dummy/갱얼쥐.jpg" />
+          <Image src={userInfo?.imagePath as string} />
         </ImageWrapper>
       </TitleWrapper>
-      <Title>김승우</Title>
+      <Title>{userInfo?.userName}</Title>
       <ContentWrapper>
         <ContentTitle>이메일</ContentTitle>
         <Content>osabero@naver.com</Content>
       </ContentWrapper>
+      <ButtonWrapper>
+        <LargeButton content="로그아웃" onClick={handleLogout} />
+      </ButtonWrapper>
       <BottomNavigation />
     </div>
   );
