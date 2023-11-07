@@ -34,8 +34,11 @@ public class ModelBoardEntity {
     @Column(name="image_path")
     private String imagePath;
 
-    @Column(name="voice_id")
-    private String voiceId;
+    @Column(name="ele_voice_id")
+    private String eleVoiceId;
+
+    @Column(name="hey_voice_id")
+    private String heyVoiceId;
 
     @Column(name="avatar_id")
     private String avatarId;
