@@ -7,6 +7,7 @@ import com.example.remeet.entity.ModelBoardEntity;
 import com.example.remeet.service.ModelBoardService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -16,6 +17,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 import java.util.List;
 
 @CrossOrigin(value = "*", allowedHeaders = "*")
@@ -80,6 +82,17 @@ public class ModelBoardController {
         
         return ResponseEntity.ok(modelBoardDetailDto);
 
+    }
+
+    @GetMapping("/makevoice/{modelNo}")
+    public ResponseEntity<?> generateEleVoiceId(@PathVariable Integer modelNo) {
+        try {
+            String voiceId = modelBoardService.createVoiceModel(modelNo);
+            return ResponseEntity.ok(Collections.singletonMap("ele_voice_id", voiceId));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Collections.singletonMap("error", "음성 ID 생성 중 오류가 발생했습니다."));
+        }
     }
 
 
