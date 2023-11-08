@@ -21,6 +21,7 @@ public class ModelBoardDetailDto {
     private char gender;
     private String commonVideoPath;
     private List<Map<String, String>> conversationText;
+    private String conversationText2;
     private Integer conversationCount;
     private LocalDateTime latestConversationTime;
 }

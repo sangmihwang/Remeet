@@ -42,16 +42,19 @@ public class ModelBoardController {
     public ResponseEntity<ModelBoardDetailDto> getModelBoardDetail(@PathVariable Integer modelNo){
         log.info("request to /api/v1/model/"+modelNo+" [Method: GET]");
         ModelBoardDetailDto modelBoardDetailDto = modelBoardService.getModelBoardDetailById(modelNo)
-                .orElseThrow(() -> new IllegalArgumentException("모델넘버가 존재하지 않음: " + modelNo));
-
+                .orElseThrow(() ->{
+                            log.info("모델넘버가 존재하지 않음: " + modelNo);
+                            return new IllegalArgumentException("모델넘버가 존재하지 않음: " + modelNo);
+                        }
+                );
         return ResponseEntity.ok(modelBoardDetailDto);
     }
+
     @GetMapping("/video/{modelNo}")
     public ResponseEntity<List<String>> getVideoPathsByModelNo(@PathVariable Integer modelNo) {
         log.info("request to /api/v1/model/video/"+modelNo+" [Method: GET]");
         return ResponseEntity.ok(modelBoardService.getVideoPathsByModelNo(modelNo));
     }
-
 
     @PostMapping(consumes = "multipart/form-data")
     public ResponseEntity<ModelBoardDetailDto> createModelBoard(
@@ -75,11 +78,13 @@ public class ModelBoardController {
         Integer modelNo = modelBoardService.createModelBoard(modelBoardCreateDto, userNo, voiceFiles, videoFiles,imagePath, kakaoName, conversationText);
 
         ModelBoardDetailDto modelBoardDetailDto = modelBoardService.getModelBoardDetailById(modelNo)
-                .orElseThrow(() -> new IllegalArgumentException("생성 후 오류가 있음"));
-
+                .orElseThrow(() ->{
+                        log.info("생성 후 오류가 있음");
+                        return new IllegalArgumentException("생성 후 오류가 있음");
+                        }
+                );
         
         return ResponseEntity.ok(modelBoardDetailDto);
-
     }
 
     @GetMapping("/makevoice/{modelNo}")
@@ -89,6 +94,7 @@ public class ModelBoardController {
             String voiceId = modelBoardService.createVoiceModel(modelNo);
             return ResponseEntity.ok(Collections.singletonMap("ele_voice_id", voiceId));
         } catch (Exception e) {
+            log.info("음성 ID 생성 중 오류가 발생했습니다.");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Collections.singletonMap("error", "음성 ID 생성 중 오류가 발생했습니다."));
         }

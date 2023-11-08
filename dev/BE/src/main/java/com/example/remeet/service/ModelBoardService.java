@@ -10,20 +10,14 @@ import com.example.remeet.repository.UploadedVideoRepository;
 import com.example.remeet.repository.UploadedVoiceRepository;
 import com.example.remeet.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -33,13 +27,12 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class ModelBoardService {
-
-    private final String FLASK_API_UPROAD = "http://k9a706.p.ssafy.io:5000/api/v1/upload/files";
     private final FlaskService flaskService;
     private final ModelBoardRepository modelBoardRepository;
     private final UserRepository userRepository;
     private final UploadedVoiceRepository uploadedVoiceRepository;
     private final UploadedVideoRepository uploadedVideoRepository;
+
     @Transactional(readOnly = true)
     public List<String> getVideoPathsByModelNo(Integer modelNo) {
         ModelBoardEntity modelBoardEntity = modelBoardRepository.findById(modelNo)
@@ -48,48 +41,6 @@ public class ModelBoardService {
         return uploadedVideoRepository.findByModelNo(modelBoardEntity).stream()
                 .map(UploadedVideoEntity::getVideoPath)
                 .collect(Collectors.toList());
-    }
-
-    @Transactional(readOnly = true)
-    public List<String> getVoicePathsByModelNo(Integer modelNo) {
-        ModelBoardEntity modelEntity = modelBoardRepository.findById(modelNo)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 모델입니다"));
-
-        return uploadedVoiceRepository.findByModelNo(modelEntity).stream()
-                .map(UploadedVoiceEntity::getVoicePath)
-                .collect(Collectors.toList());
-    }
-
-    public List<String> uploadFilesToFlask(List<MultipartFile> Files, Integer userNo, Integer modelNo, String type) throws IOException {
-        RestTemplate restTemplate = new RestTemplate();
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.MULTIPART_FORM_DATA);
-
-        MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-
-        for (MultipartFile file : Files) {
-            body.add("files", new ByteArrayResource(file.getBytes()){
-                @Override
-                public String getFilename(){
-                    return file.getOriginalFilename();
-                }
-            });
-        }
-        body.add("userNo", userNo.toString());
-        body.add("modelNo", modelNo.toString());
-        body.add("type", type);
-
-        HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
-        ResponseEntity<FileUploadDto> response = restTemplate.exchange(
-                FLASK_API_UPROAD,
-                HttpMethod.POST,
-                requestEntity,
-                FileUploadDto.class
-        );
-        List<String> FileList = response.getBody().getFileList();
-
-        return FileList;
     }
 
     @Transactional
@@ -111,9 +62,9 @@ public class ModelBoardService {
         modelBoardRepository.save(modelBoardEntity);
 
         Integer modelNo = modelBoardEntity.getModelNo();
-        List<String> uploadedImagePaths = uploadFilesToFlask(imageFiles, userNo, modelNo, "image");
-        List<String> uploadedVoicePaths = uploadFilesToFlask(voiceFiles, userNo, modelNo, "voice");
-        List<String> uploadedVideoPaths = uploadFilesToFlask(videoFiles, userNo, modelNo, "video");
+        List<String> uploadedImagePaths = flaskService.uploadFilesToFlask(imageFiles, userNo, modelNo, "image");
+        List<String> uploadedVoicePaths = flaskService.uploadFilesToFlask(voiceFiles, userNo, modelNo, "voice");
+        List<String> uploadedVideoPaths = flaskService.uploadFilesToFlask(videoFiles, userNo, modelNo, "video");
 
         for (MultipartFile imageFile : imageFiles) {
             for (String imagePath : uploadedImagePaths){
@@ -165,7 +116,7 @@ public class ModelBoardService {
                 .map(voice -> new FileSystemResource(new File(voice.getVoicePath())))
                 .collect(Collectors.toList());
 
-        String voiceId = makeVoice(modelBoardEntity, fileResources);
+        String voiceId = flaskService.makeVoice(modelBoardEntity, fileResources);
 
         if (voiceId != null && !voiceId.isEmpty()) {
             // Update the ModelBoardEntity with the new voice ID
@@ -174,38 +125,6 @@ public class ModelBoardService {
         }
 
         return voiceId;
-    }
-
-    // 기존의 makeVoice 메소드를 수정하여 FileSystemResource 리스트를 받도록 함
-    public String makeVoice(ModelBoardEntity modelBoardEntity, List<FileSystemResource> audioFiles) throws IOException {
-        RestTemplate restTemplate = new RestTemplate();
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.MULTIPART_FORM_DATA);
-
-        MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-        body.add("modelName", modelBoardEntity.getModelName());
-        body.add("gender", modelBoardEntity.getGender());
-
-        for (FileSystemResource fileResource : audioFiles) {
-            body.add("files", fileResource);
-        }
-
-        HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
-        String voiceApiUrl = "http://k9a706.p.ssafy.io:5000/api/v1/conversation/makevoice";
-
-        ResponseEntity<Map> response = restTemplate.postForEntity(voiceApiUrl, requestEntity, Map.class);
-
-        if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
-            Map responseBody = response.getBody();
-            if (responseBody.containsKey("voice_id")) {
-                return responseBody.get("voice_id").toString();
-            } else {
-                throw new RuntimeException("Voice ID not found in the response");
-            }
-        } else {
-            throw new RuntimeException("Failed to create voice model: " + response.getStatusCode());
-        }
     }
 
     @Transactional(readOnly = true)
@@ -221,6 +140,7 @@ public class ModelBoardService {
                         entity.getGender(),
                         entity.getCommonVideoPath(),
                         transformValue(entity.getConversationText()),
+                        entity.getConversationText(),
                         entity.getConversationCount(),
                         entity.getLatestConversationTime()
                 ));
