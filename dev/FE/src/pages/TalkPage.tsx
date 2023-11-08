@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import videojs from 'video.js';
 import { useNavigate } from 'react-router-dom';
 import PageHeader from '@/components/navbar/PageHeader';
@@ -78,6 +78,22 @@ const TalkPage = () => {
   const handleCloseTalkHistory = () => {
     setIsTalkHistory(false);
   };
+
+  useEffect(() => {
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      const message =
+        'You have unsaved changes. Are you sure you want to leave?';
+      event.returnValue = message; // Gecko and Trident
+      return message; // Gecko and WebKit
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    // cleanup 함수에서 이벤트 리스너를 제거합니다.
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, []);
 
   return (
     <Wrapper>

@@ -33,6 +33,14 @@ const Input = styled.input`
   display: none;
 `;
 
+const ImageWrapper = styled.div<{ $imagePath: string }>`
+  width: 6rem;
+  height: 6rem;
+  background-image: url(${(props) => props.$imagePath});
+  background-position: center;
+  background-size: contain;
+`;
+
 const SignUpPage = () => {
   const navigate = useNavigate();
   const [signUpForm, setSignUpForm] = useState<SignUpForm>({
@@ -124,7 +132,7 @@ const SignUpPage = () => {
     }
   };
 
-  const mutation = useMutation<AxiosResponse, Error, SignUpForm>(userSignUp, {
+  const mutation = useMutation<AxiosResponse, Error, FormData>(userSignUp, {
     onSuccess: (res) => {
       console.log(res);
       navigate('/login');
@@ -137,19 +145,28 @@ const SignUpPage = () => {
   const handleSingUpClick = () => {
     if (checkForm.allCheck) {
       const formData = new FormData();
-      // Object.keys(signUpForm).forEach((key) => {
-      //   formData.append(key, signUpForm[key]);
-      // });
-      formData.append(
-        'data',
-        new Blob([JSON.stringify(signUpForm)], { type: 'application/json' }),
+      // signUpForm의 데이터를 formData에 추가합니다.
+      Object.entries(signUpForm).forEach(
+        ([key, value]: [key: string, value: string]) => {
+          if (key !== 'imagePath') {
+            // imagePath는 제외하고 나머지 데이터를 추가합니다.
+            formData.append(key, value);
+          }
+        },
       );
-      if (imageFile) {
+
+      // 이미지 파일이 있다면 formData에 추가합니다.
+      if (imageFile && imageFile.blob) {
         formData.append('imagePath', imageFile.blob);
       }
-      mutation.mutate(signUpForm);
+      Object.entries(signUpForm).forEach(([key, value]) => {
+        console.log(key, value);
+      });
+
+      // mutation에 formData를 넘겨줍니다.
+      mutation.mutate(formData);
     } else {
-      alert('항목을 전부 채워주세요');
+      alert('모든 항목을 채워주세요.');
     }
   };
 
@@ -213,7 +230,8 @@ const SignUpPage = () => {
           onChange={handleFileChange}
         />
       </Label>
-      {imageFile && <img src={imageFile.url} alt={imageFile.blob.name} />}
+
+      {imageFile && <ImageWrapper $imagePath={imageFile.url} />}
 
       <LargeButton onClick={handleSingUpClick} content="회 원 가 입" />
     </>
