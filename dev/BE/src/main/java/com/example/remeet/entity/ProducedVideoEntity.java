@@ -1,6 +1,5 @@
 package com.example.remeet.entity;
 
-import com.sun.istack.NotNull;
 import lombok.*;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.OnDelete;
@@ -8,7 +7,7 @@ import org.hibernate.annotations.OnDeleteAction;
 import org.springframework.data.annotation.CreatedDate;
 
 import javax.persistence.*;
-import java.math.BigInteger;
+import java.time.LocalDateTime;
 
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -24,23 +23,21 @@ public class ProducedVideoEntity {
     @Column(name="pro_video_no")
     private Integer proVideoNo;
 
-    @NotNull
-    @Column(name="pro_video_name")
+    @Column(name="pro_video_name", nullable = false)
     private String proVideoName;
 
-    @NotNull
-    @Column(name="video_path")
+    @Column(name="video_path", nullable = false)
     private String videoPath;
 
     @Column(name="holo_path")
     private String holoPath;
 
     @CreatedDate
-    private BigInteger createdTime;
+    @Column(name="create_time", columnDefinition = "TIMESTAMP")
+    private LocalDateTime createdTime;
 
-    @NotNull
     @ManyToOne
-    @JoinColumn(name="model_no")
+    @JoinColumn(name="model_no", nullable = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
     private ModelBoardEntity modelNo;
 }
