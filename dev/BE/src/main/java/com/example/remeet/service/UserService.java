@@ -1,7 +1,6 @@
 package com.example.remeet.service;
 
 import com.example.remeet.dto.TokenResponseDto;
-import com.example.remeet.dto.UserDataDto;
 import com.example.remeet.dto.UserInfoDto;
 import com.example.remeet.dto.UserLoginDto;
 import com.example.remeet.entity.RefreshTokenEntity;
@@ -12,7 +11,6 @@ import com.example.remeet.util.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.mindrot.jbcrypt.BCrypt;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
