@@ -375,7 +375,7 @@ def upload_files():
                         target_path, vcodec="libx264", acodec="aac"
                     ).run(overwrite_output=True)
 
-            if fileType == "audio":
+            if fileType == "voice":
                 new_path = f'{file.filename.split(".")[0]}' + ".mp3"
                 convert_audio_to_mp3(temp_blob_path, new_path)
             elif fileType == "video":
