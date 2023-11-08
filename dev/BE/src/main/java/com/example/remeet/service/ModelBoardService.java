@@ -35,7 +35,6 @@ import java.util.stream.Collectors;
 public class ModelBoardService {
 
     private final String FLASK_API_UPROAD = "http://k9a706.p.ssafy.io:5000/api/v1/upload/files";
-    private final String FLASK_API_AVATAR = "http://k9a706.p.ssafy.io:5000/api/v1/createAvatarID";
     private final FlaskService flaskService;
     private final ModelBoardRepository modelBoardRepository;
     private final UserRepository userRepository;
@@ -118,7 +117,7 @@ public class ModelBoardService {
 
         for (MultipartFile imageFile : imageFiles) {
             for (String imagePath : uploadedImagePaths){
-                String avatar = flaskService.callFlaskByMultipartFile(imageFile, "avatar");
+                String avatar = flaskService.callFlaskByMultipartFile(imageFile, "avatar").getResult();
                 ModelBoardEntity resetModel = modelBoardRepository.findByModelNo(modelNo).get();
                 resetModel.setImagePath(imagePath);
                 resetModel.setAvatarId(avatar);

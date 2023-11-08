@@ -33,7 +33,7 @@ public class UserService {
     public void signUp(String userId, String password, String userName, MultipartFile imagePath, String userEmail) throws IOException {
         String imageURL = " ";
         if (imagePath != null && !imagePath.isEmpty()) {
-            imageURL = flaskService.callFlaskByMultipartFile(imagePath, "profile");
+            imageURL = flaskService.callFlaskByMultipartFile(imagePath, "profile").getResult();
         } else {
             imageURL = "common";
         }
