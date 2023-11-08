@@ -58,7 +58,7 @@ const Content = styled.div`
   font-weight: 600;
 `;
 
-const ModalTitle = styled.h2`
+const ModalTitle = styled.span`
   font-size: 1.5rem;
 `;
 
@@ -90,16 +90,18 @@ const ProfilePage = () => {
       confirmButtonColor: '#3085d6',
       cancelButtonColor: '#d33',
       confirmButtonText: '회원 탈퇴',
-    }).then((result) => {
-      if (result.isConfirmed) {
-        mutation.mutate();
-        MySwal.fire({
-          title: '탈퇴되었습니다.',
-          text: '',
-          icon: 'success',
-        });
-      }
-    });
+    })
+      .then((result) => {
+        if (result.isConfirmed) {
+          mutation.mutate();
+          MySwal.fire({
+            title: '탈퇴되었습니다.',
+            text: '',
+            icon: 'success',
+          }).catch((err) => console.log(err));
+        }
+      })
+      .catch((err) => console.log(err));
   };
 
   const handleLogout = () => {
@@ -123,7 +125,7 @@ const ProfilePage = () => {
       <Title>{userInfo?.userName}</Title>
       <ContentWrapper>
         <ContentTitle>이메일</ContentTitle>
-        <Content>osabero@naver.com</Content>
+        <Content>{userInfo?.userEmail}</Content>
       </ContentWrapper>
       <ButtonWrapper>
         <LargeButton content="로그아웃" onClick={handleLogout} />
