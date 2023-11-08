@@ -488,13 +488,26 @@ def upload_avatar():
         app.logger.info("CREATE_AVATAR_ID API Response result : ", 400, "- No selected file")
         return jsonify(error="No selected file"), 400
     # files = {'file': (file.filename, file, 'image/jpeg')}
+    temp_blob_path = secure_filename(file.filename)  # 안전한 파일 이름 사용
+    file.save(temp_blob_path)
+    def convert_image_to_jpeg(source_path, target_path):
+        if source_path == target_path:
+            target_path = "tmp_" + os.path.basename(target_path)
+        ffmpeg.input(source_path).output(
+            target_path, format='image2', vcodec='mjpeg'
+        ).run(overwrite_output=True)
 
-    resp = requests.post(
-        "https://upload.heygen.com/v1/talking_photo",
-        data=file.read(),  # 파일의 내용을 읽어서 줘야함
-        headers={"Content-Type": "image/jpeg", "x-api-key": x_api_key},
-    )
-    
+    if allowed_file(file):
+        new_path = file.filename
+    else : 
+        new_path = f'{file.filename.split(".")[0]}.jpeg'
+        convert_image_to_jpeg(temp_blob_path,new_path)
+    with open(new_path, "rb") as file:
+        resp = requests.post(
+            "https://upload.heygen.com/v1/talking_photo",
+            data=file,  # 파일의 내용을 읽어서 줘야함
+            headers={"Content-Type": "image/jpeg", "x-api-key": x_api_key},
+        )
     app.logger.info("CREATE_AVATAR_ID API Response result : ", resp.status_code)
     return jsonify({"result" : resp.json()["data"]["talking_photo_id"]}), 200
 
@@ -594,10 +607,10 @@ def signup_image():
 # STT API : 402번쨰줄부터 시작
 # VOICE MODEL 생성 API :451번쨰줄부터 시작
 # AVATAR 생성 API : 474번째줄부터 시작
-# 기본 영상 생성 API : 500번째줄부터 시작
-# video 기반 대화 생성 API : 511번째줄부터 시작
-# voice 기반 대화 생성 API : 526번째줄부터 시작
-# 회원가입 image 저장 API : 548번째줄부터 시작
+# 기본 영상 생성 API : 513번째줄부터 시작
+# video 기반 대화 생성 API : 524번째줄부터 시작
+# voice 기반 대화 생성 API : 539번째줄부터 시작
+# 회원가입 image 저장 API : 561번째줄부터 시작
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=False)
