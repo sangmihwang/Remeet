@@ -6,13 +6,13 @@ const PageHeaderWrapper = styled.div`
   width: 86vw;
   height: 2.25rem;
   position: relative;
+  padding: 1.5rem 0 1rem 0;
 `;
 
 const Title = styled.span<{ $inputType: number }>`
   font-size: 1.5rem;
   font-weight: 700;
   position: absolute;
-  bottom: 0;
   left: 50%;
   color: ${(props) => {
     return props.$inputType === 1 ? '#000' : '#fff';
@@ -31,7 +31,8 @@ const SideBtn = styled.button<{ $inputType: number }>`
     return props.$inputType === 1 ? 'var(--primary-color)' : '#fff';
   }};
   position: absolute;
-  bottom: 0;
+  top: 60%;
+  transform: translateY(-50%);
 `;
 
 const LeftBtn = styled(SideBtn)`
