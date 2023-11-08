@@ -475,7 +475,7 @@ def upload_avatar():
         data=file.read(),  # 파일의 내용을 읽어서 줘야함
         headers={"Content-Type": "image/jpeg", "x-api-key": x_api_key},
     )
-    result = resp.json()["data"]["talking_photo_id"]
+    result = json.loads(resp.json())["data"]["talking_photo_id"]
 
     return jsonify({"result" : result}), 200
 
@@ -500,7 +500,6 @@ def make_conversation_video():
     conversation_text = request.json.get("conversationText")
     answer = gpt_answer(model_name, conversation_text, input_text)
     voice = request.json.get("heyVoiceId")
-    # 대화상대의 Heygen Talking Photo ID
     avatar = request.json.get("avatarId")
     videoPath = videoMaker(answer, voice, avatar)
     return jsonify({"answer": answer, "url": videoPath})
@@ -521,7 +520,6 @@ def make_conversation_voice():
         model_no = request.json.get("modelNo")
         conversation_no = request.json.get("conversationNo")
         voice_url = make_tts(ele_voice_id, answer, user_no, model_no, conversation_no)
-        # 성공 응답을 JSON으로 포맷 후 반환
         return jsonify({"answer": answer, "url": voice_url})
 
     except Exception as e:
