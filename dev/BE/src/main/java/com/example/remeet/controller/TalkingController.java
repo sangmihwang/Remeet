@@ -3,7 +3,6 @@ package com.example.remeet.controller;
 import com.example.remeet.dto.FlaskResponseDto;
 
 import com.example.remeet.service.FlaskService;
-import com.example.remeet.service.TranscribeStreamingService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -22,6 +21,7 @@ public class TalkingController {
 
     @PostMapping("transcribe")
     public ResponseEntity<FlaskResponseDto> transcribeFile(@RequestParam("file") MultipartFile file) throws IOException {
+        log.info("request to /api/v1/talking/transcribe [Method: POST]");
         FlaskResponseDto transcriptionResult = flaskService.callFlaskByMultipartFile(file, "stt");
         return ResponseEntity.ok(transcriptionResult);
     }

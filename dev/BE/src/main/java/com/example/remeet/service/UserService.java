@@ -72,6 +72,10 @@ public class UserService {
         return userInfo;
     }
 
+    public void deleteRefreshToken(Integer userNo){
+        redisRepository.deleteById(userNo);
+    }
+
     public String getUserId(Integer userNo) {
         return userRepository.findByUserNo(userNo).get().getUserId();
     }
@@ -96,4 +100,5 @@ public class UserService {
         if(redisRepository.findByRefreshToken(token) == null) return false; // 리프레시 토큰이 유효하다면 true 아니라면 false 반환
         else return true;
     }
+
 }
