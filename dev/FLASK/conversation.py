@@ -375,7 +375,7 @@ def upload_files():
                         target_path, vcodec="libx264", acodec="aac"
                     ).run(overwrite_output=True)
 
-            if fileType == "audio":
+            if fileType == "voice":
                 new_path = f'{file.filename.split(".")[0]}' + ".mp3"
                 convert_audio_to_mp3(temp_blob_path, new_path)
             elif fileType == "video":
@@ -391,6 +391,7 @@ def upload_files():
                 s3_url = f"https://remeet.s3.ap-northeast-2.amazonaws.com/{folder_key + new_path}"
                 responses.append(s3_url)
             except Exception as e:
+                app.logger.inf("UPLOAD_FILES API Response result : ", str(e))
                 responses.append("Failed to upload file")
 
             # 각 파일 처리에 대한 응답을 저장
