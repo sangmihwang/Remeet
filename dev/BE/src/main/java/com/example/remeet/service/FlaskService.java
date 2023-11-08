@@ -1,5 +1,6 @@
 package com.example.remeet.service;
 
+import com.example.remeet.dto.FlaskResponseDto;
 import com.example.remeet.dto.STTResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.json.JSONObject;
@@ -44,7 +45,7 @@ public class FlaskService {
         return responseEntity.getBody();
     }
 
-    public String callFlaskByMultipartFile(MultipartFile file, String type) throws IOException {
+    public FlaskResponseDto callFlaskByMultipartFile(MultipartFile file, String type) throws IOException {
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.MULTIPART_FORM_DATA); // Content-Type을 multipart/form-data로 설정
@@ -69,12 +70,13 @@ public class FlaskService {
             newURL = FLASK_API_URL + "signup";
         }
 
-        ResponseEntity<String> responseEntity = restTemplate.exchange(
+        ResponseEntity<FlaskResponseDto> responseEntity = restTemplate.exchange(
                 newURL,
                 HttpMethod.POST,
                 request,
-                String.class
+                FlaskResponseDto.class
         );
+
         return responseEntity.getBody();
     }
 }
