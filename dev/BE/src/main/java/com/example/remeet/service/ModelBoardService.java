@@ -221,7 +221,7 @@ public class ModelBoardService {
                         entity.getHeyVoiceId(),
                         entity.getGender(),
                         entity.getCommonVideoPath(),
-                        entity.getConversationText(),
+                        transformValue(entity.getConversationText()),
                         entity.getConversationCount(),
                         entity.getLatestConversationTime()
                 ));
@@ -261,6 +261,19 @@ public class ModelBoardService {
         }
         return null;
     }
+
+    public List<Map<String, String>> transformValue(String conversationText) {
+        List<Map<String, String>> result = new ArrayList<>();
+        String[] lines = conversationText.split("\n");
+        for (String line : lines) {
+            String[] words = line.split(":");
+            Map<String, String> map = new HashMap<>();
+            map.put(words[0], words[1]);
+            result.add(map);
+        }
+        return result;
+    }
+
     public List<ModelBoardDto> findByOption(String option, Integer userNo) {
         switch (option) {
             case "all":

@@ -5,6 +5,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
 
 @Data
 @AllArgsConstructor
@@ -18,7 +20,7 @@ public class ModelBoardDetailDto {
     private String eleVoiceId;
     private char gender;
     private String commonVideoPath;
-    private String conversationText;
+    private List<Map<String, String>> conversationText;
     private Integer conversationCount;
     private LocalDateTime latestConversationTime;
 }
