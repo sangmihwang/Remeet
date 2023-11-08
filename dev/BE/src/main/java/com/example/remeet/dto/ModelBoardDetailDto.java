@@ -24,4 +24,6 @@ public class ModelBoardDetailDto {
     private String conversationText2;
     private Integer conversationCount;
     private LocalDateTime latestConversationTime;
+    private List<UploadedVideoDto> videoList;
+    private List<UploadedVoiceDto> voiceList;
 }

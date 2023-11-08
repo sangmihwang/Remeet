@@ -130,21 +130,34 @@ public class ModelBoardService {
     @Transactional(readOnly = true)
     public Optional<ModelBoardDetailDto> getModelBoardDetailById(Integer modelNo) {
         return modelBoardRepository.findById(modelNo)
-                .map(entity -> new ModelBoardDetailDto(
-                        entity.getModelNo(),
-                        entity.getModelName(),
-                        entity.getImagePath(),
-                        entity.getAvatarId(),
-                        entity.getEleVoiceId(),
-                        entity.getHeyVoiceId(),
-                        entity.getGender(),
-                        entity.getCommonVideoPath(),
-                        transformValue(entity.getConversationText()),
-                        entity.getConversationText(),
-                        entity.getConversationCount(),
-                        entity.getLatestConversationTime()
-                ));
+                .map(entity -> {
+                    List<UploadedVideoDto> videoList = uploadedVideoRepository.findByModelNo(entity).stream()
+                            .map(videoEntity -> new UploadedVideoDto(videoEntity.getVideoNo(), videoEntity.getVideoPath()))
+                            .collect(Collectors.toList());
+
+                    List<UploadedVoiceDto> voiceList = uploadedVoiceRepository.findByModelNo(entity).stream()
+                            .map(voiceEntity -> new UploadedVoiceDto(voiceEntity.getVoiceNo(), voiceEntity.getVoicePath()))
+                            .collect(Collectors.toList());
+
+                    return new ModelBoardDetailDto(
+                            entity.getModelNo(),
+                            entity.getModelName(),
+                            entity.getImagePath(),
+                            entity.getAvatarId(),
+                            entity.getEleVoiceId(),
+                            entity.getHeyVoiceId(),
+                            entity.getGender(),
+                            entity.getCommonVideoPath(),
+                            transformValue(entity.getConversationText()),
+                            entity.getConversationText(),
+                            entity.getConversationCount(),
+                            entity.getLatestConversationTime(),
+                            videoList,
+                            voiceList
+                    );
+                });
     }
+
 
     public String formatChat(String conversationText, String kakaoName) {
         StringBuilder formattedText = new StringBuilder();
