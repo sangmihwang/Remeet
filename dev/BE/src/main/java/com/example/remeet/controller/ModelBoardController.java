@@ -3,9 +3,7 @@ package com.example.remeet.controller;
 import com.example.remeet.dto.ModelBoardCreateDto;
 import com.example.remeet.dto.ModelBoardDetailDto;
 import com.example.remeet.dto.ModelBoardDto;
-import com.example.remeet.entity.ModelBoardEntity;
 import com.example.remeet.service.ModelBoardService;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -33,6 +31,7 @@ public class ModelBoardController {
 
     @GetMapping
     public ResponseEntity<List<ModelBoardDto>> getModelBoard(HttpServletRequest request, @RequestParam("option") String option){
+        log.info("request to /api/v1/model [Method: GET]");
         Integer userNo = (Integer)request.getAttribute("userNo");
         List<ModelBoardDto> modelBoardDtos = modelBoardService.findByOption(option, userNo);
         return ResponseEntity.ok(modelBoardDtos);
@@ -41,6 +40,7 @@ public class ModelBoardController {
 
     @GetMapping("/{modelNo}")
     public ResponseEntity<ModelBoardDetailDto> getModelBoardDetail(@PathVariable Integer modelNo){
+        log.info("request to /api/v1/model/"+modelNo+" [Method: GET]");
         ModelBoardDetailDto modelBoardDetailDto = modelBoardService.getModelBoardDetailById(modelNo)
                 .orElseThrow(() -> new IllegalArgumentException("모델넘버가 존재하지 않음: " + modelNo));
 
@@ -48,6 +48,7 @@ public class ModelBoardController {
     }
     @GetMapping("/video/{modelNo}")
     public ResponseEntity<List<String>> getVideoPathsByModelNo(@PathVariable Integer modelNo) {
+        log.info("request to /api/v1/model/video/"+modelNo+" [Method: GET]");
         return ResponseEntity.ok(modelBoardService.getVideoPathsByModelNo(modelNo));
     }
 
@@ -63,6 +64,7 @@ public class ModelBoardController {
             @RequestParam("videoFiles") List<MultipartFile> videoFiles,
             HttpServletRequest request
     ) throws IOException {
+        log.info("request to /api/v1/model [Method: POST]");
         String conversationText = new String(conversationTextFile.getBytes(), StandardCharsets.UTF_8);
 
         ModelBoardCreateDto modelBoardCreateDto = new ModelBoardCreateDto(
@@ -82,6 +84,7 @@ public class ModelBoardController {
 
     @GetMapping("/makevoice/{modelNo}")
     public ResponseEntity<?> generateEleVoiceId(@PathVariable Integer modelNo) {
+        log.info("request to /api/v1/model/makevoice/"+modelNo+" [Method: GET]");
         try {
             String voiceId = modelBoardService.createVoiceModel(modelNo);
             return ResponseEntity.ok(Collections.singletonMap("ele_voice_id", voiceId));
@@ -93,6 +96,7 @@ public class ModelBoardController {
 
     @DeleteMapping("{modelNo}")
     public ResponseEntity getVoicePathsByModelNo(@PathVariable Integer modelNo) {
+        log.info("request to /api/v1/model/"+modelNo+" [Method: DELETE]");
         modelBoardService.deleteModelBoard(modelNo);
         return ResponseEntity.ok().build();
     }
