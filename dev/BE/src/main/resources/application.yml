@@ -1,0 +1,53 @@
+server:
+  servlet:
+    context-path: /api/v1
+  port: 8443
+#  ssl:
+#    enabled: true
+#    key-store: file:/etc/letsencrypt/keystore.p12
+#    key-store-password: 1q2w3e4r1q2w3e4r
+#    key-alias: yourkeyalias
+#    key-store-type: PKCS12
+
+spring:
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 20MB
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://k9a706.p.ssafy.io:3306/mydb?serverTimezone=Asia/Seoul
+    username: remeet01
+    password: remeetremeet706
+    hikari:
+      maximum-pool-size: 20
+  #    url: ${DATABASE_URL}
+  #    username: ${DATABASE_ID}
+  #    password: ${DATABASE_PASSWORD}
+  jpa:
+    database: mysql
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate:
+        default_batch_fetch_size: 100
+        dialect: org.hibernate.dialect.MySQL5InnoDBDialect
+    open-in-view: false
+    show-sql: false
+  redis:
+    port: 6379
+    host: k9a706.p.ssafy.io
+    password: 1q2w3e4r@@#
+
+jwt:
+  secretKey: rkGU45258GGhiolLO2465TFY5345kGU45258GGhiolLO2465TFY5345seeew
+  access:
+    expiration: 10000 # 1시간(60분) (1000L(ms -> s) * 60L(s -> m) * 60L(m -> h))
+    header: Authorization
+
+  refresh:
+    expiration: 1209600000 # (1000L(ms -> s) * 60L(s -> m) * 60L(m -> h) * 24L(h -> 하루) * 14(2주))
+    header: Authorization_refresh

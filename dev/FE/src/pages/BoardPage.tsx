@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-// import { useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { AxiosResponse } from 'axios';
@@ -37,25 +37,43 @@ const Text = styled.div`
   font-weight: 600;
 `;
 
+const SearchInput = styled.input`
+  padding: 1rem;
+  width: calc(100% - 5rem);
+  margin: 1rem 1.5rem;
+  border: none;
+  border-radius: 20px;
+  background-color: #f6f6f6;
+`;
+
 const BoardPage = () => {
   const headerContent = {
     left: '',
-    title: 'Re:memories',
+    title: 'Re:members',
     right: 'Add',
   };
   const navigate = useNavigate();
-
   // const [option, setOption] = useState('all');
   const option = 'all';
-
+  const [searchTerm, setSearchTerm] = useState('');
   const { data: peopleList } = useQuery<AxiosResponse<PeopleListItem[]>>(
     ['getPeopleList', option],
     () => getPeopleList(option),
   );
+  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(event.target.value);
+  };
 
   const handleGoCreate = () => {
     navigate('create');
   };
+
+  const filteredPeopleList = peopleList
+    ? peopleList.data.filter((person) =>
+        person.modelName.toLowerCase().includes(searchTerm.toLowerCase()),
+      )
+    : [];
+
   return (
     <>
       <PageHeader
@@ -63,10 +81,17 @@ const BoardPage = () => {
         type={1}
         rightButtonClick={handleGoCreate}
       />
-      {peopleList && peopleList.data.length > 0 ? (
-        peopleList.data.map((item: PeopleListItem) => {
-          return <BoardItem key={item.modelNo} {...item} />;
-        })
+      <SearchInput
+        type="text"
+        placeholder="Search"
+        value={searchTerm}
+        onChange={handleSearchChange}
+        autoFocus
+      />
+      {filteredPeopleList.length > 0 ? (
+        filteredPeopleList.map((item: PeopleListItem) => (
+          <BoardItem key={item.modelNo} {...item} />
+        ))
       ) : (
         <ButtonTextWrapper>
           <PlusButton onClick={handleGoCreate} />
