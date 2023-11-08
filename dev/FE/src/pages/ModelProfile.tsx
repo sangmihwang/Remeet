@@ -127,16 +127,18 @@ const ModelProfile = () => {
       confirmButtonColor: '#3085d6',
       cancelButtonColor: '#d33',
       confirmButtonText: '삭제',
-    }).then((result) => {
-      if (result.isConfirmed) {
-        mutation.mutate(modelNo);
-        MySwal.fire({
-          title: '삭제되었습니다.',
-          text: '',
-          icon: 'success',
-        });
-      }
-    });
+    })
+      .then((result) => {
+        if (result.isConfirmed) {
+          mutation.mutate(Number(modelNo));
+          MySwal.fire({
+            title: '삭제되었습니다.',
+            text: '',
+            icon: 'success',
+          }).catch((err) => console.log(err));
+        }
+      })
+      .catch((err) => console.log(err));
   };
 
   const { data: modelInfomation } = useQuery<ModelInformation | undefined>(

@@ -1,5 +1,5 @@
 import { AxiosResponse } from 'axios';
-import { Login, SignUpForm, UserResponse } from '@/types/user';
+import { Login, UserResponse } from '@/types/user';
 import { api, authApi, formApi } from '.';
 
 const userLogin = async (
@@ -8,7 +8,7 @@ const userLogin = async (
   return api.post('user/login', loginData);
 };
 
-const userSignUp = async (signUpForm: SignUpForm): Promise<AxiosResponse> => {
+const userSignUp = async (signUpForm: FormData): Promise<AxiosResponse> => {
   return formApi.post('user/signup', signUpForm);
 };
 

@@ -39,15 +39,13 @@ const LoginPage = () => {
         sessionStorage.setItem('refreshToken', refreshToken);
         navigate('/board');
       },
-      onError: (err) => {
-        console.log(err);
+      onError: () => {
         window.alert('아이디 혹은 비밀번호를 확인해 주세요');
       },
     },
   );
 
   const handleLoginClick = () => {
-    console.log(loginForm);
     mutation.mutate(loginForm);
   };
 

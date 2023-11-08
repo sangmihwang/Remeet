@@ -99,7 +99,7 @@ const ModelCreate = () => {
   const [textFiles, setTextFiles] = useState<TextFile[]>([]);
 
   // API 관련
-  const mutation = useMutation<AxiosResponse, Error, any>(modelCreate, {
+  const mutation = useMutation<AxiosResponse, Error, FormData>(modelCreate, {
     onSuccess: (res) => console.log(res),
     onError: (err) => console.log(err),
   });
