@@ -13,10 +13,12 @@ from werkzeug.utils import secure_filename
 import ffmpeg
 import json
 from flask_cors import CORS
+import logging
 
 app = Flask(__name__)
 # .env 파일에서 환경 변수를 로드합니다.
 CORS(app)
+app.logger.setLevel(logging.INFO)
 
 AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
 AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
@@ -44,7 +46,6 @@ def convert_blob_to_wav(blob_path, output_path):
     sound = AudioSegment.from_file(blob_path, format="webm")
     sound.export(output_path, format="wav")
 
-
 def get_wav_info(wav_filename):
     with wave.open(wav_filename, "rb") as wf:
         n_channels = wf.getnchannels()
@@ -60,7 +61,6 @@ def get_wav_info(wav_filename):
             "n_frames": n_frames,
             "duration": duration,
         }
-
 
 # Heygen API 관련
 # Heygen API 관련
