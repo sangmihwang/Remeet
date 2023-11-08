@@ -493,9 +493,9 @@ def upload_avatar():
         data=file.read(),  # 파일의 내용을 읽어서 줘야함
         headers={"Content-Type": "image/jpeg", "x-api-key": x_api_key},
     )
-    result = json.loads(resp.json())["data"]["talking_photo_id"]
+    result = json.loads(resp)
 
-    return jsonify({"result" : result}), 200
+    return jsonify({"result" : result["data"]["talking_photo_id"]}), 200
 
 # 기본 영상 생성 API
 # 기본 영상 생성 API
