@@ -41,7 +41,7 @@ const ConversationButton = styled.button`
   height: 2rem;
   border-radius: 100px;
   border: 0;
-  font-size: 1rem;
+  font-size: 0.9rem;
   font-weight: 600;
   background-color: var(--primary-color);
   color: #fff;

@@ -9,5 +9,4 @@ public class RemeetApplication {
     public static void main(String[] args) {
         SpringApplication.run(RemeetApplication.class, args);
     }
-
 }
