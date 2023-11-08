@@ -7,7 +7,7 @@ interface PeopleListItem {
 interface ModelInformation extends PeopleListItem {
   videoList: string[];
   voiceList: string[];
-  conversationText: string;
+  conversationText: { [key: string]: string }[];
 }
 
 export { PeopleListItem, ModelInformation };

@@ -1,6 +1,6 @@
 import styled from 'styled-components';
 
-import { LargeButton } from '../common';
+import { LargeButton, TalkBubble } from '../common';
 
 const TitleWrapper = styled.div`
   width: 88vw;
@@ -24,25 +24,27 @@ const ListWrapper = styled.ul`
   padding: 0;
 `;
 
-const ListItem = styled.li`
-  list-style: none;
-`;
-
 interface TextUploadProps {
-  textFile: string | undefined;
+  conversation: { [key: string]: string }[] | undefined;
   handleCloseModal: () => void;
+  imagePath: string | undefined;
 }
 
-const TextSavedContent = ({ textFile, handleCloseModal }: TextUploadProps) => {
+const TextSavedContent = ({
+  conversation,
+  handleCloseModal,
+  imagePath,
+}: TextUploadProps) => {
+  console.log(conversation);
   return (
     <>
       <TitleWrapper>
         <Title>대화 목록</Title>
       </TitleWrapper>
       <ListWrapper>
-        <ListItem>
-          <pre>{textFile}</pre>
-        </ListItem>
+        {conversation && (
+          <TalkBubble imagePath={imagePath} conversation={conversation} />
+        )}
       </ListWrapper>
       <LargeButton onClick={handleCloseModal} content="닫기" />
     </>
