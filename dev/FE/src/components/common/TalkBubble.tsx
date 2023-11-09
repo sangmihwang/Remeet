@@ -2,7 +2,7 @@ import styled from 'styled-components';
 
 const IMessage = styled.div`
   background-color: #fff;
-  border: 1px solid #e5e5ea;
+  border: 0px solid #e5e5ea;
   border-radius: 0.25rem;
   display: flex;
   flex-direction: column;
@@ -110,7 +110,7 @@ const ProfileImage = styled.p<{ $imagePath: string }>`
   position: relative;
 `;
 
-const ImageWrapper = styled.p`
+const ImageWrapper = styled.div`
   display: flex;
   margin: 0;
 `;
@@ -123,7 +123,7 @@ interface TalkBubbleProps {
 const TalkBubble = ({ conversation, imagePath }: TalkBubbleProps) => {
   const $imagePath = imagePath || '/dummy/갱얼쥐.jpg';
   return (
-    <IMessage>
+    <IMessage key="TalkBubble_savedContent">
       {conversation?.map((item, idx) => {
         const prevKey =
           idx !== 0 ? Object.keys(conversation[idx - 1])[0] : null;
@@ -137,16 +137,24 @@ const TalkBubble = ({ conversation, imagePath }: TalkBubbleProps) => {
         const className = (key === '나 ' ? 'from-me ' : 'from-them ') + tail;
 
         if (key === '나 ') {
-          return <Message className={className}>{value}</Message>;
+          return (
+            <Message key={item[0]} className={className}>
+              {value}
+            </Message>
+          );
         }
 
         return prevKey !== key ? (
-          <ImageWrapper>
+          <ImageWrapper key={item[0]}>
             <ProfileImage $imagePath={$imagePath} />
-            <Message className={className}>{value}</Message>
+            <Message key={item[0]} className={className}>
+              {value}
+            </Message>
           </ImageWrapper>
         ) : (
-          <Message className={className}>{value}</Message>
+          <Message key={item[0]} className={className}>
+            {value}
+          </Message>
         );
       })}
     </IMessage>

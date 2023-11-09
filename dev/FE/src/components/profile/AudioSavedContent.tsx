@@ -1,5 +1,6 @@
 import styled from 'styled-components';
 import { LargeButton } from '../common';
+import { VoiceList } from '@/types/peopleList';
 
 const TitleWrapper = styled.div`
   width: 88vw;
@@ -28,7 +29,7 @@ const ListItem = styled.li`
 `;
 
 interface AudioUploadProps {
-  audioFiles: string[] | undefined;
+  audioFiles: VoiceList[] | undefined;
   handleCloseModal: () => void;
 }
 
@@ -43,9 +44,9 @@ const AudioSavedContent = ({
       </TitleWrapper>
       <ListWrapper>
         {audioFiles &&
-          audioFiles.map((file, index) => (
-            <ListItem key={index}>
-              <audio controls src={file} />
+          audioFiles.map((file) => (
+            <ListItem key={file.voiceNo}>
+              <audio controls src={file.voicePath} />
             </ListItem>
           ))}
       </ListWrapper>
