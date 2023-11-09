@@ -126,6 +126,7 @@ const TalkPage = () => {
       </TitleWrapper>
       <ContentWrpper>
         <AudioRecorder
+          history={talkHistory}
           pushHistory={pushHistory}
           modelInformation={modelInfomation}
           setVideoSrc={setVideoSrc}
