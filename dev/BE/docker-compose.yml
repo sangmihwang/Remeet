@@ -1,0 +1,17 @@
+
+version: '3.8'
+
+services:
+  spring-app:
+    build:
+      
+      dockerfile: dockerfile
+    container_name: my-springboot-container
+    ports:
+      - "8080:8080"
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    external: true
