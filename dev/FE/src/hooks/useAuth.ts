@@ -11,14 +11,14 @@ const useAuth = () => {
       .then((res) => {
         setUserInfo(res.data);
       })
-      .catch((err) => console.log(err));
+      .catch(() => {});
   }, []);
 
   useEffect(() => {
     if (!userInfo) {
       refreshUserInfo()
-        .then((res) => console.log(res))
-        .catch((err) => console.log(err));
+        .then(() => {})
+        .catch(() => {});
     }
   });
   return { userInfo, setUserInfo, refreshUserInfo };

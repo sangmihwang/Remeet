@@ -1,4 +1,3 @@
-import axios from 'axios';
 import { useState, useRef } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import AudioPlayerTest from './AudioPlayerTest';
@@ -6,17 +5,15 @@ import { ModelInformation } from '@/types/peopleList';
 import { conversateVoice, transcribeVoice } from '@/api/talk';
 import { History } from '@/types/talk';
 
-const TESTURL = 'http://localhost:5000/api/v1';
-
 interface AudioRecorderProps {
-  setVideoSrc: (url: string) => void;
+  // setVideoSrc: (url: string) => void;
   modelInformation: ModelInformation | undefined;
   pushHistory: (text: string, speakerType: number) => void;
   history: History[];
 }
 
 const AudioRecorder = ({
-  setVideoSrc,
+  // setVideoSrc,
   modelInformation,
   pushHistory,
   history,
@@ -43,12 +40,13 @@ const AudioRecorder = ({
       setCurrentTranscribe(res.data.result);
       const voiceForm = {
         question: res.data.result,
-        modelName: modelInformation?.modelName,
-        conversationText: modelInformation?.conversationText2,
+        modelName: modelInformation?.modelName || '',
+        conversationText: modelInformation?.conversationText2 || '',
         history,
         eleVoiceId: 'uxgSoqINxv9NZ5NwNoZb',
         conversationNo: 1,
         userNo: 1,
+        modelNo: 1,
       };
       conversateVoiceMutation.mutate(voiceForm);
     },
@@ -75,40 +73,6 @@ const AudioRecorder = ({
 
       // axios를 사용하여 서버에 POST 요청 보내기
       transcribeMutation.mutate(formData);
-      // axios
-      //   .post(`${TESTURL}/transcribe`, formData)
-      //   .then((response: any) => {
-      //     console.log('Successfully uploaded audio:', response.data);
-      //     setAudioSrc(response.data.text);
-      //     axios
-      //       .post(`${TESTURL}/conversation/voice`, {
-      //         // question: response.data.transcription,
-      //         // heyVoiceId: '720b7163e1dc40ddbe76ab8a58161f7b',
-      //         // avatarId: 'f51ed02fc13a4a1694736bfb04620901',
-      //         // modelName: '강명조',
-      //         // conversationText: '나 : 야 \n나 : 니 \n나 : 담주만가능하나?\n나 : 스터디잇는거까뭇네\n강명조 : 낼 모레 일이잇어서\n강명조 : 서울에\n강명조 : 아님 미룰까\n강명조 : 대답\n나 : 미루는거\n나 : 추천\n나 : 이번주만\n나 : 오지게바쁨\n나 : 일잔\n나 : 서울은어차피오는거가\n강명조 : ㅇㅇ\n강명조 : 담주 중으로감그럼\n나 : ㅇㅋ\n나 : 이번주\n나 : 젤바쁜주엿노 ㅋ\n강명조 : 일단 못갈수도잇음\n나 : ㅜ\n나 : ㅇ..\n'
-      //         question: response.data.transcription,
-      //         modelName: '강명조',
-      //         conversationText:
-      //           '나 : 야 \n나 : 니 \n나 : 담주만가능하나?\n나 : 스터디잇는거까뭇네\n강명조 : 낼 모레 일이잇어서\n강명조 : 서울에\n강명조 : 아님 미룰까\n강명조 : 대답\n나 : 미루는거\n나 : 추천\n나 : 이번주만\n나 : 오지게바쁨\n나 : 일잔\n나 : 서울은어차피오는거가\n강명조 : ㅇㅇ\n강명조 : 담주 중으로감그럼\n나 : ㅇㅋ\n나 : 이번주\n나 : 젤바쁜주엿노 ㅋ\n강명조 : 일단 못갈수도잇음\n나 : ㅜ\n나 : ㅇ..\n',
-      //         eleVoiceId: 'uxgSoqINxv9NZ5NwNoZb',
-      //         userNo: 1,
-      //         modelNo: 1,
-      //         conversationNo: 1,
-      //       })
-      //       .then((res) => {
-      //         console.log(res);
-      //         console.log(res.data);
-      //         setAudioSrc(res.data.URL);
-      //         setVideoSrc(res.data.URL);
-      //       })
-      //       .catch((err) => {
-      //         console.log(err);
-      //       });
-      //   })
-      //   .catch((error) => {
-      //     console.error('Error uploading audio:', error);
-      //   });
     };
 
     mediaRecorder.start();

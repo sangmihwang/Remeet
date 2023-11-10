@@ -1,13 +1,13 @@
 import styled from 'styled-components';
-import { useEffect, useRef, useState } from 'react';
-import videojs from 'video.js';
+import { useEffect, useState } from 'react';
+// import videojs from 'video.js';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import PageHeader from '@/components/navbar/PageHeader';
 // import BottomNavigation from '@/components/navbar/BottomNavigation';
 import { SmallButton, TalkBubble } from '@/components/common';
 import AudioRecorder from '@/components/talk/AudioRecorder';
-import Video from '@/components/talk/Video';
+// import Video from '@/components/talk/Video';
 import Modal from '@/components/common/Modal';
 import { History } from '@/types/talk';
 import { ModelInformation } from '@/types/peopleList';
@@ -24,12 +24,12 @@ const TitleWrapper = styled.div`
   height: 45vh;
 `;
 
-const VideoWrapper = styled.div`
-  margin: 0 auto;
-  width: 86vw;
-  height: 12.5rem;
-  background-color: #fff;
-`;
+// const VideoWrapper = styled.div`
+//   margin: 0 auto;
+//   width: 86vw;
+//   height: 12.5rem;
+//   background-color: #fff;
+// `;
 
 const ContentWrpper = styled.div`
   width: 100%;
@@ -63,35 +63,35 @@ const TalkPage = () => {
     title: modelInfomation?.modelName ?? '로딩중',
     right: '',
   };
-  const [videoSrc, setVideoSrc] = useState<string | null>(null);
+  // const [videoSrc, setVideoSrc] = useState<string | null>(null);
 
-  const playerRef = useRef(null);
+  // const playerRef = useRef(null);
 
-  const videoJsOptions = {
-    autoplay: true,
-    controls: true,
-    responsive: true,
-    fluid: true,
-    sources: [
-      {
-        src: videoSrc,
-        type: 'video/mp4',
-      },
-    ],
-  };
+  // const videoJsOptions = {
+  //   autoplay: true,
+  //   controls: true,
+  //   responsive: true,
+  //   fluid: true,
+  //   sources: [
+  //     {
+  //       src: videoSrc,
+  //       type: 'video/mp4',
+  //     },
+  //   ],
+  // };
 
-  const handlePlayerReady = (player: any) => {
-    playerRef.current = player;
+  // const handlePlayerReady = (player: any) => {
+  //   playerRef.current = player;
 
-    // You can handle player events here, for example:
-    player.on('waiting', () => {
-      videojs.log('player is waiting');
-    });
+  //   // You can handle player events here, for example:
+  //   player.on('waiting', () => {
+  //     videojs.log('player is waiting');
+  //   });
 
-    player.on('dispose', () => {
-      videojs.log('player will dispose');
-    });
-  };
+  //   player.on('dispose', () => {
+  //     videojs.log('player will dispose');
+  //   });
+  // };
 
   const handleEndConversation = () => {
     navigate('/board');
@@ -120,16 +120,16 @@ const TalkPage = () => {
     <Wrapper>
       <TitleWrapper>
         <PageHeader content={headerContent} type={2} />
-        <VideoWrapper>
+        {/* <VideoWrapper>
           <Video options={videoJsOptions} onReady={handlePlayerReady} />
-        </VideoWrapper>
+        </VideoWrapper> */}
       </TitleWrapper>
       <ContentWrpper>
         <AudioRecorder
           history={talkHistory}
           pushHistory={pushHistory}
           modelInformation={modelInfomation}
-          setVideoSrc={setVideoSrc}
+          // setVideoSrc={setVideoSrc}
         />
         <SmallButton
           type={1}
