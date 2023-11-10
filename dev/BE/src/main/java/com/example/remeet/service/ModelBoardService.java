@@ -1,14 +1,8 @@
 package com.example.remeet.service;
 
 import com.example.remeet.dto.*;
-import com.example.remeet.entity.ModelBoardEntity;
-import com.example.remeet.entity.UploadedVideoEntity;
-import com.example.remeet.entity.UploadedVoiceEntity;
-import com.example.remeet.entity.UserEntity;
-import com.example.remeet.repository.ModelBoardRepository;
-import com.example.remeet.repository.UploadedVideoRepository;
-import com.example.remeet.repository.UploadedVoiceRepository;
-import com.example.remeet.repository.UserRepository;
+import com.example.remeet.entity.*;
+import com.example.remeet.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.data.domain.PageRequest;
@@ -18,6 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -32,6 +27,9 @@ public class ModelBoardService {
     private final UserRepository userRepository;
     private final UploadedVoiceRepository uploadedVoiceRepository;
     private final UploadedVideoRepository uploadedVideoRepository;
+    private final ProducedVideoRepository producedVideoRepository;
+    private final ProducedVoiceRepository producedVoiceRepository;
+
 
     @Transactional(readOnly = true)
     public List<String> getVideoPathsByModelNo(Integer modelNo) {
@@ -222,6 +220,34 @@ public class ModelBoardService {
     @Transactional
     public void deleteModelBoard(Integer modelNo) {
         modelBoardRepository.deleteById(modelNo);
+    }
+
+    public List<NeedUpdateModelDto> getNeedUpdateList() {
+        List<NeedUpdateModelDto> getList = modelBoardRepository.findByNeedUpdate();
+        return getList;
+    }
+
+    public void updateHeyVoiceId(NeedUpdateModelDto needUpdateModelDto) throws IOException{
+        ModelBoardEntity getModel = modelBoardRepository.findByModelNo(needUpdateModelDto.getModelNo()).get();
+        String heyVoiceId = flaskService.callFlaskByMultipartFile(null, needUpdateModelDto.getModelName()).getResult();
+        getModel.setHeyVoiceId(heyVoiceId);
+        modelBoardRepository.save(getModel);
+    }
+
+    public Integer makeConversation(Integer modelNo, String type) {
+        if (type.equals("video")) {
+            ProducedVideoEntity newConversation = ProducedVideoEntity.builder()
+                    .modelNo(modelBoardRepository.findByModelNo(modelNo).get())
+                    .build();
+            producedVideoRepository.save(newConversation);
+            return newConversation.getProVideoNo();
+        } else {
+            ProducedVoiceEntity newConversation = ProducedVoiceEntity.builder()
+                    .modelNo(modelBoardRepository.findByModelNo(modelNo).get())
+                    .build();
+            producedVoiceRepository.save(newConversation);
+            return newConversation.getProVoiceNo();
+        }
     }
 }
 

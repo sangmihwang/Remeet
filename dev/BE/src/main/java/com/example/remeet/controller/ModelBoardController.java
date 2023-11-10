@@ -3,6 +3,7 @@ package com.example.remeet.controller;
 import com.example.remeet.dto.ModelBoardCreateDto;
 import com.example.remeet.dto.ModelBoardDetailDto;
 import com.example.remeet.dto.ModelBoardDto;
+import com.example.remeet.dto.NeedUpdateModelDto;
 import com.example.remeet.service.ModelBoardService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -107,4 +108,15 @@ public class ModelBoardController {
         return ResponseEntity.ok().build();
     }
 
+    @GetMapping("check-model")
+    public ResponseEntity<List<NeedUpdateModelDto>> getNeedUpdate() {
+        List<NeedUpdateModelDto> getNeedUpdateList = modelBoardService.getNeedUpdateList();
+        return ResponseEntity.ok(getNeedUpdateList);
+    }
+
+    @PostMapping("update-heyId")
+    public ResponseEntity updateHeyVoiceId(@RequestBody NeedUpdateModelDto needUpdateModelDto) throws IOException {
+        modelBoardService.updateHeyVoiceId(needUpdateModelDto);
+        return ResponseEntity.ok().build();
+    }
 }
