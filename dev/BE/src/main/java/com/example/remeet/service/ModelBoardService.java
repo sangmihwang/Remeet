@@ -10,8 +10,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.persistence.EntityNotFoundException;
 import java.io.File;
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -234,6 +236,13 @@ public class ModelBoardService {
     }
 
     public Integer makeConversation(Integer modelNo, String type) {
+        ModelBoardEntity model = modelBoardRepository.findById(modelNo)
+                .orElseThrow(() -> new EntityNotFoundException("모델 정보가 없습니다."));
+
+        model.setLatestConversationTime(LocalDateTime.now());
+        model.setConversationCount(model.getConversationCount() + 1);
+        modelBoardRepository.save(model);
+
         if (type.equals("video")) {
             ProducedVideoEntity newConversation = ProducedVideoEntity.builder()
                     .modelNo(modelBoardRepository.findByModelNo(modelNo).get())
