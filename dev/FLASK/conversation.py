@@ -112,7 +112,7 @@ def commonvideoMaker(avatar_id):
 
     return result["data"]["video_url"]
 
-@app.route("api/v1/heyVoiceId", methods=['POST'])
+@app.route("/api/v1/heyVoiceId", methods=['POST'])
 def getVoiceId():
     app.logger.info("HEYGEN_VIDEO_ID API ATTEMPT")
     global x_api_key
