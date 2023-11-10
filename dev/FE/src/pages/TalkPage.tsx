@@ -1,13 +1,17 @@
 import styled from 'styled-components';
-import { useEffect, useRef, useState } from 'react';
-import videojs from 'video.js';
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+// import videojs from 'video.js';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import PageHeader from '@/components/navbar/PageHeader';
 // import BottomNavigation from '@/components/navbar/BottomNavigation';
 import { SmallButton, TalkBubble } from '@/components/common';
 import AudioRecorder from '@/components/talk/AudioRecorder';
-import Video from '@/components/talk/Video';
+// import Video from '@/components/talk/Video';
 import Modal from '@/components/common/Modal';
+import { History } from '@/types/talk';
+import { ModelInformation } from '@/types/peopleList';
+import { getPeopleInfo } from '@/api/peoplelist';
 
 const Wrapper = styled.div`
   background-color: var(--primary-color);
@@ -17,15 +21,15 @@ const Wrapper = styled.div`
 
 const TitleWrapper = styled.div`
   width: 100%;
-  height: 35vh;
+  height: 45vh;
 `;
 
-const VideoWrapper = styled.div`
-  margin: 0 auto;
-  width: 86vw;
-  height: 12.5rem;
-  background-color: #fff;
-`;
+// const VideoWrapper = styled.div`
+//   margin: 0 auto;
+//   width: 86vw;
+//   height: 12.5rem;
+//   background-color: #fff;
+// `;
 
 const ContentWrpper = styled.div`
   width: 100%;
@@ -35,48 +39,65 @@ const ContentWrpper = styled.div`
 
 const TalkPage = () => {
   const navigate = useNavigate();
-  const [isTalkHistory, setIsTalkHistory] = useState<boolean>(false);
+  const { modelNo } = useParams();
+
+  const [isOpenTalkHistoryModal, setIsOpentalkHistoryModal] =
+    useState<boolean>(false);
+  const [talkHistory, setTalkHistory] = useState<History[]>([]);
+  const { data: modelInfomation } = useQuery<ModelInformation | undefined>(
+    ['getModelInfo'],
+    () => getPeopleInfo(Number(modelNo)),
+  );
+  console.log(modelInfomation);
+  const pushHistory = (text: string, speakerType: number) => {
+    setTalkHistory((prevState: History[]) => {
+      if (speakerType === 1) {
+        return [...prevState, { '나 ': text }];
+      }
+      return [...prevState, { '상대방 ': text }];
+    });
+  };
 
   const headerContent = {
     left: '',
-    title: '할머니',
+    title: modelInfomation?.modelName ?? '로딩중',
     right: '',
   };
-  const [videoSrc, setVideoSrc] = useState<string | null>(null);
+  // const [videoSrc, setVideoSrc] = useState<string | null>(null);
 
-  const playerRef = useRef(null);
+  // const playerRef = useRef(null);
 
-  const videoJsOptions = {
-    autoplay: true,
-    controls: true,
-    responsive: true,
-    fluid: true,
-    sources: [
-      {
-        src: videoSrc,
-        type: 'video/mp4',
-      },
-    ],
-  };
+  // const videoJsOptions = {
+  //   autoplay: true,
+  //   controls: true,
+  //   responsive: true,
+  //   fluid: true,
+  //   sources: [
+  //     {
+  //       src: videoSrc,
+  //       type: 'video/mp4',
+  //     },
+  //   ],
+  // };
 
-  const handlePlayerReady = (player: any) => {
-    playerRef.current = player;
+  // const handlePlayerReady = (player: any) => {
+  //   playerRef.current = player;
 
-    // You can handle player events here, for example:
-    player.on('waiting', () => {
-      videojs.log('player is waiting');
-    });
+  //   // You can handle player events here, for example:
+  //   player.on('waiting', () => {
+  //     videojs.log('player is waiting');
+  //   });
 
-    player.on('dispose', () => {
-      videojs.log('player will dispose');
-    });
-  };
+  //   player.on('dispose', () => {
+  //     videojs.log('player will dispose');
+  //   });
+  // };
 
   const handleEndConversation = () => {
     navigate('/board');
   };
   const handleCloseTalkHistory = () => {
-    setIsTalkHistory(false);
+    setIsOpentalkHistoryModal(false);
   };
 
   useEffect(() => {
@@ -99,16 +120,21 @@ const TalkPage = () => {
     <Wrapper>
       <TitleWrapper>
         <PageHeader content={headerContent} type={2} />
-        <VideoWrapper>
+        {/* <VideoWrapper>
           <Video options={videoJsOptions} onReady={handlePlayerReady} />
-        </VideoWrapper>
+        </VideoWrapper> */}
       </TitleWrapper>
       <ContentWrpper>
-        <AudioRecorder setVideoSrc={setVideoSrc} />
+        <AudioRecorder
+          history={talkHistory}
+          pushHistory={pushHistory}
+          modelInformation={modelInfomation}
+          // setVideoSrc={setVideoSrc}
+        />
         <SmallButton
           type={1}
           text="대화 내역"
-          onClick={() => setIsTalkHistory(true)}
+          onClick={() => setIsOpentalkHistoryModal(true)}
         />
         <SmallButton
           type={2}
@@ -116,9 +142,12 @@ const TalkPage = () => {
           text="대화 종료"
         />
       </ContentWrpper>
-      {isTalkHistory && (
+      {isOpenTalkHistoryModal && (
         <Modal onClose={handleCloseTalkHistory}>
-          <TalkBubble />
+          <TalkBubble
+            conversation={talkHistory}
+            imagePath={modelInfomation?.imagePath}
+          />
         </Modal>
       )}
       {/* <BottomNavigation /> */}

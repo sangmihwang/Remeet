@@ -272,7 +272,8 @@ const ModelProfile = () => {
           )}
           {isTalkModal && (
             <TextSavedContent
-              textFile={modelInfomation?.conversationText}
+              imagePath={modelInfomation?.imagePath}
+              conversation={modelInfomation?.conversationText}
               handleCloseModal={handleCloseModal}
             />
           )}

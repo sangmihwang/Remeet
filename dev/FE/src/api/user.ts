@@ -1,5 +1,5 @@
 import { AxiosResponse } from 'axios';
-import { Login, UserResponse } from '@/types/user';
+import { Login, User, UserResponse } from '@/types/user';
 import { api, authApi, formApi } from '.';
 
 const userLogin = async (
@@ -16,7 +16,7 @@ const getCheckUserId = async (userId: string) => {
   return api.get(`user/check-id?userId=${userId}`);
 };
 
-const getUserInfo = async () => {
+const getUserInfo = async (): Promise<AxiosResponse<User>> => {
   return authApi.get('user');
 };
 
