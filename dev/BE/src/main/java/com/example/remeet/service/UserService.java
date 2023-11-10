@@ -42,6 +42,7 @@ public class UserService {
                 .password(BCrypt.hashpw(password, BCrypt.gensalt()))
                 .profileImg(imageURL)
                 .userEmail(userEmail)
+                .isAdmin("F")
                 .build();
         userRepository.save(newMember);
     }
