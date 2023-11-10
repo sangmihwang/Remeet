@@ -67,6 +67,7 @@ public class UserService {
         userInfo.setUserName(user.getUserName());
         userInfo.setImagePath(user.getProfileImg());
         userInfo.setUserEmail(user.getUserEmail());
+        userInfo.setIsAdmin(user.getIsAdmin());
         return userInfo;
     }
 
