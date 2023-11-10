@@ -4,9 +4,9 @@ version: '3.8'
 services:
   flask-app:
     build:
-      context: ./flask
-      dockerfile: Dockerfile
-    container_name: flask_app_container
+      
+      dockerfile: Dockerfile.conversation
+    container_name: my-flask-conversation-container
     networks:
       - app-network
 
