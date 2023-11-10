@@ -27,5 +27,6 @@ services:
 
 networks:
   app-network:
+    external: true
     name: app-network
     driver: bridge
