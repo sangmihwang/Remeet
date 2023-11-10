@@ -47,7 +47,7 @@ public class ModelBoardEntity {
     private String commonVideoPath;
 
     @NotNull
-    @Column(name="conversation_text")
+    @Column(name="conversation_text", columnDefinition = "TEXT")
     private String conversationText;
 
     @NotNull
