@@ -23,10 +23,10 @@ public class ProducedVoiceEntity {
     @Column(name="pro_voice_no")
     private Integer proVoiceNo;
 
-    @Column(name="pro_voice_name", nullable = false)
+    @Column(name="pro_voice_name")
     private String proVoiceName;
 
-    @Column(name="voice_path", nullable = false)
+    @Column(name="voice_path")
     private String voicePath;
 
     @CreatedDate
