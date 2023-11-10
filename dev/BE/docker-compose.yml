@@ -1,32 +1,20 @@
 version: '3.8'
 
 services:
-  flask-app:
-    build:
-      context: ../FLASK
-      dockerfile: Dockerfile.conversation
-    image: my-flask-conversation-app
-    container_name: my-flask-conversation-container
-    env_file:
-      - ${ENV_FILE_PATH}
-    networks:
-      - app-network
-
   spring-boot-app:
     build:
-      context: .
-      dockerfile: dockerfile  # 스프링 부트 애플리케이션의 Dockerfile
-    image: my-springboot-app
-    container_name: my-springboot-container
+      context: 
+      dockerfile: dockerfile
+    image: ${DOCKER_IMAGE_NAME}
+    container_name: ${DOCKER_CONTAINER_NAME}
     ports:
-      - "8080:8080"  # 필요한 경우 외부로 포트를 노출
+      - "8443:8443"
+    volumes:
+      - /etc/letsencrypt/keystore.p12:/etc/letsencrypt/keystore.p12
     networks:
       - app-network
-    depends_on:
-      - flask-app  # Flask 앱이 먼저 실행되어야 하는 경우 사용
 
 networks:
   app-network:
-    external: true
     name: app-network
     driver: bridge
