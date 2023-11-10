@@ -1,5 +1,6 @@
 import styled from 'styled-components';
 import { LargeButton } from '../common';
+import { VideoList } from '@/types/peopleList';
 
 const TitleWrapper = styled.div`
   width: 88vw;
@@ -28,7 +29,7 @@ const ListItem = styled.li`
 `;
 
 interface VideoUploadProps {
-  videoFiles: string[] | undefined;
+  videoFiles: VideoList[] | undefined;
   handleCloseModal: () => void;
 }
 
@@ -45,7 +46,7 @@ const VideoSavedContent = ({
         {videoFiles &&
           videoFiles.map((file, index) => (
             <ListItem key={index}>
-              <span>{file}</span>
+              <span>{file.videoNo}</span>
             </ListItem>
           ))}
       </ListWrapper>
