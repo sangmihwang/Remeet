@@ -23,7 +23,7 @@ app.logger.setLevel(logging.INFO)
 AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
 AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
 ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY")
-x_api_key = os.getenv("x-api-key")
+x_api_key = os.getenv("x_api_key")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 REGION_NAME = "ap-northeast-2"
