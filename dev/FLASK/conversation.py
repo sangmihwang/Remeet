@@ -479,7 +479,7 @@ def make_voice_model():
 def upload_avatar():
     app.logger.info("CREATE_AVATAR_ID API ATTEMPT")
     # Avatar로 사용할 사진 업로드
-    x_api_key = os.getenv("x-api-key")
+    x_api_key = os.getenv("x_api_key")
     if "file" not in request.files:
         app.logger.info("CREATE_AVATAR_ID API Response result : ", 400, "- No file part")
         return jsonify(error="No file part"), 400
