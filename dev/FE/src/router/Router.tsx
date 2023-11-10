@@ -4,6 +4,7 @@ import {
   LoginPage,
   MainPage,
   ModelCreate,
+  ModelProducing,
   ModelProfile,
   ProfilePage,
   SignUpPage,
@@ -53,6 +54,7 @@ const Router = () => {
           <Route path="board" element={<BoardPage />} />
           <Route path="board/create" element={<ModelCreate />} />
           <Route path="board/:modelNo" element={<ModelProfile />} />
+          <Route path="producing/:modelNo" element={<ModelProducing />} />
           <Route path="videostorage" element={<VideoStorage />} />
         </Route>
       </Route>
