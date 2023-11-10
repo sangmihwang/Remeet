@@ -27,6 +27,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class FlaskService {
     private RestTemplate restTemplate;
+    private UserService userService;
     private final String FLASK_API_URL = "http://k9a706.p.ssafy.io:5000/api/v1/";
 
     @Autowired
@@ -46,16 +47,21 @@ public class FlaskService {
         // userNo를 JSON 객체에 추가
         JSONObject jsonRequestObject = new JSONObject(jsonRequest);
         jsonRequestObject.put("userNo", userNo);
-        HttpEntity<String> request = new HttpEntity<>(jsonRequestObject.toString(), headers);
 
         // POST 요청 보내기
         String NEW_URL = " ";
         if (type.equals("video")) {
             NEW_URL = FLASK_API_URL +"conversation/video";
+            if (userService.checkAdmin(userNo)) {
+                jsonRequestObject.put("admin", "true");
+            } else{
+                jsonRequestObject.put("admin", "false");
+            }
         } else if (type.equals("voice")) {
             NEW_URL = FLASK_API_URL + "conversation/voice";
         }
 
+        HttpEntity<String> request = new HttpEntity<>(jsonRequestObject.toString(), headers);
         ResponseEntity<ConversationResponseDto> responseEntity = restTemplate.exchange(
                 NEW_URL,
                 HttpMethod.POST,
