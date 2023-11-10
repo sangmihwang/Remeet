@@ -100,7 +100,7 @@ public class UserService {
     }
 
     public Boolean checkAdmin(Integer userNo) {
-        if (userRepository.findByUserNo(userNo).get().getIsAdmin()) {
+        if (userRepository.findByUserNo(userNo).get().getIsAdmin().equals("T")) {
             return true;
         } else {
             return false;
