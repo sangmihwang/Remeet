@@ -23,10 +23,10 @@ public class ProducedVideoEntity {
     @Column(name="pro_video_no")
     private Integer proVideoNo;
 
-    @Column(name="pro_video_name", nullable = false)
+    @Column(name="pro_video_name")
     private String proVideoName;
 
-    @Column(name="video_path", nullable = false)
+    @Column(name="video_path")
     private String videoPath;
 
     @Column(name="holo_path")

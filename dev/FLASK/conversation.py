@@ -112,11 +112,11 @@ def commonvideoMaker(avatar_id):
 
     return result["data"]["video_url"]
 
-
-def getVoiceId(voice_name):
+@app.route("api/v1/heyVoiceId", methods=['POST'])
+def getVoiceId():
     app.logger.info("HEYGEN_VIDEO_ID API ATTEMPT")
-
     global x_api_key
+    voice_name = request.json.get("type")
     hey_headers = {"accept": "application/json", "x-api-key": x_api_key}
     # talking photo ID 전체조회
     # url_avatar = "https://api.heygen.com/v1/talking_photo.list"
@@ -135,7 +135,7 @@ def getVoiceId(voice_name):
             voice_id = voice["voice_id"]
             break
 
-    return jsonify({"voice_id": voice_id})
+    return jsonify({"result": voice_id})
 
 
 def videoMaker(text, voice_id, avatar_id):

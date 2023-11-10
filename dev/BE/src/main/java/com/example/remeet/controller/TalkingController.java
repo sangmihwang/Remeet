@@ -5,6 +5,7 @@ import com.example.remeet.dto.ConversationResponseDto;
 import com.example.remeet.dto.FlaskResponseDto;
 
 import com.example.remeet.service.FlaskService;
+import com.example.remeet.service.ModelBoardService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,6 +15,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 @CrossOrigin(value = "*", allowedHeaders = "*")
 @RequiredArgsConstructor
@@ -22,6 +25,16 @@ import java.io.IOException;
 @Slf4j
 public class TalkingController {
     private final FlaskService flaskService;
+    private final ModelBoardService modelBoardService;
+
+    @PostMapping("{modelNo}")
+    public ResponseEntity<Map<String, Integer>> makeConversation(@PathVariable("modelNo") Integer modelNo, @RequestBody String type) {
+        Integer conNo = modelBoardService.makeConversation(modelNo, type);
+        Map<String, Integer> conversationNo = new HashMap<>();
+        conversationNo.put("conversationNo", conNo);
+        return ResponseEntity.ok(conversationNo);
+    }
+
 
     @PostMapping("transcribe")
     public ResponseEntity<FlaskResponseDto> transcribeFile(@RequestParam("file") MultipartFile file) throws IOException {

@@ -78,6 +78,7 @@ public class FlaskService {
                 return file.getOriginalFilename();
             }
         });
+        body.add("type", type);
         HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<>(body, headers);
 
         // POST 요청 보내기
@@ -88,6 +89,8 @@ public class FlaskService {
             newURL = FLASK_API_URL + "transcribe";
         } else if (type.equals("profile")) {
             newURL = FLASK_API_URL + "signup";
+        } else {
+            newURL = FLASK_API_URL + "heyVoiceId";
         }
 
         ResponseEntity<FlaskResponseDto> responseEntity = restTemplate.exchange(
