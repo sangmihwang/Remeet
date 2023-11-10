@@ -40,4 +40,8 @@ public class UserEntity {
     @Column(name = "user_email")
     private String userEmail;
 
+    @NotNull
+    @Column(name = "is_admin", columnDefinition = "CHAR(1) DEFAULT 'F'")
+    private String isAdmin;
+
 }
