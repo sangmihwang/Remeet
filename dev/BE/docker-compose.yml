@@ -2,11 +2,13 @@
 version: '3.8'
 
 services:
-  flask-app:
+  spring-app:
     build:
       
-      dockerfile: Dockerfile.conversation
-    container_name: my-flask-conversation-container
+      dockerfile: dockerfile
+    container_name: my-springboot-container
+    ports:
+      - "8080:8080"
     networks:
       - app-network
 
