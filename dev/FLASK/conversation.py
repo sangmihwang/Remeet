@@ -112,7 +112,7 @@ def commonvideoMaker(avatar_id):
 
     return result["data"]["video_url"]
 
-@app.route("api/v1/heyVoiceId", methods=['POST'])
+@app.route("/api/v1/heyVoiceId", methods=['POST'])
 def getVoiceId():
     app.logger.info("HEYGEN_VIDEO_ID API ATTEMPT")
     global x_api_key
@@ -138,16 +138,16 @@ def getVoiceId():
     return jsonify({"result": voice_id})
 
 
-def videoMaker(text, voice_id, avatar_id):
+def videoMaker(text, voice_id, avatar_id, admin):
     app.logger.info("HEYGEN_VIDEO_MAKER API ATTEMPT")
     global x_api_key
-
+    test = False if admin else True
     # voice ID 와 talking photo ID를 선택해 input text로 영상 생성
     url_avatar = "https://api.heygen.com/v1/video.generate"
     payload_avatar = {
         "background": "#ffffff",
         "ratio": "16:9",
-        "test": False,
+        "test": test,
         "version": "v1alpha",
         "clips": [
             {
@@ -533,7 +533,8 @@ def make_conversation_video():
     answer = gpt_answer(model_name, conversation_text, input_text)
     voice = request.json.get("heyVoiceId")
     avatar = request.json.get("avatarId")
-    videoPath = videoMaker(answer, voice, avatar)
+    is_admin = request.json.get("admin")
+    videoPath = videoMaker(answer, voice, avatar, is_admin)
     return jsonify({"answer": answer, "url": videoPath})
 
 

@@ -99,4 +99,11 @@ public class UserService {
         else return true;
     }
 
+    public Boolean checkAdmin(Integer userNo) {
+        if (userRepository.findByUserNo(userNo).get().getIsAdmin()) {
+            return true;
+        } else {
+            return false;
+        }
+    }
 }
