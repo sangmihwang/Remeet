@@ -38,17 +38,19 @@ const AudioRecorder = ({
       console.log(res);
       pushHistory(res.data.result, 1);
       setCurrentTranscribe(res.data.result);
-      const voiceForm = {
-        question: res.data.result,
-        modelName: modelInformation?.modelName || '',
-        conversationText: modelInformation?.conversationText2 || '',
-        history,
-        eleVoiceId: 'uxgSoqINxv9NZ5NwNoZb',
-        conversationNo: 1,
-        userNo: 1,
-        modelNo: 1,
-      };
-      conversateVoiceMutation.mutate(voiceForm);
+      if (modelInformation) {
+        const voiceForm = {
+          question: res.data.result,
+          modelName: modelInformation.modelName,
+          conversationText: modelInformation.conversationText2,
+          history,
+          eleVoiceId: 'uxgSoqINxv9NZ5NwNoZb',
+          conversationNo: 1,
+          userNo: 1,
+          modelNo: modelInformation?.modelNo,
+        };
+        conversateVoiceMutation.mutate(voiceForm);
+      }
     },
     onError: (err) => console.log(err),
   });
