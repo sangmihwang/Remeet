@@ -28,7 +28,7 @@ import java.util.Map;
 public class FlaskService {
     private RestTemplate restTemplate;
     private UserService userService;
-    private final String FLASK_API_URL = "http://flask-app:5000/api/v1/";
+    private final String FLASK_API_URL = "http://localhost:5000/api/v1/";
 
     @Autowired
     public FlaskService(RestTemplate restTemplate) {
@@ -71,7 +71,7 @@ public class FlaskService {
         return responseEntity.getBody();
     }
 
-    public FlaskResponseDto callFlaskByMultipartFile(MultipartFile file, String type) throws IOException {
+    public FlaskResponseDto callFlaskByMultipartFile(MultipartFile file, Integer userNo, Integer modelNo, Integer conversationNo , String type) throws IOException {
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.MULTIPART_FORM_DATA); // Content-Type을 multipart/form-data로 설정
@@ -85,6 +85,9 @@ public class FlaskService {
             }
         });
         body.add("type", type);
+        body.add("userNo", userNo);
+        body.add("modelNo", modelNo);
+        body.add("conversationNo", conversationNo);
         HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<>(body, headers);
 
         // POST 요청 보내기

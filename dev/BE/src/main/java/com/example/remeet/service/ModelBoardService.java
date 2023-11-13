@@ -65,7 +65,7 @@ public class ModelBoardService {
 
         for (MultipartFile imageFile : imageFiles) {
             for (String imagePath : uploadedImagePaths){
-                String avatar = flaskService.callFlaskByMultipartFile(imageFile, "avatar").getResult();
+                String avatar = flaskService.callFlaskByMultipartFile(imageFile,0,0,0, "avatar").getResult();
                 ModelBoardEntity resetModel = modelBoardRepository.findByModelNo(modelNo).get();
                 resetModel.setImagePath(imagePath);
                 resetModel.setAvatarId(avatar);
@@ -228,7 +228,7 @@ public class ModelBoardService {
 
     public void updateHeyVoiceId(NeedUpdateModelDto needUpdateModelDto) throws IOException{
         ModelBoardEntity getModel = modelBoardRepository.findByModelNo(needUpdateModelDto.getModelNo()).get();
-        String heyVoiceId = flaskService.callFlaskByMultipartFile(null, needUpdateModelDto.getModelName()).getResult();
+        String heyVoiceId = flaskService.callFlaskByMultipartFile(null,0,0,0, needUpdateModelDto.getModelName()).getResult();
         getModel.setHeyVoiceId(heyVoiceId);
         modelBoardRepository.save(getModel);
     }

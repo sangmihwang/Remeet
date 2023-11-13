@@ -98,7 +98,6 @@ def commonvideoMaker(avatar_id):
     }
 
     response_silent = requests.post(url_silent, json=payload_silent, headers=headers)
-    app.logger.info("HEYGEN_COMMON_VIDEO API Response result : ", response_silent.status_code)
 
     tmp = json.loads(response_silent.text)
     video_id = tmp["data"]["video_id"]
@@ -128,7 +127,6 @@ def getVoiceId():
     url_voice = "https://api.heygen.com/v1/voice.list"
     voice_list = requests.get(url_voice, headers=hey_headers)
     voice_json = json.loads(voice_list.text)
-    app.logger.info("HEYGEN_VIDEO_ID API Response result : ", voice_list.status_code)
 
     # voice name으로 voice ID 조회
     voice_id = "none"
@@ -171,7 +169,6 @@ def videoMaker(text, voice_id, avatar_id, admin):
     }
 
     response_avatar = requests.post(url_avatar, json=payload_avatar, headers=headers)
-    app.logger.info("HEYGEN_VIDEO_MAKER API Response result : ", response_avatar.status_code)
 
     # print(response_avatar.text)
     # print(response_avatar.text["data"]["video_id"])
@@ -228,7 +225,6 @@ def gpt_answer(model_name, conversation_text, input_text):
             ],
         },
     )
-    app.logger.info("GPT API Response result : ", response.status_code)
     chat_response = (
         response.json().get("choices", [{}])[0].get("message", {}).get("content", "")
     )
@@ -259,7 +255,6 @@ def make_voice(model_name, gender, audio_files):
         make_voice_url, headers=headers, data=data, files=audio_files
     )
     response.raise_for_status()
-    app.logger.info("MAKE_VOICE API Response result : ", response.status_code)
     json_response = response.json()
 
     if "voice_id" not in json_response:
@@ -291,7 +286,6 @@ def make_tts(ele_voice_id, text, user_no, model_no, conversation_no):
     }
 
     response = requests.post(tts_url, json=data, headers=headers, stream=True)
-    app.logger.info("TTS API Response result : ", response.status_code)
 
     # API 응답 상태 확인
     if response.status_code != 200:
@@ -426,43 +420,38 @@ def transcribe_audio():
 
             # .wav 파일로 변환
             temp_wav_path = os.path.join(temp_dir, "temp_info_check.wav")
-            try:
-                audio = AudioSegment.from_file(temp_blob_path)
-                audio = audio.set_frame_rate(16000).set_channels(1).set_sample_width(2)
-                audio.export(temp_wav_path, format="wav", codec="pcm_s16le")
-            except Exception as e:
-                app.logger.info("STT API Response result : ", 422, "- Error in file conversion")
-                return jsonify({"error": "Error in file conversion"}), 422
-
+            audio = AudioSegment.from_file(temp_blob_path)
+            audio = audio.set_frame_rate(16000).set_channels(1).set_sample_width(2)
+            audio.export(temp_wav_path, format="wav", codec="pcm_s16le")
             # 변환된 .wav 파일을 읽어오기
-        with open(temp_wav_path, "rb") as audio_file:
-            audio_content = audio_file.read()
-            try:
-                # 오디오 파일을 텍스트로 변환
-                credentials = service_account.Credentials.from_service_account_file(key_path)
-                client = speech.SpeechClient(credentials=credentials)
+            with open(temp_wav_path, "rb") as audio_file:
+                audio_content = audio_file.read()
+                try:
+                    # 오디오 파일을 텍스트로 변환
+                    credentials = service_account.Credentials.from_service_account_file(key_path)
+                    client = speech.SpeechClient(credentials=credentials)
 
-                audio = speech.RecognitionAudio(content=audio_content)
-                config = speech.RecognitionConfig(
-                    encoding=speech.RecognitionConfig.AudioEncoding.LINEAR16,
-                    sample_rate_hertz=16000,
-                    language_code='ko-KR'
-                )
+                    audio = speech.RecognitionAudio(content=audio_content)
+                    config = speech.RecognitionConfig(
+                        encoding=speech.RecognitionConfig.AudioEncoding.LINEAR16,
+                        sample_rate_hertz=16000,
+                        language_code='ko-KR'
+                    )
 
-                response = client.recognize(config=config, audio=audio)
+                    response = client.recognize(config=config, audio=audio)
 
-                # 변환된 텍스트를 수집
-                transcripts = [result.alternatives[0].transcript for result in response.results]
-                return jsonify({"result" : transcripts[0]}), 200
-            except response.GoogleAPICallError as e:
-                app.logger.info("STT API Response result : ", 500, "- Error calling Google API")
-                return jsonify({"error": "Error calling Google API"}), 500
-            except response.RetryError as e:
-                app.logger.info("STT API Response result : ", 500, "- Error with API retry logic")
-                return jsonify({"error": "Error with API retry logic"}), 500
-            except response.TooManyRequests as e:
-                app.logger.info("STT API Response result : ", 429, "- Too many requests to the API")
-                return jsonify({"error": "Too many requests to the API"}), 429
+                    # 변환된 텍스트를 수집
+                    transcripts = [result.alternatives[0].transcript for result in response.results]
+                    return jsonify({"result" : transcripts[0]}), 200
+                except response.GoogleAPICallError as e:
+                    app.logger.info("STT API Response result : ", 500, "- Error calling Google API")
+                    return jsonify({"error": "Error calling Google API"}), 500
+                except response.RetryError as e:
+                    app.logger.info("STT API Response result : ", 500, "- Error with API retry logic")
+                    return jsonify({"error": "Error with API retry logic"}), 500
+                except response.TooManyRequests as e:
+                    app.logger.info("STT API Response result : ", 429, "- Too many requests to the API")
+                    return jsonify({"error": "Too many requests to the API"}), 429
                     
             # 임시 파일은 이 블록을 벗어나면 자동으로 삭제됩니다.
     app.logger.info("STT API Response result : ", 400, "- Invalid file")
@@ -528,7 +517,6 @@ def upload_avatar():
             data=file,  # 파일의 내용을 읽어서 줘야함
             headers={"Content-Type": "image/jpeg", "x-api-key": x_api_key},
         )
-    app.logger.info("CREATE_AVATAR_ID API Response result : ", resp.status_code)
     return jsonify({"result" : resp.json()["data"]["talking_photo_id"]}), 200
 
 # 기본 영상 생성 API
@@ -573,6 +561,7 @@ def make_conversation_voice():
         model_no = request.json.get("modelNo")
         conversation_no = request.json.get("conversationNo")
         voice_url = make_tts(ele_voice_id, answer, user_no, model_no, conversation_no)
+        print(answer, input_text)
         return jsonify({"answer": answer, "url": voice_url})
 
     except Exception as e:
@@ -634,4 +623,4 @@ def signup_image():
 # 회원가입 image 저장 API : 561번째줄부터 시작
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=False)
+    app.run(host="0.0.0.0", port=5000, debug=True)
