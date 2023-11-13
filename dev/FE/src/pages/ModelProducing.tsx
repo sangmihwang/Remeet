@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from 'react';
 import styled, { keyframes } from 'styled-components';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -38,11 +39,21 @@ const ImageWrapper = styled.div`
   width: fit-content;
   margin: 5rem auto 0;
 `;
-const ServiceName = styled.div`
+const ServiceWrapper = styled.div`
+  width: fit-content;
+  margin: 2rem auto 0;
+`;
+const ServiceTitle = styled.div`
   color: var(--primary-color);
-  font-size: 1.6rem;
+  font-size: 2.2rem;
+  font-weight: 1000;
+  width: fit-content;
+`;
+const ServiceSubTitle = styled.div`
+  color: var(--primary-color);
+  font-size: 0.8rem;
   font-weight: 600;
-  margin: 0.5rem auto;
+  left: 0;
   width: fit-content;
 `;
 const ProducingAlert = styled.div`
@@ -60,25 +71,39 @@ const ProducingAlert = styled.div`
   justify-content: center;
 `;
 const fillAnimation = keyframes`
-  from { width: 0%; }
-  to { width: 80%; }
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
 `;
 const ProgressBar = styled.div`
   height: 10%;
   background-color: var(--primary-color);
-  width: 0%;
-  border-radius: 5px;
-  margin-top: 1.5rem;
-  margin-left: 10%;
+  width: 100%;
+  border-radius: 15px;
+  margin: 1rem;
+  position: relative;
+  transform: scaleX(0);
+  transform-origin: left center;
   animation: ${fillAnimation} 15s ease-in-out forwards;
 `;
 const ProgressWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
   margin: 1rem auto;
-  width: 90%;
+  width: 80%;
   height: 12rem;
-  border-radius: 20px;
+  border-radius: 10px;
   background-color: #f6f6f6;
   overflow: hidden;
+  padding: 0.3rem 1rem;
+`;
+const ProgressRate = styled.div`
+  align-self: center;
+  margin: 0.5rem auto 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--primary-color);
 `;
 
 const ModelProducing = () => {
@@ -87,7 +112,7 @@ const ModelProducing = () => {
   const { modelNo } = useParams<{ modelNo?: string }>();
   const headerContent = {
     left: 'Back',
-    title: 'Re:meet',
+    title: '',
     right: '',
   };
   const { data: modelInfomation } = useQuery<ModelInformation | undefined>(
@@ -102,6 +127,23 @@ const ModelProducing = () => {
       console.error('해당 번호 모델 없음');
     }
   };
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setProgress((oldProgress) => {
+        if (oldProgress === 100) {
+          clearInterval(interval);
+          return 100;
+        }
+        return oldProgress + 1;
+      });
+    }, 150);
+
+    return () => {
+      clearInterval(interval);
+    };
+  }, []);
   return (
     <div>
       <HeaderBackGround />
@@ -109,8 +151,11 @@ const ModelProducing = () => {
         <PageHeader content={headerContent} type={2} />
       </TitleWrapper>
       <ProgressWrapper>
-        <ProducingAlert>모델을 제작 중입니다</ProducingAlert>
-        <ServiceName>Re:meet</ServiceName>
+        <ServiceWrapper>
+          <ServiceSubTitle>Over The Limit,</ServiceSubTitle>
+          <ServiceTitle>Re:meet</ServiceTitle>
+        </ServiceWrapper>
+        <ProgressRate>{progress}%</ProgressRate>
         <ProgressBar />
       </ProgressWrapper>
       <ImageWrapper>
@@ -133,7 +178,7 @@ const ModelProducing = () => {
           onClick={() => handleTalkStart()}
         />
       </ButtonWrapper>
-
+      <ProducingAlert>모델을 제작 중입니다</ProducingAlert>
       <BottomNavigation />
     </div>
   );
