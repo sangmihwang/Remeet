@@ -3,7 +3,6 @@ package com.example.remeet.dto;
 import lombok.Data;
 
 @Data
-public class STTResponseDto {
-    private String text;
-
+public class FlaskResponseDto {
+    private String result;
 }

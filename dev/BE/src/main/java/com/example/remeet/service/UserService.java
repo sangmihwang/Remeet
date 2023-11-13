@@ -1,7 +1,6 @@
 package com.example.remeet.service;
 
 import com.example.remeet.dto.TokenResponseDto;
-import com.example.remeet.dto.UserDataDto;
 import com.example.remeet.dto.UserInfoDto;
 import com.example.remeet.dto.UserLoginDto;
 import com.example.remeet.entity.RefreshTokenEntity;
@@ -12,7 +11,6 @@ import com.example.remeet.util.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.mindrot.jbcrypt.BCrypt;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -33,7 +31,7 @@ public class UserService {
     public void signUp(String userId, String password, String userName, MultipartFile imagePath, String userEmail) throws IOException {
         String imageURL = " ";
         if (imagePath != null && !imagePath.isEmpty()) {
-            imageURL = flaskService.callFlaskByMultipartFile(imagePath, "profile");
+            imageURL = flaskService.callFlaskByMultipartFile(imagePath, "profile").getResult();
         } else {
             imageURL = "common";
         }
@@ -44,6 +42,7 @@ public class UserService {
                 .password(BCrypt.hashpw(password, BCrypt.gensalt()))
                 .profileImg(imageURL)
                 .userEmail(userEmail)
+                .isAdmin("F")
                 .build();
         userRepository.save(newMember);
     }
@@ -68,8 +67,12 @@ public class UserService {
         userInfo.setUserNo(user.getUserNo());
         userInfo.setUserName(user.getUserName());
         userInfo.setImagePath(user.getProfileImg());
-
+        userInfo.setUserEmail(user.getUserEmail());
         return userInfo;
+    }
+
+    public void deleteRefreshToken(Integer userNo){
+        redisRepository.deleteById(userNo);
     }
 
     public String getUserId(Integer userNo) {
@@ -95,5 +98,13 @@ public class UserService {
     public boolean checkRefreshToken(String token){
         if(redisRepository.findByRefreshToken(token) == null) return false; // 리프레시 토큰이 유효하다면 true 아니라면 false 반환
         else return true;
+    }
+
+    public Boolean checkAdmin(Integer userNo) {
+        if (userRepository.findByUserNo(userNo).get().getIsAdmin().equals("T")) {
+            return true;
+        } else {
+            return false;
+        }
     }
 }

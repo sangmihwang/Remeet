@@ -12,7 +12,6 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class VideoService {
-    private final ModelBoardRepository modelBoardRepository;
     private final ProducedVideoRepository producedVideoRepository;
 
     public List<VideoDataDto> recentProducedVideo(Integer userNo) {
