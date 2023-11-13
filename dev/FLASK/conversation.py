@@ -14,6 +14,7 @@ import ffmpeg
 import json
 from flask_cors import CORS
 import logging
+from moviepy.editor import VideoFileClip, clips_array, ImageClip
 
 app = Flask(__name__)
 # .env 파일에서 환경 변수를 로드합니다.
@@ -28,14 +29,89 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 REGION_NAME = "ap-northeast-2"
 BUCKET_NAME = "remeet"
-ALLOWED_EXTENSIONS = { "txt", "pdf", "png", "jpg", "jpeg","gif","mp4", "wav", "mp3", "mp4", "avi","mov","flv","wmv",}
+ALLOWED_EXTENSIONS = {
+    "txt",
+    "pdf",
+    "png",
+    "jpg",
+    "jpeg",
+    "gif",
+    "mp4",
+    "wav",
+    "mp3",
+    "mp4",
+    "avi",
+    "mov",
+    "flv",
+    "wmv",
+}
 
 # S3 클라이언트 설정
 s3_client = boto3.client(
     "s3",
     aws_access_key_id=AWS_ACCESS_KEY_ID,
     aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
-    region_name=REGION_NAME,)
+    region_name=REGION_NAME,
+)
+
+
+######
+# Function to download video from S3
+def download_from_s3(bucket, object_name, local_file_path):
+    s3_client.download_file(bucket, object_name, local_file_path)
+
+
+# Function to create hologram video and upload to S3
+def make_hologram_video(input_video_path, bucket_name, s3_file_path):
+    # Load video
+    clip = VideoFileClip(input_video_path)
+    duration = clip.duration
+    transparent_clip = (
+        ImageClip("transparent.png", duration=duration)
+        .set_opacity(0)
+        .resize(height=clip.size[1])
+    )
+
+    # Create hologram effect
+    top_clip = clip.rotate(angle=45, resample="bicubic")
+    bottom_clip = clip.rotate(angle=315, resample="bicubic")
+    left_clip = clip.rotate(angle=135, resample="bicubic")
+    right_clip = clip.rotate(angle=225, resample="bicubic")
+    final_clip = clips_array([[top_clip, bottom_clip], [left_clip, right_clip]])
+
+    # Use a temporary file for output to ensure it's deleted after use
+    with tempfile.NamedTemporaryFile(suffix=".mp4", delete=False) as temp_output_video:
+        output_video_path = temp_output_video.name
+        # final_clip = clips_array([...])  # Your clips array logic
+        final_clip.write_videofile(output_video_path, codec="libx264")
+
+        # Upload to S3
+        s3_client.upload_file(output_video_path, bucket_name, s3_file_path)
+
+    # Delete the temporary output file
+    os.remove(output_video_path)
+
+
+# Flask route to process video
+@app.route("/process-video", methods=["POST"])
+def process_video():
+    data = request.json
+    path = data["path"]
+    input_object_name = path + "merged_video.mp4"
+    s3_output_path = path + "holo_video.mp4"
+    bucket_name = BUCKET_NAME
+
+    # Use a temporary file for input to ensure it's deleted after use
+    with tempfile.NamedTemporaryFile(delete=True) as temp_input_video:
+        input_video_path = temp_input_video.name
+        download_from_s3(bucket_name, input_object_name, input_video_path)
+        # Process the video and upload to S3
+        make_hologram_video(input_video_path, bucket_name, s3_output_path)
+
+    return jsonify({"message": "Video processed and uploaded successfully."})
+
+
+#######
 
 
 def allowed_file(filename):
@@ -45,6 +121,7 @@ def allowed_file(filename):
 def convert_blob_to_wav(blob_path, output_path):
     sound = AudioSegment.from_file(blob_path, format="webm")
     sound.export(output_path, format="wav")
+
 
 def get_wav_info(wav_filename):
     with wave.open(wav_filename, "rb") as wf:
@@ -61,6 +138,7 @@ def get_wav_info(wav_filename):
             "n_frames": n_frames,
             "duration": duration,
         }
+
 
 # Heygen API 관련
 # Heygen API 관련
@@ -95,7 +173,9 @@ def commonvideoMaker(avatar_id):
     }
 
     response_silent = requests.post(url_silent, json=payload_silent, headers=headers)
-    app.logger.info("HEYGEN_COMMON_VIDEO API Response result : ", response_silent.status_code)
+    app.logger.info(
+        "HEYGEN_COMMON_VIDEO API Response result : ", response_silent.status_code
+    )
 
     tmp = json.loads(response_silent.text)
     video_id = tmp["data"]["video_id"]
@@ -112,7 +192,8 @@ def commonvideoMaker(avatar_id):
 
     return result["data"]["video_url"]
 
-@app.route("/api/v1/heyVoiceId", methods=['POST'])
+
+@app.route("/api/v1/heyVoiceId", methods=["POST"])
 def getVoiceId():
     app.logger.info("HEYGEN_VIDEO_ID API ATTEMPT")
     global x_api_key
@@ -168,7 +249,9 @@ def videoMaker(text, voice_id, avatar_id, admin):
     }
 
     response_avatar = requests.post(url_avatar, json=payload_avatar, headers=headers)
-    app.logger.info("HEYGEN_VIDEO_MAKER API Response result : ", response_avatar.status_code)
+    app.logger.info(
+        "HEYGEN_VIDEO_MAKER API Response result : ", response_avatar.status_code
+    )
 
     # print(response_avatar.text)
     # print(response_avatar.text["data"]["video_id"])
@@ -195,7 +278,7 @@ def videoMaker(text, voice_id, avatar_id, admin):
 def gpt_answer(model_name, conversation_text, input_text):
     app.logger.info("GPT API ATTEMPT")
     global OPENAI_API_KEY
-    
+
     first_setting = """
     너는 {0} 인척 나랑 대화를 해야해. {0}은 죽었어.
     평소 {0}와 나의 대화가 있어.
@@ -342,6 +425,7 @@ def make_tts(ele_voice_id, text, user_no, model_no, conversation_no):
 # 파일 업로드 API
 # 파일 업로드 API
 
+
 @app.route("/api/v1/upload/files", methods=["POST"])
 def upload_files():
     app.logger.info("UPLOAD_FILES API ATTEMPT")
@@ -375,10 +459,10 @@ def upload_files():
                         target_path, vcodec="libx264", acodec="aac"
                     ).run(overwrite_output=True)
 
-            if fileType == "voice" and file.filename.split(".")[1].lower() != 'mp3':
+            if fileType == "voice" and file.filename.split(".")[1].lower() != "mp3":
                 new_path = f'{file.filename.split(".")[0]}' + ".mp3"
                 convert_audio_to_mp3(temp_blob_path, new_path)
-            elif fileType == "video" and file.filename.split(".")[1].lower() != 'mp4':
+            elif fileType == "video" and file.filename.split(".")[1].lower() != "mp4":
                 new_path = f'{file.filename.split(".")[0]}.mp4'
                 convert_video_to_mp4(temp_blob_path, new_path)
             else:
@@ -402,6 +486,7 @@ def upload_files():
 
 # STT API
 # STT API
+
 
 @app.route("/api/v1/transcribe", methods=["POST"])
 def transcribe_audio():
@@ -438,12 +523,34 @@ def transcribe_audio():
                     text = r.recognize_google(audio_data, language="ko-KR")
                     return jsonify({"result": text}), 200
                 except sr.UnknownValueError:
-                    app.logger.info("STT API Response result : ", 422, "- Speech Recognition could not understand the audio")
-                    return jsonify({"error": "Speech Recognition could not understand the audio"}), 422
+                    app.logger.info(
+                        "STT API Response result : ",
+                        422,
+                        "- Speech Recognition could not understand the audio",
+                    )
+                    return (
+                        jsonify(
+                            {
+                                "error": "Speech Recognition could not understand the audio"
+                            }
+                        ),
+                        422,
+                    )
                 except sr.RequestError as e:
-                    app.logger.info("STT API Response result : ", 503, f"- Could not request results from the Speech Recognition service; {e}")
-                    return jsonify({"error": f"Could not request results from the Speech Recognition service; {e}"}),503
-                    
+                    app.logger.info(
+                        "STT API Response result : ",
+                        503,
+                        f"- Could not request results from the Speech Recognition service; {e}",
+                    )
+                    return (
+                        jsonify(
+                            {
+                                "error": f"Could not request results from the Speech Recognition service; {e}"
+                            }
+                        ),
+                        503,
+                    )
+
             # 임시 파일은 이 블록을 벗어나면 자동으로 삭제됩니다.
     app.logger.info("STT API Response result : ", 400, "- Invalid file")
     return jsonify({"error": "Invalid file"}), 400
@@ -451,6 +558,7 @@ def transcribe_audio():
 
 # VOICE MODEL 생성 API
 # VOICE MODEL 생성 API
+
 
 @app.route("/api/v1/conversation/makevoice", methods=["POST"])
 def make_voice_model():
@@ -468,12 +576,13 @@ def make_voice_model():
         return jsonify({"voice_id": voice_id})
     except Exception as e:
         print(str(e))
-        app.logger.info("MAKE_VOICE API Response result : ", 500, "-",str(e))
+        app.logger.info("MAKE_VOICE API Response result : ", 500, "-", str(e))
         return jsonify({"error": str(e)}), 500
 
 
 # AVATAR 생성 API
 # AVATAR 생성 API
+
 
 @app.route("/api/v1/createAvatarID", methods=["POST"])
 def upload_avatar():
@@ -481,27 +590,32 @@ def upload_avatar():
     # Avatar로 사용할 사진 업로드
     x_api_key = os.getenv("x_api_key")
     if "file" not in request.files:
-        app.logger.info("CREATE_AVATAR_ID API Response result : ", 400, "- No file part")
+        app.logger.info(
+            "CREATE_AVATAR_ID API Response result : ", 400, "- No file part"
+        )
         return jsonify(error="No file part"), 400
     file = request.files["file"]
     if file.filename == "":
-        app.logger.info("CREATE_AVATAR_ID API Response result : ", 400, "- No selected file")
+        app.logger.info(
+            "CREATE_AVATAR_ID API Response result : ", 400, "- No selected file"
+        )
         return jsonify(error="No selected file"), 400
     # files = {'file': (file.filename, file, 'image/jpeg')}
     temp_blob_path = secure_filename(file.filename)  # 안전한 파일 이름 사용
     file.save(temp_blob_path)
+
     def convert_image_to_jpeg(source_path, target_path):
         if source_path == target_path:
             target_path = "tmp_" + os.path.basename(target_path)
         ffmpeg.input(source_path).output(
-            target_path, format='image2', vcodec='mjpeg'
+            target_path, format="image2", vcodec="mjpeg"
         ).run(overwrite_output=True)
 
     if allowed_file(file):
         new_path = file.filename
-    else : 
+    else:
         new_path = f'{file.filename.split(".")[0]}.jpeg'
-        convert_image_to_jpeg(temp_blob_path,new_path)
+        convert_image_to_jpeg(temp_blob_path, new_path)
     with open(new_path, "rb") as file:
         resp = requests.post(
             "https://upload.heygen.com/v1/talking_photo",
@@ -509,7 +623,8 @@ def upload_avatar():
             headers={"Content-Type": "image/jpeg", "x-api-key": x_api_key},
         )
     app.logger.info("CREATE_AVATAR_ID API Response result : ", resp.status_code)
-    return jsonify({"result" : resp.json()["data"]["talking_photo_id"]}), 200
+    return jsonify({"result": resp.json()["data"]["talking_photo_id"]}), 200
+
 
 # 기본 영상 생성 API
 # 기본 영상 생성 API
@@ -569,21 +684,30 @@ def signup_image():
     app.logger.info(key)
     if "file" not in request.files:
         app.logger.info("SIGNUP_IMAGE API Response result : ", 403, "- No file part")
-        return jsonify({ "error" : "No file part" }), 403
+        return jsonify({"error": "No file part"}), 403
 
     file = request.files.get("file")
 
     if file:
         folder_key = f"PROFILE/"
-        type = file.filename.split('.')[-1]
-        existing_files = s3_client.list_objects_v2(Bucket=BUCKET_NAME, Prefix=folder_key)
-        existing_file_keys = [obj['Key'] for obj in existing_files.get('Contents', []) if obj['Key'].endswith(type)]
+        type = file.filename.split(".")[-1]
+        existing_files = s3_client.list_objects_v2(
+            Bucket=BUCKET_NAME, Prefix=folder_key
+        )
+        existing_file_keys = [
+            obj["Key"]
+            for obj in existing_files.get("Contents", [])
+            if obj["Key"].endswith(type)
+        ]
 
         # 새 파일 이름 생성
-        existing_indices = [int(key.split('/')[-1].split('.')[0]) for key in existing_file_keys if
-                            key.split('/')[-1].split('.')[0].isdigit()]
+        existing_indices = [
+            int(key.split("/")[-1].split(".")[0])
+            for key in existing_file_keys
+            if key.split("/")[-1].split(".")[0].isdigit()
+        ]
         next_index = 1 if not existing_indices else max(existing_indices) + 1
-        new_path = str(next_index)+'.' +type
+        new_path = str(next_index) + "." + type
         file.save(new_path)
         try:
             # 저장된 pcm 파일을 S3에 업로드
@@ -591,14 +715,14 @@ def signup_image():
                 s3_client.upload_fileobj(file, BUCKET_NAME, folder_key + new_path)
             os.remove(new_path)  # 임시 파일 삭제
             s3_url = f"https://remeet.s3.ap-northeast-2.amazonaws.com/{folder_key + new_path}"
-            return jsonify({'result': s3_url}),200
+            return jsonify({"result": s3_url}), 200
         except Exception as e:
             app.logger.info("SIGNUP_IMAGE API Response result : ", 405, "-", str(e))
-            return jsonify({'error' : e}), 405
+            return jsonify({"error": e}), 405
         # 각 파일 처리에 대한 응답을 저장
     else:
         app.logger.info("SIGNUP_IMAGE API Response result : ", 403, "- No file part")
-        return jsonify({ "error" : "No file part" }), 403
+        return jsonify({"error": "No file part"}), 403
 
 
 # HEYGEN API 관련 : 65번째줄부터 시작
