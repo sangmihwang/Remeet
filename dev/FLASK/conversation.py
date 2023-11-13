@@ -375,10 +375,10 @@ def upload_files():
                         target_path, vcodec="libx264", acodec="aac"
                     ).run(overwrite_output=True)
 
-            if fileType == "voice":
+            if fileType == "voice" and file.filename.split(".")[1].lower() != 'mp3':
                 new_path = f'{file.filename.split(".")[0]}' + ".mp3"
                 convert_audio_to_mp3(temp_blob_path, new_path)
-            elif fileType == "video":
+            elif fileType == "video" and file.filename.split(".")[1].lower() != 'mp4':
                 new_path = f'{file.filename.split(".")[0]}.mp4'
                 convert_video_to_mp4(temp_blob_path, new_path)
             else:
