@@ -32,7 +32,7 @@ const VideoWrapper = styled.div`
 
 const ContentWrpper = styled.div`
   width: 100%;
-  height: 40 vh;
+  height: 40vh;
   background-color: #fff;
 `;
 
