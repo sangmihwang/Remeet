@@ -53,7 +53,6 @@ const BoardPage = () => {
     right: 'Add',
   };
   const navigate = useNavigate();
-  // const [option, setOption] = useState('all');
   const option = 'all';
   const [searchTerm, setSearchTerm] = useState('');
   const { data: peopleList } = useQuery<AxiosResponse<PeopleListItem[]>>(
