@@ -38,7 +38,8 @@ const ImageWrapper = styled.div<{ $imagePath: string }>`
   height: 6rem;
   background-image: url(${(props) => props.$imagePath});
   background-position: center;
-  background-size: contain;
+  background-size: cover;
+  background-repeat: no-repeat;
 `;
 
 const SignUpPage = () => {
@@ -159,10 +160,6 @@ const SignUpPage = () => {
       if (imageFile && imageFile.blob) {
         formData.append('imagePath', imageFile.blob);
       }
-      Object.entries(signUpForm).forEach(([key, value]) => {
-        console.log(key, value);
-      });
-
       // mutation에 formData를 넘겨줍니다.
       mutation.mutate(formData);
     } else {

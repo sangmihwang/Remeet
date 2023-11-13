@@ -1,18 +1,119 @@
-import axios from 'axios';
 import { useState, useRef } from 'react';
+import { useMutation } from '@tanstack/react-query';
+import styled from 'styled-components';
 import AudioPlayerTest from './AudioPlayerTest';
+import { ModelInformation } from '@/types/peopleList';
+import { conversateVideo, conversateVoice, transcribeVoice } from '@/api/talk';
+import { History } from '@/types/talk';
+import useAuth from '@/hooks/useAuth';
 
-const TESTURL = 'http://localhost:5000/api/v1';
+const Wrapper = styled.div`
+  height: 25vh;
+`;
+
+const RecordButton = styled.button`
+  width: 2rem;
+  height: 2rem;
+  border-radius: 100%;
+  background-color: #f6f6f6;
+  background-image: url('/icon/mic_icon.svg');
+  background-repeat: no-repeat;
+  background-size: 80%;
+  background-position: center;
+`;
+
+const TextWrapper = styled.div`
+  width: 86vw;
+  height: 3rem;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #ebebeb;
+`;
+
+const Text = styled.div`
+  font-size: 0.875rem;
+  width: 70vw;
+`;
 
 interface AudioRecorderProps {
-  setVideoSrc: (url: string) => void;
+  setVideoSrc?: (url: string) => void;
+  modelInformation: ModelInformation | undefined;
+  pushHistory: (text: string, speakerType: number) => void;
+  history: History[];
+  conversationNo: number;
 }
 
-const AudioRecorder = ({ setVideoSrc }: AudioRecorderProps) => {
+const AudioRecorder = ({
+  setVideoSrc,
+  modelInformation,
+  pushHistory,
+  history,
+  conversationNo,
+}: AudioRecorderProps) => {
   const [recording, setRecording] = useState<boolean>(false);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const [audioSrc, setAudioSrc] = useState<string | null>(null);
+  const [currentTranscribe, setCurrentTranscribe] = useState<string>('');
+  const { userInfo } = useAuth();
+  const conversateVideoMutation = useMutation(conversateVideo, {
+    onSuccess: (res) => {
+      console.log(res);
+      if (setVideoSrc) {
+        setVideoSrc(res.data.url);
+      }
+      pushHistory(res.data.answer, 2);
+    },
+    onError: (err) => {
+      console.log(err);
+    },
+  });
+  const conversateVoiceMutation = useMutation(conversateVoice, {
+    onSuccess: (res) => {
+      console.log(res);
+      setAudioSrc(res.data.url);
+      pushHistory(res.data.answer, 2);
+    },
+    onError: (err) => {
+      console.log(err);
+    },
+  });
+  const transcribeMutation = useMutation(transcribeVoice, {
+    onSuccess: (res) => {
+      console.log(res);
+      pushHistory(res.data.result, 1);
+      setCurrentTranscribe(res.data.result);
+      if (modelInformation && userInfo && !setVideoSrc) {
+        const voiceForm = {
+          question: res.data.result,
+          modelName: modelInformation.modelName,
+          conversationText: modelInformation.conversationText2,
+          history,
+          eleVoiceId: 'uxgSoqINxv9NZ5NwNoZb',
+          conversationNo,
+          userNo: userInfo.userId,
+          modelNo: modelInformation?.modelNo,
+        };
+        conversateVoiceMutation.mutate(voiceForm);
+      }
+      if (modelInformation && userInfo && setVideoSrc) {
+        const videoForm = {
+          question: res.data.result,
+          modelName: modelInformation.modelName,
+          conversationText: modelInformation.conversationText2,
+          history,
+          heyVoiceId: 'uxgSoqINxv9NZ5NwNoZb',
+          conversationNo,
+          userNo: userInfo.userId,
+          modelNo: modelInformation?.modelNo,
+          avatarId: modelInformation.avatarId,
+        };
+        conversateVideoMutation.mutate(videoForm);
+      }
+    },
+    onError: (err) => console.log(err),
+  });
 
   const startRecording = async () => {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -26,47 +127,13 @@ const AudioRecorder = ({ setVideoSrc }: AudioRecorderProps) => {
 
     mediaRecorder.onstop = () => {
       const newAudioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-      setAudioBlob(newAudioBlob);
       // You can save or send the audioBlob to the server now
       // FormData를 만들어서 음성 파일 추가
       const formData = new FormData();
       formData.append('file', newAudioBlob, 'audio.wav'); // 'audio'는 서버에서 받을 이름, 'audio.wav'는 파일 이름
 
       // axios를 사용하여 서버에 POST 요청 보내기
-      axios
-        .post(`${TESTURL}/transcribe`, formData)
-        .then((response: any) => {
-          console.log('Successfully uploaded audio:', response.data);
-          setAudioSrc(response.data.text);
-          axios
-            .post(`${TESTURL}/conversation/voice`, {
-              // question: response.data.transcription,
-              // heyVoiceId: '720b7163e1dc40ddbe76ab8a58161f7b',
-              // avatarId: 'f51ed02fc13a4a1694736bfb04620901',
-              // modelName: '강명조',
-              // conversationText: '나 : 야 \n나 : 니 \n나 : 담주만가능하나?\n나 : 스터디잇는거까뭇네\n강명조 : 낼 모레 일이잇어서\n강명조 : 서울에\n강명조 : 아님 미룰까\n강명조 : 대답\n나 : 미루는거\n나 : 추천\n나 : 이번주만\n나 : 오지게바쁨\n나 : 일잔\n나 : 서울은어차피오는거가\n강명조 : ㅇㅇ\n강명조 : 담주 중으로감그럼\n나 : ㅇㅋ\n나 : 이번주\n나 : 젤바쁜주엿노 ㅋ\n강명조 : 일단 못갈수도잇음\n나 : ㅜ\n나 : ㅇ..\n'
-              question: response.data.transcription,
-              modelName: '강명조',
-              conversationText:
-                '나 : 야 \n나 : 니 \n나 : 담주만가능하나?\n나 : 스터디잇는거까뭇네\n강명조 : 낼 모레 일이잇어서\n강명조 : 서울에\n강명조 : 아님 미룰까\n강명조 : 대답\n나 : 미루는거\n나 : 추천\n나 : 이번주만\n나 : 오지게바쁨\n나 : 일잔\n나 : 서울은어차피오는거가\n강명조 : ㅇㅇ\n강명조 : 담주 중으로감그럼\n나 : ㅇㅋ\n나 : 이번주\n나 : 젤바쁜주엿노 ㅋ\n강명조 : 일단 못갈수도잇음\n나 : ㅜ\n나 : ㅇ..\n',
-              eleVoiceId: 'uxgSoqINxv9NZ5NwNoZb',
-              userNo: 1,
-              modelNo: 1,
-              conversationNo: 1,
-            })
-            .then((res) => {
-              console.log(res);
-              console.log(res.data);
-              setAudioSrc(res.data.URL);
-              setVideoSrc(res.data.URL);
-            })
-            .catch((err) => {
-              console.log(err);
-            });
-        })
-        .catch((error) => {
-          console.error('Error uploading audio:', error);
-        });
+      transcribeMutation.mutate(formData);
     };
 
     mediaRecorder.start();
@@ -80,14 +147,19 @@ const AudioRecorder = ({ setVideoSrc }: AudioRecorderProps) => {
   };
 
   return (
-    <div>
-      <button onClick={startRecording} disabled={recording}>
-        {recording ? 'Recording...' : 'Start Recording'}
-      </button>
-      {audioBlob && <audio controls src={URL.createObjectURL(audioBlob)} />}
-      <div>오디오 플레이어</div>
-      {audioSrc && <AudioPlayerTest src={audioSrc} />}
-    </div>
+    <Wrapper>
+      <TextWrapper>
+        <RecordButton onClick={startRecording} disabled={recording} />
+        {/* <span>{recording ? 'Recording...' : 'Start Recording'}</span> */}
+        <Text>{currentTranscribe}</Text>
+      </TextWrapper>
+      {!setVideoSrc && (
+        <>
+          <div>상대방의 대답</div>
+          {audioSrc && <AudioPlayerTest src={audioSrc} />}
+        </>
+      )}
+    </Wrapper>
   );
 };
 

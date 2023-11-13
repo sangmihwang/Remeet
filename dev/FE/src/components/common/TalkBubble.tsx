@@ -1,103 +1,17 @@
 import styled from 'styled-components';
 
-// const Wrapper = styled.div`
-//   background-color: #fff;
-//   border: 1px solid #e5e5ea;
-//   border-radius: 0.25rem;
-//   display: flex;
-//   flex-direction: column;
-//   font-family: 'SanFrancisco';
-//   font-size: 1.25rem;
-//   margin: 0 auto 1rem;
-//   max-width: 600px;
-//   padding: 0.5rem 1.5rem;
-// `;
-
-// const BaseButton = styled.div`
-//   border-radius: 1.15rem;
-//   line-height: 1.25;
-//   max-width: 75%;
-//   padding: 0.5rem 0.875rem;
-//   position: relative;
-//   word-wrap: break-word;
-//   &::before {
-//     bottom: -0.1rem;
-//     content: '';
-//     height: 1rem;
-//     position: absolute;
-//   }
-//   &::after {
-//     bottom: -0.1rem;
-//     content: '';
-//     height: 1rem;
-//     position: absolute;
-//   }
-// `;
-
-// const ButtonFromMe = styled(BaseButton)`
-//   align-self: flex-end;
-//   background-color: #248bf5;
-//   color: #fff;
-//   &::before {
-//     border-bottom-left-radius: 0.8rem 0.7rem;
-//     border-right: 1rem solid #248bf5;
-//     right: -0.35rem;
-//     transform: translate(0, -0.1rem);
-//   }
-//   &::after {
-//     background-color: #fff;
-//     border-bottom-left-radius: 0.5rem;
-//     right: -40px;
-//     transform: translate(-30px, -2px);
-//     width: 10px;
-//   }
-// `;
-
-// const ButtonFromThem = styled(BaseButton)`
-//   align-items: flex-start;
-//   background-color: #e5e5ea;
-//   color: #000;
-//   &::before {
-//     border-bottom-right-radius: 0.8rem 0.7rem;
-//     border-left: 1rem solid #e5e5ea;
-//     left: -0.35rem;
-//     transform: translate(0, -0.1rem);
-//   }
-//   &::after {
-//     background-color: #fff;
-//     border-bottom-right-radius: 0.5rem;
-//     left: 20px;
-//     transform: translate(-30px, -2px);
-//     width: 10px;
-//   }
-// `;
-
-// const Shape = styled.div`
-//   margin-bottom: 3rem;
-//   width: 200px; /* Adjust as necessary */
-//   height: 100px; /* Adjust as necessary */
-//   background-color: #007bff; /* Your color */
-//   clip-path: polygon(
-//     0 0,
-//     100% 0,
-//     100% calc(100% + 50px),
-//     calc(100% + 50px) 100%,
-//     0 100%
-//   );
-// `;
-
 const IMessage = styled.div`
   background-color: #fff;
-  border: 1px solid #e5e5ea;
+  border: 0px solid #e5e5ea;
   border-radius: 0.25rem;
   display: flex;
   flex-direction: column;
   font-family: 'SanFrancisco';
-  font-size: 1.25rem;
+  font-size: 1rem;
   margin: 0 auto 1rem;
   max-width: 600px;
   padding: 0.5rem 1.5rem;
-  // 반응형 스타일도 여기 포함시킬 수 있습니다.
+  max-height: 42vh;
 `;
 
 const Message = styled.p`
@@ -136,11 +50,21 @@ const Message = styled.p`
       transform: translate(-30px, -2px);
       width: 10px;
     }
+    &:not(:last-child) {
+      margin: 0.25rem 0 0;
+    }
+    &:last-child {
+      margin: 0.25rem 0 0;
+
+      margin-bottom: 0.5rem;
+    }
   }
 
   // from-them 스타일
   &.from-them {
-    align-items: flex-start;
+    margin-bottom: 0rem;
+    margin-left: 0.5rem;
+    align-self: flex-start;
     background-color: #e5e5ea;
     color: #000;
 
@@ -158,24 +82,82 @@ const Message = styled.p`
       transform: translate(-30px, -2px);
       width: 10px;
     }
+    &:not(:last-child) {
+      margin: 0.25rem 0 0 2.5rem;
+    }
+    &:last-child {
+      margin-bottom: 0.5rem;
+    }
   }
 
-  // 기타 클래스 및 스타일...
+  &.no-tail {
+    &::before {
+      display: none;
+    }
+    &::after {
+      display: none;
+    }
+  }
+`;
+const ProfileImage = styled.p<{ $imagePath: string }>`
+  width: 2rem;
+  height: 2rem;
+  margin: 1rem 0 0 0;
+  border-radius: 100%;
+  background-image: url(${(props) => props.$imagePath});
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  position: relative;
 `;
 
-const TalkBubble = () => {
+const ImageWrapper = styled.div`
+  display: flex;
+  margin: 0;
+`;
+
+interface TalkBubbleProps {
+  conversation: { [key: string]: string }[];
+  imagePath: string | undefined;
+}
+
+const TalkBubble = ({ conversation, imagePath }: TalkBubbleProps) => {
+  const $imagePath = imagePath || '/dummy/갱얼쥐.jpg';
   return (
-    <IMessage>
-      <Message className="from-me">
-        와 신기하다 왜 기자릴 낮ㄴㅁㅇㄻㄴㅇㄻㄴㄹㄴ
-      </Message>
-      <Message className="from-me">와 신기하다</Message>
-      <Message className="from-them">
-        정말 신기하다 여긴 왜 이짊ㄴ앎ㄴ아러ㅣㅏㄴㅇ
-      </Message>
-      <Message className="from-me">와 신기하다</Message>
-      <Message className="from-them">정말 신기하다</Message>
-      <Message className="from-them">정말 신기하다</Message>
+    <IMessage key="TalkBubble_savedContent">
+      {conversation?.map((item, idx) => {
+        const prevKey =
+          idx !== 0 ? Object.keys(conversation[idx - 1])[0] : null;
+        const key = Object.keys(item)[0];
+        const nextKey =
+          idx !== conversation.length - 1
+            ? Object.keys(conversation[idx + 1])[0]
+            : null;
+        const value = item[key];
+        const tail = key === nextKey ? 'no-tail' : '';
+        const className = (key === '나 ' ? 'from-me ' : 'from-them ') + tail;
+
+        if (key === '나 ') {
+          return (
+            <Message key={item[0]} className={className}>
+              {value}
+            </Message>
+          );
+        }
+
+        return prevKey !== key ? (
+          <ImageWrapper key={item[0]}>
+            <ProfileImage $imagePath={$imagePath} />
+            <Message key={item[0]} className={className}>
+              {value}
+            </Message>
+          </ImageWrapper>
+        ) : (
+          <Message key={item[0]} className={className}>
+            {value}
+          </Message>
+        );
+      })}
     </IMessage>
   );
 };

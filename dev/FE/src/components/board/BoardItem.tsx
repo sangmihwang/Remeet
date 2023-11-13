@@ -1,6 +1,8 @@
 import { useNavigate } from 'react-router-dom';
 import { MouseEvent } from 'react';
 import styled from 'styled-components';
+import withReactContent from 'sweetalert2-react-content';
+import Swal from 'sweetalert2';
 
 const Wrapper = styled.div`
   width: 86vw;
@@ -60,13 +62,31 @@ interface BoardItemProps {
 }
 
 const BoardItem = ({ modelNo, modelName, imagePath }: BoardItemProps) => {
+  const MySwal = withReactContent(Swal);
   const navigate = useNavigate();
   const handleGoModelInfo = () => {
     navigate(`${modelNo}`);
   };
   const handleGoTalk = (e: MouseEvent) => {
     e.stopPropagation();
-    navigate(`/talk/${modelNo}`);
+    MySwal.fire({
+      title: '대화 종류를 선택해 주세요.',
+      icon: 'question',
+      showConfirmButton: true,
+      showDenyButton: true,
+      showCancelButton: true,
+      confirmButtonText: '음성 대화',
+      denyButtonText: '영상 대화',
+    })
+      .then((result) => {
+        if (result.isConfirmed) {
+          navigate(`/talk/voice/${modelNo}`);
+        }
+        if (result.isDenied) {
+          navigate(`/talk/video/${modelNo}`);
+        }
+      })
+      .catch(() => {});
   };
   return (
     <Wrapper onClick={handleGoModelInfo}>
