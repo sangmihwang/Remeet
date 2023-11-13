@@ -50,7 +50,7 @@ const TalkVoicePage = () => {
   useEffect(() => {
     startConversation(Number(modelNo), 'voice')
       .then((res) => {
-        setConversationNo(res.data.conversationNo as number);
+        setConversationNo(res.data.conversationNo);
       })
       .catch(() => {});
   }, []);
@@ -81,10 +81,15 @@ const TalkVoicePage = () => {
       .then((result) => {
         /* Read more about isConfirmed, isDenied below */
         if (result.isConfirmed) {
-          MySwal.fire('Saved!', '', 'success');
-          navigate('/board');
+          MySwal.fire('Saved!', '', 'success')
+            .then(() => {
+              navigate('/board');
+            })
+            .catch(() => {});
         } else if (result.isDenied) {
-          MySwal.fire('Changes are not saved', '', 'info');
+          MySwal.fire('Changes are not saved', '', 'info')
+            .then(() => {})
+            .catch(() => {});
           navigate('/board');
         }
       })

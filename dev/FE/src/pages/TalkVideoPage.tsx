@@ -63,7 +63,7 @@ const TalkVideoPage = () => {
   useEffect(() => {
     startConversation(Number(modelNo), 'voice')
       .then((res) => {
-        setConversationNo(res.data.conversationNo as number);
+        setConversationNo(res.data.conversationNo);
       })
       .catch(() => {});
   }, []);

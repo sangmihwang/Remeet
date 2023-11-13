@@ -1,7 +1,11 @@
+import { AxiosResponse } from 'axios';
 import { ConversationVideoForm, ConversationVoiceForm } from '@/types/talk';
 import { authApi, authFormApi } from '.';
 
-const startConversation = async (modelNo: number, type: string) => {
+const startConversation = async (
+  modelNo: number,
+  type: string,
+): Promise<AxiosResponse<{ conversationNo: number }>> => {
   const data = {
     type,
   };
