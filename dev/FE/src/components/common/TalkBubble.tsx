@@ -11,6 +11,7 @@ const IMessage = styled.div`
   margin: 0 auto 1rem;
   max-width: 600px;
   padding: 0.5rem 1.5rem;
+  max-height: 42vh;
 `;
 
 const Message = styled.p`

@@ -1,8 +1,11 @@
 import { ConversationVideoForm, ConversationVoiceForm } from '@/types/talk';
 import { authApi, authFormApi } from '.';
 
-const startConversation = async (modelNo: number) => {
-  return authApi.get(`talking/${modelNo}`);
+const startConversation = async (modelNo: number, type: string) => {
+  const data = {
+    type,
+  };
+  return authApi.post(`talking/${modelNo}`, data);
 };
 
 const transcribeVoice = async (formData: FormData) => {
