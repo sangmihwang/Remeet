@@ -14,6 +14,7 @@ import ffmpeg
 import json
 from flask_cors import CORS
 import logging
+from moviepy.editor import VideoFileClip, clips_array, ImageClip
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -519,6 +520,45 @@ def upload_avatar():
         )
     return jsonify({"result" : resp.json()["data"]["talking_photo_id"]}), 200
 
+
+# Function to create hologram video and upload to S3
+def make_hologram_video(input_video_path, bucket_name, s3_file_path):
+    # Load video
+    clip = VideoFileClip(input_video_path)
+   
+
+    # Create hologram effect
+    top_clip = clip.rotate(angle=45, resample="bicubic")
+    bottom_clip = clip.rotate(angle=315, resample="bicubic")
+    left_clip = clip.rotate(angle=135, resample="bicubic")
+    right_clip = clip.rotate(angle=225, resample="bicubic")
+    final_clip = clips_array([[top_clip, bottom_clip], [left_clip, right_clip]])
+
+    # Use a temporary file for output to ensure it's deleted after use
+    with tempfile.NamedTemporaryFile(suffix=".mp4", delete=False) as temp_output_video:
+        output_video_path = temp_output_video.name
+        # final_clip = clips_array([...])  # Your clips array logic
+        final_clip.write_videofile(output_video_path, codec="libx264")
+
+        # Upload to S3
+        s3_client.upload_file(output_video_path, bucket_name, s3_file_path)
+
+    # Delete the temporary output file
+    os.remove(output_video_path)
+
+
+# Flask route to process video
+# @app.route("/process-video", methods=["POST"])
+def process_video(path, userNo,modelNo):
+    app.logger.info("process_video API ATTEMPT")
+    s3_output_path = f'ASSET/{userNo}/{modelNo}/' + "holo_video.mp4"
+    bucket_name = BUCKET_NAME
+
+    make_hologram_video(path, bucket_name, s3_output_path)
+    s3_url = f"https://remeet.s3.ap-northeast-2.amazonaws.com/{s3_output_path}"
+    return s3_url
+
+
 # 기본 영상 생성 API
 # 기본 영상 생성 API
 @app.route("/api/v1/conversation/commonvideo", methods=["POST"])
@@ -526,8 +566,13 @@ def make_common_video():
     app.logger.info("MAKE_COMMON_VIDEO API ATTEMPT")
     # 대화상대의 Heygen Talking Photo ID
     avatar = request.json.get("avatarId")
+    userNo = request.json.get("userNo")
+    modelNo = request.json.get("modelNo")
     commonVideoPath = commonvideoMaker(avatar)
-    return jsonify({"URL": commonVideoPath}), 200
+    answer = process_video(commonVideoPath, userNo, modelNo)
+    return jsonify({"answer" :answer, "url": commonVideoPath}), 200
+
+
 
 
 # video 기반 대화 생성 API

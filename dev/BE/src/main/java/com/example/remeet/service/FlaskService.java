@@ -59,6 +59,8 @@ public class FlaskService {
             }
         } else if (type.equals("voice")) {
             NEW_URL = FLASK_API_URL + "conversation/voice";
+        } else if (type.equals("common")) {
+            NEW_URL = FLASK_API_URL + "conversation/commonvideo";
         }
 
         HttpEntity<String> request = new HttpEntity<>(jsonRequestObject.toString(), headers);

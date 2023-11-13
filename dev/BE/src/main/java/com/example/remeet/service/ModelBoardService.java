@@ -248,5 +248,17 @@ public class ModelBoardService {
             return newConversation.getProVoiceNo();
         }
     }
+
+    public ConversationResponseDto createCommonVideo(Integer userNo, Integer modelNo, String avatarId) throws IOException {
+        ModelBoardEntity getModel = modelBoardRepository.findByModelNo(modelNo).get();
+        ConversationDataDto getConversation = new ConversationDataDto();
+        getConversation.setModelNo(modelNo.toString());
+        getConversation.setAvatarId(avatarId);
+        ConversationResponseDto createCommon = flaskService.callFlaskConversation(getConversation,userNo, "common");
+        getModel.setCommonVideoPath(createCommon.getUrl());
+        getModel.setCommonHoloPath(createCommon.getAnswer());
+        modelBoardRepository.save(getModel);
+        return createCommon;
+    }
 }
 
