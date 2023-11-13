@@ -1,6 +1,7 @@
 from __future__ import print_function
 import tempfile
-import speech_recognition as sr
+from google.oauth2 import service_account
+from google.cloud import speech
 from flask import Flask, jsonify, request
 from pydub import AudioSegment
 import requests
@@ -13,6 +14,8 @@ import ffmpeg
 import json
 from flask_cors import CORS
 import logging
+from dotenv import load_dotenv
+load_dotenv()
 
 app = Flask(__name__)
 # .env 파일에서 환경 변수를 로드합니다.
@@ -24,6 +27,7 @@ AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
 ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY")
 x_api_key = os.getenv("x-api-key")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+key_path = 'C:/Users/SSAFY/Desktop/자율/dev/FLASK/google.json'
 
 REGION_NAME = "ap-northeast-2"
 BUCKET_NAME = "remeet"
@@ -420,28 +424,45 @@ def transcribe_audio():
             temp_blob_path = os.path.join(temp_dir, "temp_blob_data.webm")
             file.save(temp_blob_path)
 
+            # .wav 파일로 변환
             temp_wav_path = os.path.join(temp_dir, "temp_info_check.wav")
+            try:
+                audio = AudioSegment.from_file(temp_blob_path)
+                audio = audio.set_frame_rate(16000).set_channels(1).set_sample_width(2)
+                audio.export(temp_wav_path, format="wav", codec="pcm_s16le")
+            except Exception as e:
+                app.logger.info("STT API Response result : ", 422, "- Error in file conversion")
+                return jsonify({"error": "Error in file conversion"}), 422
 
-            # 오디오 변환
-            audio = AudioSegment.from_file(temp_blob_path)
-            audio.set_frame_rate(16000).set_channels(1).set_sample_width(2).export(
-                temp_wav_path, format="wav", codec="pcm_s16le"
-            )
+            # 변환된 .wav 파일을 읽어오기
+        with open(temp_wav_path, "rb") as audio_file:
+            audio_content = audio_file.read()
+            try:
+                # 오디오 파일을 텍스트로 변환
+                credentials = service_account.Credentials.from_service_account_file(key_path)
+                client = speech.SpeechClient(credentials=credentials)
 
-            # 인식기 초기화
-            r = sr.Recognizer()
+                audio = speech.RecognitionAudio(content=audio_content)
+                config = speech.RecognitionConfig(
+                    encoding=speech.RecognitionConfig.AudioEncoding.LINEAR16,
+                    sample_rate_hertz=16000,
+                    language_code='ko-KR'
+                )
 
-            with sr.AudioFile(temp_wav_path) as source:
-                audio_data = r.record(source)
-                try:
-                    text = r.recognize_google(audio_data, language="ko-KR")
-                    return jsonify({"result": text}), 200
-                except sr.UnknownValueError:
-                    app.logger.info("STT API Response result : ", 422, "- Speech Recognition could not understand the audio")
-                    return jsonify({"error": "Speech Recognition could not understand the audio"}), 422
-                except sr.RequestError as e:
-                    app.logger.info("STT API Response result : ", 503, f"- Could not request results from the Speech Recognition service; {e}")
-                    return jsonify({"error": f"Could not request results from the Speech Recognition service; {e}"}),503
+                response = client.recognize(config=config, audio=audio)
+
+                # 변환된 텍스트를 수집
+                transcripts = [result.alternatives[0].transcript for result in response.results]
+                return jsonify({"result" : transcripts[0]}), 200
+            except response.GoogleAPICallError as e:
+                app.logger.info("STT API Response result : ", 500, "- Error calling Google API")
+                return jsonify({"error": "Error calling Google API"}), 500
+            except response.RetryError as e:
+                app.logger.info("STT API Response result : ", 500, "- Error with API retry logic")
+                return jsonify({"error": "Error with API retry logic"}), 500
+            except response.TooManyRequests as e:
+                app.logger.info("STT API Response result : ", 429, "- Too many requests to the API")
+                return jsonify({"error": "Too many requests to the API"}), 429
                     
             # 임시 파일은 이 블록을 벗어나면 자동으로 삭제됩니다.
     app.logger.info("STT API Response result : ", 400, "- Invalid file")
