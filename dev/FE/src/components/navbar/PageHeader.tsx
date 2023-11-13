@@ -24,7 +24,7 @@ const SideBtn = styled.button<{ $inputType: number }>`
   padding: 0;
   margin: 0;
   font-size: 1rem;
-  font-weight: 500;
+  font-weight: 600;
   background: transparent;
   border: 0;
   color: ${(props) => {

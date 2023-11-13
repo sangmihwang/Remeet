@@ -55,7 +55,7 @@ const LoginPage = () => {
 
   const headerContent = {
     left: 'Back',
-    title: '로그인',
+    title: 'Login',
     right: 'SignUp',
   };
 
