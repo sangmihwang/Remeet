@@ -30,7 +30,7 @@ const HeaderBackGround = styled.div`
   top: 0;
   position: absolute;
   width: 100%;
-  height: 12.5rem;
+  height: 15rem;
   background-color: var(--primary-color);
   z-index: -200;
 `;

@@ -20,7 +20,7 @@ const useAuth = () => {
         .then(() => {})
         .catch(() => {});
     }
-  });
+  }, []);
   return { userInfo, setUserInfo, refreshUserInfo };
 };
 
