@@ -8,7 +8,7 @@ import BottomNavigation from '@/components/navbar/BottomNavigation';
 import { Image, LargeButton } from '@/components/common';
 import useAuth from '@/hooks/useAuth';
 import { removeTokens } from '@/utils';
-import { deleteUser } from '@/api/user';
+import { deleteUser, userLogout } from '@/api/user';
 
 const HeaderBackGround = styled.div`
   top: 0;
@@ -105,9 +105,36 @@ const ProfilePage = () => {
   };
 
   const handleLogout = () => {
-    setUserInfo(null);
-    removeTokens();
-    navigate('/');
+    MySwal.fire({
+      title: <ModalTitle>로그아웃 하시겠습니까?</ModalTitle>,
+      text: '',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: '로그아웃',
+    })
+      .then((result) => {
+        if (result.isConfirmed) {
+          userLogout()
+            .then(() => {
+              removeTokens();
+              MySwal.fire({
+                title: '로그아웃 되었습니다.',
+                text: '',
+              })
+                .then(() => {
+                  setUserInfo(null);
+
+                  navigate('/');
+                })
+                .catch(() => {});
+            })
+            .catch(() => {});
+        }
+      })
+      .catch(() => {})
+      .catch(() => {});
   };
   return (
     <>
