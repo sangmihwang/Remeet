@@ -60,7 +60,7 @@ const StorageItem = ({ videos, title }: StorageItemProps) => {
         {videos &&
           videos.map((item) => {
             return (
-              <Item>
+              <Item key={item.modelNo}>
                 <ItemImage
                   onClick={() => handleItemClick(item.modelNo)}
                   $imagePath={item.imagePath}
