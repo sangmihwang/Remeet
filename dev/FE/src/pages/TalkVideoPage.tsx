@@ -1,10 +1,11 @@
 import styled from 'styled-components';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import videojs from 'video.js';
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
+import withReactContent from 'sweetalert2-react-content';
+import Swal from 'sweetalert2';
 import PageHeader from '@/components/navbar/PageHeader';
-// import BottomNavigation from '@/components/navbar/BottomNavigation';
 import { SmallButton, TalkBubble } from '@/components/common';
 import AudioRecorder from '@/components/talk/AudioRecorder';
 import Video from '@/components/talk/Video';
@@ -34,14 +35,22 @@ const VideoWrapper = styled.div`
 
 const ContentWrpper = styled.div`
   width: 100%;
-  height: 65vh;
+  height: 55vh;
   background-color: #fff;
+`;
+
+const ButtonWrapper = styled.div`
+  margin: 0 auto;
+  width: 86vw;
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
 `;
 
 const TalkVideoPage = () => {
   const navigate = useNavigate();
   const { modelNo } = useParams();
-  const location = useLocation();
+  const MySwal = withReactContent(Swal);
 
   const [isOpenTalkHistoryModal, setIsOpentalkHistoryModal] =
     useState<boolean>(false);
@@ -52,10 +61,11 @@ const TalkVideoPage = () => {
   );
   const [conversationNo, setConversationNo] = useState<number>(0);
   useEffect(() => {
-    // startConversation(Number(modelNo)).then((res) => {
-    //   setConversationNo(res.data.conversationNo);
-    // });
-    console.log(location);
+    startConversation(Number(modelNo), 'voice')
+      .then((res) => {
+        setConversationNo(res.data.conversationNo as number);
+      })
+      .catch(() => {});
   }, []);
   console.log(modelInfomation);
   const pushHistory = (text: string, speakerType: number) => {
@@ -103,7 +113,24 @@ const TalkVideoPage = () => {
   };
 
   const handleEndConversation = () => {
-    navigate('/board');
+    MySwal.fire({
+      title: '대화를 저장하고 종료하시겠습니까?',
+      showDenyButton: true,
+      showCancelButton: true,
+      confirmButtonText: 'Save',
+      denyButtonText: `Don't save`,
+    })
+      .then((result) => {
+        /* Read more about isConfirmed, isDenied below */
+        if (result.isConfirmed) {
+          MySwal.fire('Saved!', '', 'success');
+          navigate('/board');
+        } else if (result.isDenied) {
+          MySwal.fire('Changes are not saved', '', 'info');
+          navigate('/board');
+        }
+      })
+      .catch(() => {});
   };
   const handleCloseTalkHistory = () => {
     setIsOpentalkHistoryModal(false);
@@ -139,18 +166,20 @@ const TalkVideoPage = () => {
           pushHistory={pushHistory}
           modelInformation={modelInfomation}
           conversationNo={conversationNo}
-          // setVideoSrc={setVideoSrc}
+          setVideoSrc={setVideoSrc}
         />
-        <SmallButton
-          type={1}
-          text="대화 내역"
-          onClick={() => setIsOpentalkHistoryModal(true)}
-        />
-        <SmallButton
-          type={2}
-          onClick={handleEndConversation}
-          text="대화 종료"
-        />
+        <ButtonWrapper>
+          <SmallButton
+            type={1}
+            text="대화 내역"
+            onClick={() => setIsOpentalkHistoryModal(true)}
+          />
+          <SmallButton
+            type={2}
+            onClick={handleEndConversation}
+            text="대화 종료"
+          />
+        </ButtonWrapper>
       </ContentWrpper>
       {isOpenTalkHistoryModal && (
         <Modal onClose={handleCloseTalkHistory}>
@@ -160,7 +189,6 @@ const TalkVideoPage = () => {
           />
         </Modal>
       )}
-      {/* <BottomNavigation /> */}
     </Wrapper>
   );
 };

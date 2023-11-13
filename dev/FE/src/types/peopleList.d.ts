@@ -20,6 +20,7 @@ interface ModelInformation extends PeopleListItem {
   conversationText: { [key: string]: string }[];
   conversationText2: string;
   eleVoiceId?: string;
+  avatarId: string;
 }
 
 export { PeopleListItem, ModelInformation, VoiceList, VideoList };

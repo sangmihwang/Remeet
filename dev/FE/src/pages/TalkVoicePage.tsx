@@ -2,8 +2,10 @@ import styled from 'styled-components';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
+import withReactContent from 'sweetalert2-react-content';
+import Swal from 'sweetalert2';
 import PageHeader from '@/components/navbar/PageHeader';
-import { SmallButton, TalkBubble } from '@/components/common';
+import { LargeButton, TalkBubble } from '@/components/common';
 import AudioRecorder from '@/components/talk/AudioRecorder';
 import { History } from '@/types/talk';
 import { ModelInformation } from '@/types/peopleList';
@@ -18,7 +20,7 @@ const Wrapper = styled.div`
 
 const TitleWrapper = styled.div`
   width: 100%;
-  height: 80vh;
+  height: 60vh;
 `;
 
 const VideoWrapper = styled.div`
@@ -30,13 +32,14 @@ const VideoWrapper = styled.div`
 
 const ContentWrpper = styled.div`
   width: 100%;
-  height: 65vh;
+  height: 40 vh;
   background-color: #fff;
 `;
 
 const TalkVoicePage = () => {
   const navigate = useNavigate();
   const { modelNo } = useParams();
+  const MySwal = withReactContent(Swal);
 
   const [talkHistory, setTalkHistory] = useState<History[]>([]);
   const { data: modelInfomation } = useQuery<ModelInformation | undefined>(
@@ -50,7 +53,7 @@ const TalkVoicePage = () => {
         setConversationNo(res.data.conversationNo as number);
       })
       .catch(() => {});
-  });
+  }, []);
   console.log(modelInfomation);
   const pushHistory = (text: string, speakerType: number) => {
     setTalkHistory((prevState: History[]) => {
@@ -68,7 +71,24 @@ const TalkVoicePage = () => {
   };
 
   const handleEndConversation = () => {
-    navigate('/board');
+    MySwal.fire({
+      title: '대화를 저장하고 종료하시겠습니까?',
+      showDenyButton: true,
+      showCancelButton: true,
+      confirmButtonText: 'Save',
+      denyButtonText: `Don't save`,
+    })
+      .then((result) => {
+        /* Read more about isConfirmed, isDenied below */
+        if (result.isConfirmed) {
+          MySwal.fire('Saved!', '', 'success');
+          navigate('/board');
+        } else if (result.isDenied) {
+          MySwal.fire('Changes are not saved', '', 'info');
+          navigate('/board');
+        }
+      })
+      .catch(() => {});
   };
 
   useEffect(() => {
@@ -105,11 +125,7 @@ const TalkVoicePage = () => {
           modelInformation={modelInfomation}
           conversationNo={conversationNo}
         />
-        <SmallButton
-          type={2}
-          onClick={handleEndConversation}
-          text="대화 종료"
-        />
+        <LargeButton onClick={handleEndConversation} content="대화 종료" />
       </ContentWrpper>
     </Wrapper>
   );
