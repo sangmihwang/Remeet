@@ -1,17 +1,19 @@
 import styled from 'styled-components';
-import { useEffect, useState } from 'react';
-// import videojs from 'video.js';
+import { useEffect, useState, useRef } from 'react';
+import videojs from 'video.js';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
+import withReactContent from 'sweetalert2-react-content';
+import Swal from 'sweetalert2';
 import PageHeader from '@/components/navbar/PageHeader';
-// import BottomNavigation from '@/components/navbar/BottomNavigation';
 import { SmallButton, TalkBubble } from '@/components/common';
 import AudioRecorder from '@/components/talk/AudioRecorder';
-// import Video from '@/components/talk/Video';
+import Video from '@/components/talk/Video';
 import Modal from '@/components/common/Modal';
 import { History } from '@/types/talk';
 import { ModelInformation } from '@/types/peopleList';
 import { getPeopleInfo } from '@/api/peoplelist';
+import { startConversation } from '@/api/talk';
 
 const Wrapper = styled.div`
   background-color: var(--primary-color);
@@ -24,22 +26,31 @@ const TitleWrapper = styled.div`
   height: 45vh;
 `;
 
-// const VideoWrapper = styled.div`
-//   margin: 0 auto;
-//   width: 86vw;
-//   height: 12.5rem;
-//   background-color: #fff;
-// `;
-
-const ContentWrpper = styled.div`
-  width: 100%;
-  height: 65vh;
+const VideoWrapper = styled.div`
+  margin: 0 auto;
+  width: 86vw;
+  height: 12.5rem;
   background-color: #fff;
 `;
 
-const TalkPage = () => {
+const ContentWrpper = styled.div`
+  width: 100%;
+  height: 55vh;
+  background-color: #fff;
+`;
+
+const ButtonWrapper = styled.div`
+  margin: 0 auto;
+  width: 86vw;
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+`;
+
+const TalkVideoPage = () => {
   const navigate = useNavigate();
   const { modelNo } = useParams();
+  const MySwal = withReactContent(Swal);
 
   const [isOpenTalkHistoryModal, setIsOpentalkHistoryModal] =
     useState<boolean>(false);
@@ -48,6 +59,14 @@ const TalkPage = () => {
     ['getModelInfo'],
     () => getPeopleInfo(Number(modelNo)),
   );
+  const [conversationNo, setConversationNo] = useState<number>(0);
+  useEffect(() => {
+    startConversation(Number(modelNo), 'voice')
+      .then((res) => {
+        setConversationNo(res.data.conversationNo as number);
+      })
+      .catch(() => {});
+  }, []);
   console.log(modelInfomation);
   const pushHistory = (text: string, speakerType: number) => {
     setTalkHistory((prevState: History[]) => {
@@ -63,38 +82,55 @@ const TalkPage = () => {
     title: modelInfomation?.modelName ?? '로딩중',
     right: '',
   };
-  // const [videoSrc, setVideoSrc] = useState<string | null>(null);
+  const [videoSrc, setVideoSrc] = useState<string | null>(null);
 
-  // const playerRef = useRef(null);
+  const playerRef = useRef(null);
 
-  // const videoJsOptions = {
-  //   autoplay: true,
-  //   controls: true,
-  //   responsive: true,
-  //   fluid: true,
-  //   sources: [
-  //     {
-  //       src: videoSrc,
-  //       type: 'video/mp4',
-  //     },
-  //   ],
-  // };
+  const videoJsOptions = {
+    autoplay: true,
+    controls: true,
+    responsive: true,
+    fluid: true,
+    sources: [
+      {
+        src: videoSrc,
+        type: 'video/mp4',
+      },
+    ],
+  };
 
-  // const handlePlayerReady = (player: any) => {
-  //   playerRef.current = player;
+  const handlePlayerReady = (player: any) => {
+    playerRef.current = player;
 
-  //   // You can handle player events here, for example:
-  //   player.on('waiting', () => {
-  //     videojs.log('player is waiting');
-  //   });
+    // You can handle player events here, for example:
+    player.on('waiting', () => {
+      videojs.log('player is waiting');
+    });
 
-  //   player.on('dispose', () => {
-  //     videojs.log('player will dispose');
-  //   });
-  // };
+    player.on('dispose', () => {
+      videojs.log('player will dispose');
+    });
+  };
 
   const handleEndConversation = () => {
-    navigate('/board');
+    MySwal.fire({
+      title: '대화를 저장하고 종료하시겠습니까?',
+      showDenyButton: true,
+      showCancelButton: true,
+      confirmButtonText: 'Save',
+      denyButtonText: `Don't save`,
+    })
+      .then((result) => {
+        /* Read more about isConfirmed, isDenied below */
+        if (result.isConfirmed) {
+          MySwal.fire('Saved!', '', 'success');
+          navigate('/board');
+        } else if (result.isDenied) {
+          MySwal.fire('Changes are not saved', '', 'info');
+          navigate('/board');
+        }
+      })
+      .catch(() => {});
   };
   const handleCloseTalkHistory = () => {
     setIsOpentalkHistoryModal(false);
@@ -120,27 +156,30 @@ const TalkPage = () => {
     <Wrapper>
       <TitleWrapper>
         <PageHeader content={headerContent} type={2} />
-        {/* <VideoWrapper>
+        <VideoWrapper>
           <Video options={videoJsOptions} onReady={handlePlayerReady} />
-        </VideoWrapper> */}
+        </VideoWrapper>
       </TitleWrapper>
       <ContentWrpper>
         <AudioRecorder
           history={talkHistory}
           pushHistory={pushHistory}
           modelInformation={modelInfomation}
-          // setVideoSrc={setVideoSrc}
+          conversationNo={conversationNo}
+          setVideoSrc={setVideoSrc}
         />
-        <SmallButton
-          type={1}
-          text="대화 내역"
-          onClick={() => setIsOpentalkHistoryModal(true)}
-        />
-        <SmallButton
-          type={2}
-          onClick={handleEndConversation}
-          text="대화 종료"
-        />
+        <ButtonWrapper>
+          <SmallButton
+            type={1}
+            text="대화 내역"
+            onClick={() => setIsOpentalkHistoryModal(true)}
+          />
+          <SmallButton
+            type={2}
+            onClick={handleEndConversation}
+            text="대화 종료"
+          />
+        </ButtonWrapper>
       </ContentWrpper>
       {isOpenTalkHistoryModal && (
         <Modal onClose={handleCloseTalkHistory}>
@@ -150,9 +189,8 @@ const TalkPage = () => {
           />
         </Modal>
       )}
-      {/* <BottomNavigation /> */}
     </Wrapper>
   );
 };
 
-export default TalkPage;
+export default TalkVideoPage;

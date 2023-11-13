@@ -7,7 +7,8 @@ import {
   ModelProfile,
   ProfilePage,
   SignUpPage,
-  TalkPage,
+  TalkVideoPage,
+  TalkVoicePage,
   VideoStorage,
 } from '@/pages';
 import { getAccessToken } from '@/utils';
@@ -48,7 +49,8 @@ const Router = () => {
         <Route path="login" element={<LoginPage />} />
         <Route path="signup" element={<SignUpPage />} />
         <Route element={<ProtectedRoute />}>
-          <Route path="talk/:modelNo" element={<TalkPage />} />
+          <Route path="talk/voice/:modelNo" element={<TalkVoicePage />} />
+          <Route path="talk/video/:modelNo" element={<TalkVideoPage />} />
           <Route path="profile" element={<ProfilePage />} />
           <Route path="board" element={<BoardPage />} />
           <Route path="board/create" element={<ModelCreate />} />
