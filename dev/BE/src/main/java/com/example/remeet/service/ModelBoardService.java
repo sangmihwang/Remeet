@@ -175,16 +175,16 @@ public class ModelBoardService {
 
         return formattedText.toString();
     }
-    
+
+
     public String transformLine(String line, String kakaoName) {
         Pattern pattern = Pattern.compile("^(\\d{4}\\. \\d{1,2}\\. \\d{1,2}\\. (오전|오후) \\d{1,2}:\\d{2}, )?(.+) : (.+)$");
         Matcher matcher = pattern.matcher(line);
-
         if (matcher.matches()) {
             String person = matcher.group(3);
             String message = matcher.group(4);
-    
-            if (kakaoName.equals(person)) {
+
+            if (person.contains(kakaoName)) {
                 return "상대방 : " + message;
             } else {
                 return "나 : " + message;
@@ -192,6 +192,7 @@ public class ModelBoardService {
         }
         return null;
     }
+
 
     public List<Map<String, String>> transformValue(String conversationText) {
         List<Map<String, String>> result = new ArrayList<>();
