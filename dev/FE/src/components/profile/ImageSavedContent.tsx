@@ -27,7 +27,7 @@ const ListItem = styled.li<{ $imagePath: string }>`
   list-style: none;
   margin: 0 auto;
   width: 85vw;
-  height: 30vh;
+  height: 35vh;
   background-image: url(${(props) => props.$imagePath});
   background-position: center;
   background-repeat: no-repeat;

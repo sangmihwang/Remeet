@@ -12,6 +12,10 @@ const userSignUp = async (signUpForm: FormData): Promise<AxiosResponse> => {
   return formApi.post('user/signup', signUpForm);
 };
 
+const userLogout = async () => {
+  return authApi.get('user/logout');
+};
+
 const getCheckUserId = async (userId: string) => {
   return api.get(`user/check-id?userId=${userId}`);
 };
@@ -24,4 +28,11 @@ const deleteUser = async () => {
   return authApi.delete('user');
 };
 
-export { userLogin, userSignUp, getCheckUserId, getUserInfo, deleteUser };
+export {
+  userLogin,
+  userSignUp,
+  getCheckUserId,
+  getUserInfo,
+  deleteUser,
+  userLogout,
+};
