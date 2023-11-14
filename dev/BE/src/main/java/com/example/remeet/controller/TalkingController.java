@@ -1,11 +1,13 @@
 package com.example.remeet.controller;
 
+import com.example.remeet.dto.CombinationDto;
 import com.example.remeet.dto.ConversationDataDto;
 import com.example.remeet.dto.ConversationResponseDto;
 import com.example.remeet.dto.FlaskResponseDto;
 
 import com.example.remeet.service.FlaskService;
 import com.example.remeet.service.ModelBoardService;
+import com.example.remeet.service.TalkingService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +28,7 @@ import java.util.Map;
 public class TalkingController {
     private final FlaskService flaskService;
     private final ModelBoardService modelBoardService;
+    private final TalkingService talkingService;
 
     @PostMapping("{modelNo}")
     public ResponseEntity<Map<String, Integer>> makeConversation(@PathVariable("modelNo") Integer modelNo, @RequestBody String type) {
@@ -40,7 +43,7 @@ public class TalkingController {
     public ResponseEntity<FlaskResponseDto> transcribeFile(HttpServletRequest request, @RequestParam("file") MultipartFile file, @RequestParam("modelNo") Integer modelNo, @RequestParam("conversationNo") Integer conversationNo) throws IOException {
         log.info("request to /api/v1/talking/transcribe [Method: POST]");
         Integer userNo = (Integer)request.getAttribute("userNo");
-        FlaskResponseDto transcriptionResult = flaskService.callFlaskByMultipartFile(file,userNo,modelNo, conversationNo, "stt");
+        FlaskResponseDto transcriptionResult = flaskService.callFlaskByMultipartFile(file,userNo,modelNo, conversationNo,"null", "stt");
         return ResponseEntity.ok(transcriptionResult);
     }
 
@@ -59,4 +62,20 @@ public class TalkingController {
         ConversationResponseDto answer = flaskService.callFlaskConversation(conversationDataDto, userNo, "video");
         return ResponseEntity.ok(answer);
     }
+
+    @PostMapping("question")
+    public ResponseEntity uploadQuestion(HttpServletRequest request, @RequestParam("file") MultipartFile file, @RequestParam("modelNo") Integer modelNo, @RequestParam("conversationNo") Integer conversationNo,  @RequestParam("type") String type) throws IOException {
+        log.info("request to /api/v1/talking/question [Method: POST]");
+        Integer userNo = (Integer)request.getAttribute("userNo");
+        talkingService.uploadQuestion(file,userNo,modelNo, conversationNo, type);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("combination")
+    public ResponseEntity combinationResult(HttpServletRequest request, CombinationDto combinationDto) throws JsonProcessingException {
+        Integer userNo = (Integer)request.getAttribute("userNo");
+        talkingService.combinationResult(combinationDto, userNo);
+        return ResponseEntity.ok().build();
+    }
+
 }

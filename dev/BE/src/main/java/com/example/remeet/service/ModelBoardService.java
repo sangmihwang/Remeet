@@ -75,7 +75,7 @@ public class ModelBoardService {
 
         for (MultipartFile imageFile : imageFiles) {
             for (String imagePath : uploadedImagePaths){
-                String avatar = flaskService.callFlaskByMultipartFile(imageFile,0,0,0, "avatar").getResult();
+                String avatar = flaskService.callFlaskByMultipartFile(imageFile,0,0,0, null,"avatar").getResult();
                 ModelBoardEntity resetModel = modelBoardRepository.findByModelNo(modelNo).get();
                 resetModel.setImagePath(imagePath);
                 resetModel.setAvatarId(avatar);
@@ -273,7 +273,7 @@ public class ModelBoardService {
     public CommonVideoDto createCommonVideo(NeedUpdateModelDto needUpdateModelDto) throws IOException {
         ModelBoardEntity getModel = modelBoardRepository.findByModelNo(needUpdateModelDto.getModelNo()).get();
         ConversationDataDto getConversation = new ConversationDataDto();
-        getConversation.setModelNo(needUpdateModelDto.getModelNo().toString());
+        getConversation.setModelNo(needUpdateModelDto.getModelNo());
         getConversation.setAvatarId(getModel.getAvatarId());
         getConversation.setHeyVoiceId(getModel.getHeyVoiceId());
         Boolean admin = userService.checkAdmin(needUpdateModelDto.getUserNo());

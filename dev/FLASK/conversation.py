@@ -14,7 +14,7 @@ import ffmpeg
 import json
 from flask_cors import CORS
 import logging
-from moviepy.editor import VideoFileClip, clips_array, ImageClip
+from moviepy.editor import VideoFileClip,concatenate_videoclips, concatenate_audioclips, clips_array, ImageClip, AudioFileClip
 
 app = Flask(__name__)
 # .env 파일에서 환경 변수를 로드합니다.
@@ -377,21 +377,7 @@ def make_tts(ele_voice_id, text, user_no, model_no, conversation_no):
 
     # S3 버킷에서 기존 파일 목록 가져오기
     folder_key = f"ASSET/{user_no}/{model_no}/{conversation_no}"
-    existing_files = s3_client.list_objects_v2(Bucket=BUCKET_NAME, Prefix=folder_key)
-    existing_file_keys = [
-        obj["Key"]
-        for obj in existing_files.get("Contents", [])
-        if obj["Key"].endswith(".mp3")
-    ]
-
-    # 새 파일 이름 생성
-    existing_indices = [
-        int(key.split("/")[-1].split(".")[0])
-        for key in existing_file_keys
-        if key.split("/")[-1].split(".")[0].isdigit()
-    ]
-    next_index = 1 if not existing_indices else max(existing_indices) + 1
-    output_file = f"{next_index}.mp3"
+    output_file = find_index(folder_key, "mp3")
     output_path = os.path.join(output_folder, output_file)
 
     with open(output_path, "wb") as f:
@@ -760,23 +746,7 @@ def signup_image():
     if file:
         folder_key = f"PROFILE/"
         type = file.filename.split(".")[-1]
-        existing_files = s3_client.list_objects_v2(
-            Bucket=BUCKET_NAME, Prefix=folder_key
-        )
-        existing_file_keys = [
-            obj["Key"]
-            for obj in existing_files.get("Contents", [])
-            if obj["Key"].endswith(type)
-        ]
-
-        # 새 파일 이름 생성
-        existing_indices = [
-            int(key.split("/")[-1].split(".")[0])
-            for key in existing_file_keys
-            if key.split("/")[-1].split(".")[0].isdigit()
-        ]
-        next_index = 1 if not existing_indices else max(existing_indices) + 1
-        new_path = str(next_index) + "." + type
+        new_path = find_index(folder_key, type)
         file.save(new_path)
         try:
             # 저장된 pcm 파일을 S3에 업로드
@@ -793,18 +763,144 @@ def signup_image():
         app.logger.info("SIGNUP_IMAGE API Response result : ", 403, "- No file part")
         return jsonify({"error": "No file part"}), 403
 
+def find_index(folder_key, type):
+    existing_files = s3_client.list_objects_v2(Bucket=BUCKET_NAME, Prefix=folder_key)
+    existing_file_keys = [
+        obj["Key"]
+        for obj in existing_files.get("Contents", [])
+        if obj["Key"].endswith("."+type)
+    ]
 
-# HEYGEN API 관련 : 65번째줄부터 시작
-# GPT API 관련 : 191번째줄부터 시작
-# ELEVENLABS API 관련 : 239번째줄부터 시작
-# FILE UPLOAD API : 342번쨰줄부터 시작
-# STT API : 402번쨰줄부터 시작
-# VOICE MODEL 생성 API :451번쨰줄부터 시작
-# AVATAR 생성 API : 474번째줄부터 시작
-# 기본 영상 생성 API : 513번째줄부터 시작
-# video 기반 대화 생성 API : 524번째줄부터 시작
-# voice 기반 대화 생성 API : 539번째줄부터 시작
-# 회원가입 image 저장 API : 561번째줄부터 시작
+    # 새 파일 이름 생성
+    existing_indices = [
+        int(key.split("/")[-1].split(".")[0])
+        for key in existing_file_keys
+        if key.split("/")[-1].split(".")[0].isdigit()
+    ]
+    next_index = 1 if not existing_indices else max(existing_indices) + 1
+    output_file = f"{next_index}."+type
+    return output_file
+
+
+def merge_video_audio(videoPath, audioPath, folder_key):
+    video_clip = VideoFileClip(videoPath)
+    audio_clip = AudioFileClip(audioPath)
+    audio_duration = audio_clip.duration
+    video_clip = video_clip.without_audio()
+    video_clip = video_clip.subclip(0, audio_duration)
+    final_clip = video_clip.set_audio(audio_clip)
+    
+    output_file = find_index(folder_key, "mp4")
+
+    final_clip.write_videofile(output_file, codec="libx264", audio_codec="aac")
+
+    return output_file
+
+
+@app.route('/api/v1/upload/talking', methods=["POST"])
+def question_upload():
+    app.logger.info("QEUSTION_UPLOAD API ATTEMPT")
+    if "file" not in request.files:
+        app.logger.info("QEUSTION_UPLOAD API Response result : ", 400, "- No file part")
+        return jsonify({"error": "No file part"}), 400
+
+    file = request.files["file"]
+    url = request.form.get("url")
+    type = request.form.get("type")
+    userNo = request.form.get("userNo")
+    modelNo = request.form.get("modelNo")
+    conversationNo = request.form.get("conversationNo")
+    if file.filename == "":
+        app.logger.info("QEUSTION_UPLOAD API Response result : ", 400, "- No selected file")
+        return jsonify({"error": "No selected file"}), 400
+
+    if file:
+        # 파일을 임시 디렉토리에 저장
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_blob_path = os.path.join(temp_dir, "temp_blob_data.webm")
+            file.save(temp_blob_path)
+            #
+            # .wav 파일로 변환
+            temp_wav_path = os.path.join(temp_dir, "temp_info_check.wav")
+            def convert_audio_to_mp3(source_path, target_path):
+                audio = AudioSegment.from_file(source_path)
+                # 필요한 경우, 샘플 레이트, 채널 등을 조정
+                audio.export(target_path, format="mp3")
+            convert_audio_to_mp3(temp_blob_path,temp_wav_path)
+            folder_key = f"ASSET/{userNo}/{modelNo}/{conversationNo}"
+            
+            if type == "voice":
+                merge_video = find_index(folder_key, "mp3")
+            else :
+                new_url = url.split('ASSET')[1]
+                local_file_path = os.path.join(temp_dir, "tmp_video.mp4")
+                s3_client.download_file(BUCKET_NAME,'ASSET'+new_url, local_file_path)
+                merge_video = merge_video_audio(local_file_path, temp_wav_path, folder_key)
+                
+            try:
+                with open(merge_video, "rb") as file:
+                    s3_client.upload_fileobj(file, BUCKET_NAME, folder_key + merge_video)
+                    os.remove(merge_video)
+                    s3_url = f"https://remeet.s3.ap-northeast-2.amazonaws.com/{folder_key + merge_video}"
+                    return jsonify({"result": s3_url}), 200
+            except Exception as e:
+                app.logger.info("QEUSTION_UPLOAD API Response result : ", 405, "-", str(e))
+                return jsonify({"error": e}), 405
+    else:
+        app.logger.info("QEUSTION_UPLOAD API Response result : ", 403, "- No file part")
+        return jsonify({"error": "No file part"}), 403
+
+@app.route('/api/v1/combinResult', methods=['POST'])
+def combin_result():
+    app.logger.info("COMBIN_RESULT API ATTEMPT")
+    # 다운로드할 영상 파일 목록
+    userNo = request.json.get("userNo")
+    modelNo = request.json.get("modelNo")
+    conversationNo = request.json.get("conversationNo")
+    type = request.json.get("type")
+    folder_key = f"ASSET/{userNo}/{modelNo}/{conversationNo}/"
+    response = s3_client.list_objects_v2(Bucket=BUCKET_NAME, Prefix=folder_key)
+
+    if response['KeyCount'] > 0:
+        files = [item['Key'] for item in sorted(response['Contents'], key=lambda x: x['LastModified'], reverse=False)]
+    else:
+        return jsonify({"error": "No videos found"}), 404
+    # 로컬 시스템에 저장할 파일의 경로와 이름
+    local_paths = []
+    with tempfile.TemporaryDirectory() as temp_dir:
+
+        for i in range(1, len(files)):
+            local_filename = files[i].split('/')[-1]
+            local_file_path = os.path.join(temp_dir, local_filename)
+            local_paths.append(local_file_path)
+            s3_client.download_file(BUCKET_NAME, files[i], local_file_path)
+
+        if type == 'mp4':
+            merged_file_path = os.path.join(temp_dir, "merged_video.mp4")
+            video_clips = [VideoFileClip(path) for path in local_paths]
+            final_clip = concatenate_videoclips(video_clips)
+            final_clip.write_videofile(merged_file_path)
+            new_path = folder_key + "merged_video.mp4"
+        
+        elif type == 'mp3' :
+            merged_file_path = os.path.join(temp_dir, "merged_audio.mp3")
+            audio_clips = [AudioFileClip(path) for path in local_paths]
+            final_clip = concatenate_audioclips(audio_clips)
+            final_clip.write_audiofile(merged_file_path)
+            new_path = folder_key + "merged_audio.mp3"
+        
+        try:
+            # 병합된 파일을 S3에 업로드
+            with open(merged_file_path, "rb") as file:
+                s3_client.upload_fileobj(file, BUCKET_NAME, new_path)
+            os.remove(merged_file_path)  # 임시 파일 삭제
+            s3_url = f"https://remeet.s3.ap-northeast-2.amazonaws.com/{new_path}"
+            return jsonify({'anwer': s3_url, 'url': s3_url}), 200
+        except Exception as e:
+            error_message = str(e)
+            app.logger.info("API Response result : ", 405, "-", error_message)
+            return jsonify({'error': error_message}), 405
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=False)
