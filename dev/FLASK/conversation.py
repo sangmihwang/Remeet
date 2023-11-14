@@ -45,6 +45,7 @@ ALLOWED_EXTENSIONS = {
     "mov",
     "flv",
     "wmv",
+    "m4a"
 }
 
 # S3 클라이언트 설정
