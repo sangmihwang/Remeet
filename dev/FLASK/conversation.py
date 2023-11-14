@@ -390,7 +390,7 @@ def make_tts(ele_voice_id, text, user_no, model_no, conversation_no):
     os.makedirs(output_folder, exist_ok=True)
 
     # S3 버킷에서 기존 파일 목록 가져오기
-    folder_key = f"ASSET/{user_no}/{model_no}/{conversation_no}"
+    folder_key = f"ASSET/{user_no}/{model_no}/{conversation_no}/"
     output_file = find_index(folder_key, "mp3")
     output_path = os.path.join(output_folder, output_file)
 
@@ -712,7 +712,7 @@ def make_conversation_video():
     conversation_no = request.json.get("conversationNo")
     url = request.json.get("movingHoloPath")
     voice_url = make_tts(ele_voice_id, answer, user_no, model_no, conversation_no)
-    folder_key = f"ASSET/{user_no}/{model_no}/{conversation_no}"
+    folder_key = f"ASSET/{user_no}/{model_no}/{conversation_no}/"
     with tempfile.TemporaryDirectory() as temp_dir:
         video_url = url.split('ASSET')[1]
         video_file_path = os.path.join(temp_dir, video_url)
@@ -849,7 +849,7 @@ def question_upload():
                 audio = AudioSegment.from_file(source_path)
                 # 필요한 경우, 샘플 레이트, 채널 등을 조정
                 audio.export(target_path, format="mp3")
-            folder_key = f"ASSET/{userNo}/{modelNo}/{conversationNo}"
+            folder_key = f"ASSET/{userNo}/{modelNo}/{conversationNo}/"
             
             with tempfile.TemporaryDirectory() as temp_dir:
                 if type == "voice":
