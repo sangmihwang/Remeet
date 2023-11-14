@@ -691,9 +691,6 @@ def make_common_video():
         200,
     )
 
-def make_holo_path(voice_url, )
-
-
 
 # video 기반 대화 생성 API
 # video 기반 대화 생성 API
