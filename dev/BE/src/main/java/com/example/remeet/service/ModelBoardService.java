@@ -28,7 +28,7 @@ public class ModelBoardService {
     private final UploadedVideoRepository uploadedVideoRepository;
     private final ProducedVideoRepository producedVideoRepository;
     private final ProducedVoiceRepository producedVoiceRepository;
-
+    private final UserService userService;
 
     @Transactional(readOnly = true)
     public List<String> getVideoPathsByModelNo(Integer modelNo) {
@@ -249,14 +249,18 @@ public class ModelBoardService {
         }
     }
 
-    public ConversationResponseDto createCommonVideo(Integer userNo, Integer modelNo, String avatarId) throws IOException {
+    public CommonVideoDto createCommonVideo(Integer userNo, Integer modelNo) throws IOException {
         ModelBoardEntity getModel = modelBoardRepository.findByModelNo(modelNo).get();
         ConversationDataDto getConversation = new ConversationDataDto();
         getConversation.setModelNo(modelNo.toString());
-        getConversation.setAvatarId(avatarId);
-        ConversationResponseDto createCommon = flaskService.callFlaskConversation(getConversation,userNo, "common");
-        getModel.setCommonVideoPath(createCommon.getUrl());
-        getModel.setCommonHoloPath(createCommon.getAnswer());
+        getConversation.setAvatarId(getModel.getAvatarId());
+        getConversation.setHeyVoiceId(getModel.getHeyVoiceId());
+        Boolean admin = userService.checkAdmin(userNo);
+        CommonVideoDto createCommon = flaskService.callFlaskCommonVideo(getConversation,userNo, admin);
+        getModel.setCommonVideoPath(createCommon.getCommonVideoPath());
+        getModel.setCommonHoloPath(createCommon.getCommonHoloPath());
+        getModel.setMovingVideoPath(createCommon.getMovingVideoPath());
+        getModel.setMovingHoloPath(createCommon.getMovingHoloPath());
         modelBoardRepository.save(getModel);
         return createCommon;
     }

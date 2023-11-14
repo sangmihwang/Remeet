@@ -70,15 +70,14 @@ def get_wav_info(wav_filename):
 # Heygen API 관련
 
 
-def commonvideoMaker(avatar_id):
+def commonvideoMaker(avatar_id, admin):
     app.logger.info("HEYGEN_COMMON_VIDEO API ATTEMPT")
-
     global x_api_key
-
+    test = False if admin else True
     # talking photo ID를 선택해 기본 영상(Silent Video) 생성
     url_silent = "https://api.heygen.com/v2/video/generate"
     payload_silent = {
-        "test": False,
+        "test": test,
         "caption": False,
         "dimension": {"width": 1920, "height": 1080},
         "video_inputs": [
@@ -549,9 +548,9 @@ def make_hologram_video(input_video_path, bucket_name, s3_file_path):
 
 # Flask route to process video
 # @app.route("/process-video", methods=["POST"])
-def process_video(path, userNo,modelNo):
+def process_video(path, userNo,modelNo, name):
     app.logger.info("process_video API ATTEMPT")
-    s3_output_path = f'ASSET/{userNo}/{modelNo}/' + "holo_video.mp4"
+    s3_output_path = f'ASSET/{userNo}/{modelNo}/' + name
     bucket_name = BUCKET_NAME
 
     make_hologram_video(path, bucket_name, s3_output_path)
@@ -566,22 +565,16 @@ def make_common_video():
     app.logger.info("MAKE_COMMON_VIDEO API ATTEMPT")
     # 대화상대의 Heygen Talking Photo ID
     avatar = request.json.get("avatarId")
+    voice = request.json.get("heyVoiceId")
     userNo = request.json.get("userNo")
     modelNo = request.json.get("modelNo")
     is_admin = request.json.get("admin")
     commonVideoPath = commonvideoMaker(avatar,is_admin)
-    answer = process_video(commonVideoPath, userNo, modelNo)
-    return jsonify({"answer" :answer, "url": commonVideoPath}), 200
-
-@app.route("/api/v1/conversation/movingvideo", methods=["POST"])
-def make_moving_video():
-    app.logger.info("CONVERSATION_VIDEO API ATTEMPT")
+    holoUrl = process_video(commonVideoPath, userNo, modelNo, "holo_video.mp4")
     answer = "안녕하세요! 저는 인공지능 기술의 발전에 대해 이야기하고 싶어요. 우리는 지금 인공지능이 우리 일상 속에 깊숙이 들어와 있다는 것을 실감하고 있죠. 예를 들어, 스마트폰에서 음성 인식 기능을 사용하거나, 온라인 쇼핑을 할 때 개인 맞춤형 추천을 받는 것 모두 인공지능 덕분입니다 하지만 인공지능 기술은 여기서 멈추지 않아요. 앞으로 우리는 더욱 똑똑하고, 더욱 인간처럼 반응하는 인공지능을 만나게 될 거예요."
-    voice = request.json.get("heyVoiceId")
-    avatar = request.json.get("avatarId")
-    is_admin = request.json.get("admin")
     videoPath = videoMaker(answer, voice, avatar, is_admin)
-    return jsonify({"answer": answer, "url": videoPath})
+    holoUrl2 = process_video(videoPath, userNo, modelNo, "holo_moving.mp4")
+    return jsonify({"commonVideoPath" :commonVideoPath, "commonHoloPath": holoUrl, "movingVideoPath": videoPath, "movingHoloPath": holoUrl2}), 200
 
 
 # video 기반 대화 생성 API

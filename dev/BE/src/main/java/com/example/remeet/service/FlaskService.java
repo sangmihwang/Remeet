@@ -1,9 +1,6 @@
 package com.example.remeet.service;
 
-import com.example.remeet.dto.ConversationDataDto;
-import com.example.remeet.dto.ConversationResponseDto;
-import com.example.remeet.dto.FileUploadDto;
-import com.example.remeet.dto.FlaskResponseDto;
+import com.example.remeet.dto.*;
 import com.example.remeet.entity.ModelBoardEntity;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -59,8 +56,6 @@ public class FlaskService {
             }
         } else if (type.equals("voice")) {
             NEW_URL = FLASK_API_URL + "conversation/voice";
-        } else if (type.equals("common")) {
-            NEW_URL = FLASK_API_URL + "conversation/commonvideo";
         }
 
         HttpEntity<String> request = new HttpEntity<>(jsonRequestObject.toString(), headers);
@@ -72,6 +67,33 @@ public class FlaskService {
         );
         return responseEntity.getBody();
     }
+
+    public CommonVideoDto callFlaskCommonVideo(ConversationDataDto conversationDataDto, Integer userNo, Boolean admin) throws JsonProcessingException {
+        RestTemplate restTemplate = new RestTemplate();
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON); // Content-Type JSON으로 설정
+
+        // 요청 본문에 conversationDataDto 담아서 HttpEntity 객체 생성
+        ObjectMapper objectMapper = new ObjectMapper();
+        String jsonRequest = objectMapper.writeValueAsString(conversationDataDto);
+
+        // userNo를 JSON 객체에 추가
+        JSONObject jsonRequestObject = new JSONObject(jsonRequest);
+        jsonRequestObject.put("userNo", userNo);
+        jsonRequestObject.put("admin", admin);
+        // POST 요청 보내기
+        String NEW_URL = FLASK_API_URL +"conversation/commonvideo";
+
+        HttpEntity<String> request = new HttpEntity<>(jsonRequestObject.toString(), headers);
+        ResponseEntity<CommonVideoDto> responseEntity = restTemplate.exchange(
+                NEW_URL,
+                HttpMethod.POST,
+                request,
+                CommonVideoDto.class
+        );
+        return responseEntity.getBody();
+    }
+
 
     public FlaskResponseDto callFlaskByMultipartFile(MultipartFile file, Integer userNo, Integer modelNo, Integer conversationNo , String type) throws IOException {
         RestTemplate restTemplate = new RestTemplate();

@@ -119,10 +119,9 @@ public class ModelBoardController {
     }
 
     @PostMapping("create-common")
-    public ResponseEntity<ConversationResponseDto> createCommonVideo(HttpServletRequest request, @RequestParam("modelNo") Integer modelNo, @RequestParam("avatarId") String avatarId) throws IOException {
+    public ResponseEntity<CommonVideoDto> createCommonVideo(@RequestParam("userNo") Integer userNo, @RequestParam("modelNo") Integer modelNo) throws IOException {
         log.info("request to /api/v1/talking/transcribe [Method: POST]");
-        Integer userNo = (Integer)request.getAttribute("userNo");
-        ConversationResponseDto transcriptionResult = modelBoardService.createCommonVideo(userNo,modelNo,avatarId);
+        CommonVideoDto transcriptionResult = modelBoardService.createCommonVideo(userNo,modelNo);
         return ResponseEntity.ok(transcriptionResult);
     }
 }
