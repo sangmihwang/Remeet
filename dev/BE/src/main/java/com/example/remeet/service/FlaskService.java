@@ -140,7 +140,7 @@ public class FlaskService {
     }
 
     // 기존의 makeVoice 메소드를 수정하여 FileSystemResource 리스트를 받도록 함
-    public String makeVoice(ModelBoardEntity modelBoardEntity, List<Resource> audioFiles) throws IOException {
+    public String makeVoice(ModelBoardEntity modelBoardEntity, List<String> filePaths) throws IOException {
         RestTemplate restTemplate = new RestTemplate();
 
         HttpHeaders headers = new HttpHeaders();
@@ -150,9 +150,7 @@ public class FlaskService {
         body.add("modelName", modelBoardEntity.getModelName());
         body.add("gender", modelBoardEntity.getGender());
 
-        for (Resource fileResource : audioFiles) {
-            body.add("files", fileResource);
-        }
+        filePaths.forEach(path -> body.add("filePaths", path));
 
         HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
         String voiceApiUrl = FLASK_API_URL + "conversation/makevoice";

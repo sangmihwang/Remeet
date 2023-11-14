@@ -115,57 +115,23 @@ public class ModelBoardService {
                 throw new IllegalArgumentException("음성 파일이 존재하지 않습니다.");
             }
 
-            // ModelBoardEntity 가져오기 (모델 이름과 성별 정보에 사용)
-//        ModelBoardEntity modelBoardEntity = modelBoardRepository.findById(modelNo)
-//                .orElseThrow(() -> new IllegalArgumentException("모델이 존재하지 않습니다."));
-
-            // Flask 서버로 전송할 파일 리스트 생성
-//            List<FileSystemResource> fileResources = uploadedVoices.stream()
-//                    .map(voice -> new FileSystemResource(new File(voice.getVoicePath())))
-//                    .collect(Collectors.toList());
-
-//            List<Resource> fileResources = uploadedVoices.stream()
-//                    .map(voice -> {
-//                        try {
-//                            return new UrlResource(voice.getVoicePath());
-//                        } catch (MalformedURLException e) {
-//                            log.error("잘못된 URL 형식", e);
-//                            throw new RuntimeException("파일 URL 형식 오류: " + voice.getVoicePath(), e);
-//                        }
-//                    })
-//                    .collect(Collectors.toList());
-
-            List<Resource> fileResources = uploadedVoices.stream()
-                    .map(voice -> {
-                        try {
-                            URL url = new URL(voice.getVoicePath());
-                            String extension = FilenameUtils.getExtension(url.getPath());
-                            File tempFile = File.createTempFile("downloaded", "." + extension);
-                            tempFile.deleteOnExit();
-                            FileUtils.copyURLToFile(url, tempFile);
-                            return new FileSystemResource(tempFile);
-                        } catch (IOException e) {
-                            log.error("파일 다운로드 실패", e);
-                            throw new RuntimeException("파일 다운로드 중 오류 발생: " + voice.getVoicePath(), e);
-                        }
-                    })
+            // Flask 서버로 전송할 파일 경로 리스트 생성
+            List<String> filePaths = uploadedVoices.stream()
+                    .map(UploadedVoiceEntity::getVoicePath)
                     .collect(Collectors.toList());
 
-            String voiceId = flaskService.makeVoice(modelEntity, fileResources);
+            String voiceId = flaskService.makeVoice(modelEntity, filePaths);
 
             if (voiceId != null && !voiceId.isEmpty()) {
                 // Update the ModelBoardEntity with the new voice ID
-                modelEntity.setEleVoiceId(voiceId); // Assuming 'eleVoiceId' is the correct field to update
+                modelEntity.setEleVoiceId(voiceId);
                 modelBoardRepository.save(modelEntity);
             }
 
             return voiceId;
 
-        } catch (IllegalArgumentException e) {
-            log.error("예외 발생: 모델 번호 " + modelNo + "에 대한 오류", e);
-            throw e;
         } catch (Exception e) {
-            log.error("알 수 없는 예외 발생", e);
+            log.error("음성 모델 생성 중 오류 발생", e);
             throw new RuntimeException("음성 모델 생성 중 오류 발생", e);
         }
     }

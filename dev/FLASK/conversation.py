@@ -563,11 +563,23 @@ def make_voice_model():
     app.logger.info("MAKE_VOICE API ATTEMPT")
     model_name = request.form.get("modelName")
     gender_label = request.form.get("gender")
-    audio_files = request.files.getlist("files")
+    audio_file_paths = request.form.getlist("filePaths")
+    # audio_file_paths = request.json.get("filePaths")
 
-    files = [
-        ("files", (file.filename, file.read(), "audio/mpeg")) for file in audio_files
-    ]
+    bucket_name = BUCKET_NAME
+    # S3에서 오디오 파일 다운로드
+    local_audio_files = []
+    with tempfile.TemporaryDirectory() as temp_dir:
+        for file_path in audio_file_paths:
+            local_filename = file_path.split('/')[-1]
+            local_file_path = os.path.join(temp_dir, local_filename)
+            local_audio_files.append(local_file_path)
+            s3_client.download_file(bucket_name, file_path, local_file_path)
+
+        # 오디오 파일을 업로드 형식으로 변환
+        files = [
+            ("files", (os.path.basename(file), open(file, 'rb'), "audio/mpeg")) for file in local_audio_files
+        ]
 
     try:
         voice_id = make_voice(model_name, gender_label, files)
@@ -579,9 +591,6 @@ def make_voice_model():
 
 
 # AVATAR 생성 API
-# AVATAR 생성 API
-
-
 @app.route("/api/v1/createAvatarID", methods=["POST"])
 def upload_avatar():
     app.logger.info("CREATE_AVATAR_ID API ATTEMPT")
