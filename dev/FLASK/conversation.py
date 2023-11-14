@@ -572,12 +572,13 @@ def make_voice_model():
     with tempfile.TemporaryDirectory() as temp_dir:
         try:
             for file_path in audio_file_paths:
-                app.logger.info(f"가져온 경로: {file_path}")
-                local_filename = file_path.split('/')[-1]
+                relative_path = file_path.split('amazonaws.com/')[1]
+                print('상대 경로', relative_path)
+                local_filename = relative_path.split('/')[-1]
                 local_file_path = os.path.join(temp_dir, local_filename)
-                app.logger.info(f"로컬 경로: {local_file_path}")
+                print('로컬 경로', local_file_path)
                 local_audio_files.append(local_file_path)
-                s3_client.download_file(bucket_name, file_path, local_file_path)
+                s3_client.download_file(bucket_name, relative_path, local_file_path)
         except Exception as e:
             app.logger.error(f"다운로드 중 오류 발생: {e}")
             return jsonify({"error": "파일 다운로드 중 오류 발생"}), 500
@@ -806,4 +807,4 @@ def signup_image():
 # 회원가입 image 저장 API : 561번째줄부터 시작
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    app.run(host="0.0.0.0", port=5000, debug=False)
