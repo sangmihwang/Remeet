@@ -38,7 +38,7 @@ public class ModelBoardService {
     private final UploadedVideoRepository uploadedVideoRepository;
     private final ProducedVideoRepository producedVideoRepository;
     private final ProducedVoiceRepository producedVoiceRepository;
-
+    private final UserService userService;
 
     @Transactional(readOnly = true)
     public List<String> getVideoPathsByModelNo(Integer modelNo) {
@@ -75,7 +75,7 @@ public class ModelBoardService {
 
         for (MultipartFile imageFile : imageFiles) {
             for (String imagePath : uploadedImagePaths){
-                String avatar = flaskService.callFlaskByMultipartFile(imageFile, "avatar").getResult();
+                String avatar = flaskService.callFlaskByMultipartFile(imageFile,0,0,0, "avatar").getResult();
                 ModelBoardEntity resetModel = modelBoardRepository.findByModelNo(modelNo).get();
                 resetModel.setImagePath(imagePath);
                 resetModel.setAvatarId(avatar);
@@ -275,7 +275,8 @@ public class ModelBoardService {
 
     public void updateHeyVoiceId(NeedUpdateModelDto needUpdateModelDto) throws IOException{
         ModelBoardEntity getModel = modelBoardRepository.findByModelNo(needUpdateModelDto.getModelNo()).get();
-        String heyVoiceId = flaskService.callFlaskByMultipartFile(null, needUpdateModelDto.getModelName()).getResult();
+        ConversationDataDto newData = new ConversationDataDto();
+        String heyVoiceId = flaskService.callFlaskConversation(newData,needUpdateModelDto.getUserNo(), needUpdateModelDto.getModelName()).getAnswer();
         getModel.setHeyVoiceId(heyVoiceId);
         modelBoardRepository.save(getModel);
     }
@@ -301,6 +302,22 @@ public class ModelBoardService {
             producedVoiceRepository.save(newConversation);
             return newConversation.getProVoiceNo();
         }
+    }
+
+    public CommonVideoDto createCommonVideo(NeedUpdateModelDto needUpdateModelDto) throws IOException {
+        ModelBoardEntity getModel = modelBoardRepository.findByModelNo(needUpdateModelDto.getModelNo()).get();
+        ConversationDataDto getConversation = new ConversationDataDto();
+        getConversation.setModelNo(needUpdateModelDto.getModelNo().toString());
+        getConversation.setAvatarId(getModel.getAvatarId());
+        getConversation.setHeyVoiceId(getModel.getHeyVoiceId());
+        Boolean admin = userService.checkAdmin(needUpdateModelDto.getUserNo());
+        CommonVideoDto createCommon = flaskService.callFlaskCommonVideo(getConversation,needUpdateModelDto.getUserNo(), admin);
+        getModel.setCommonVideoPath(createCommon.getCommonVideoPath());
+        getModel.setCommonHoloPath(createCommon.getCommonHoloPath());
+        getModel.setMovingVideoPath(createCommon.getMovingVideoPath());
+        getModel.setMovingHoloPath(createCommon.getMovingHoloPath());
+        modelBoardRepository.save(getModel);
+        return createCommon;
     }
 }
 

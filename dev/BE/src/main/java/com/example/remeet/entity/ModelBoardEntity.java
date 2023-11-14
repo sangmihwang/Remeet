@@ -46,6 +46,15 @@ public class ModelBoardEntity {
     @Column(name="common_video_path")
     private String commonVideoPath;
 
+    @Column(name="moving_video_path")
+    private String movingVideoPath;
+
+    @Column(name="common_holo_path")
+    private String commonHoloPath;
+
+    @Column(name="moving_holo_path")
+    private String movingHoloPath;
+
     @NotNull
     @Column(name="conversation_text", columnDefinition = "TEXT")
     private String conversationText;

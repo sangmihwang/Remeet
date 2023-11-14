@@ -1,11 +1,12 @@
 import os
 import boto3
-from moviepy.editor import VideoFileClip, concatenate_videoclips, AudioFileClip, concatenate_audioclips
+from moviepy.editor import AudioFileClip, concatenate_audioclips
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from dotenv import load_dotenv
 import tempfile
 load_dotenv()
+
 app = Flask(__name__)
 CORS(app)
 
@@ -26,49 +27,44 @@ common_url = 'https://remeet.s3.ap-northeast-2.amazonaws.com/ASSET/'
 
 @app.route('/api/v1/combinResult', methods=['POST'])
 def combin_result():
-    app.logger.info("11")
-    # 다운로드할 영상 파일 목록
+    # 다운로드할 오디오 파일 목록
     userNo = request.json.get("userNo")
     modelNo = request.json.get("modelNo")
     conversationNo = request.json.get("conversationNo")
-    type = request.json.get("type")
     folder_key = f"ASSET/{userNo}/{modelNo}/{conversationNo}/"
     response = s3_client.list_objects_v2(Bucket=bucket_name, Prefix=folder_key)
 
     if response['KeyCount'] > 0:
-        files = [item['Key'] for item in sorted(response['Contents'], key=lambda x: x['LastModified'], reverse=False)]
+        videos_to_download = [item['Key'] for item in response['Contents']]
     else:
         return jsonify({"error": "No videos found"}), 404
-    print(files)
-    # 로컬 시스템에 저장할 파일의 경로와 이름
-    local_paths = []
+    print(videos_to_download)
+
+    audio_clips = []
     with tempfile.TemporaryDirectory() as temp_dir:
+        for i in range(1, len(videos_to_download)):
+            audio_key = videos_to_download[i]
+            local_filename = os.path.join(temp_dir, f'{i}.'+videos_to_download[i].split('/')[-1].split('.')[-1])
+            print(local_filename)
+            s3_client.download_file(bucket_name, audio_key, local_filename)
+            audio_clips.append(AudioFileClip(local_filename))
 
-        for i in range(1, len(files)):
-            local_filename = files[i].split('/')[-1]
-            local_file_path = os.path.join(temp_dir, local_filename)
-            local_paths.append(local_file_path)
-            s3_client.download_file(bucket_name, files[i], local_file_path)
 
-        if type == 'video':
-            merged_file_path = os.path.join(temp_dir, "merged_video.mp4")
-            video_clips = [VideoFileClip(path) for path in local_paths]
-            final_clip = concatenate_videoclips(video_clips)
-            final_clip.write_videofile(merged_file_path)
-            new_path = folder_key + "merged_video.mp4"
+        # 병합된 파일 경로
+        merged_file_path = os.path.join(temp_dir, "merged_audio.mp3")
         
-        elif type == 'voice' :
-            merged_file_path = os.path.join(temp_dir, "merged_audio.mp3")
-            audio_clips = [AudioFileClip(path) for path in local_paths]
-            final_clip = concatenate_audioclips(audio_clips)
-            final_clip.write_audiofile(merged_file_path)
-            new_path = folder_key + "merged_audio.mp3"
-        
+        # 오디오 병합
+        final_clip = concatenate_audioclips(audio_clips)
+        final_clip.write_audiofile(merged_file_path)
+
+        # S3에 업로드할 병합된 파일의 새 경로 생성
+        type = 'mp3'  # 병합된 파일 형식
+        new_path = folder_key + "merged_audio_" + str(conversationNo) + "." + type
+
         try:
             # 병합된 파일을 S3에 업로드
             with open(merged_file_path, "rb") as file:
                 s3_client.upload_fileobj(file, bucket_name, new_path)
-            os.remove(merged_file_path)  # 임시 파일 삭제
             s3_url = f"{common_url}{new_path}"
             return jsonify({'result': s3_url}), 200
         except Exception as e:

@@ -31,7 +31,7 @@ public class UserService {
     public void signUp(String userId, String password, String userName, MultipartFile imagePath, String userEmail) throws IOException {
         String imageURL = " ";
         if (imagePath != null && !imagePath.isEmpty()) {
-            imageURL = flaskService.callFlaskByMultipartFile(imagePath, "profile").getResult();
+            imageURL = flaskService.callFlaskByMultipartFile(imagePath,0,0,0,"profile").getResult();
         } else {
             imageURL = "common";
         }
@@ -68,6 +68,7 @@ public class UserService {
         userInfo.setUserName(user.getUserName());
         userInfo.setImagePath(user.getProfileImg());
         userInfo.setUserEmail(user.getUserEmail());
+        userInfo.setIsAdmin(user.getIsAdmin());
         return userInfo;
     }
 

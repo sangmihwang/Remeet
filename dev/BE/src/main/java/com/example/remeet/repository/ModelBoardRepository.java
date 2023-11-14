@@ -36,7 +36,7 @@ public interface ModelBoardRepository extends JpaRepository<ModelBoardEntity, In
     Optional<ModelBoardEntity> findByModelNo(Integer modelNo);
 
     @Query("SELECT new com.example.remeet.dto.NeedUpdateModelDto(" +
-            "m.modelNo, m.modelName) " +
+            "m.modelNo, m.modelName, m.userNo.userNo) " +
             "FROM ModelBoardEntity m " +
             "WHERE m.heyVoiceId IS NULL AND m.eleVoiceId IS NOT NULL ")
     List<NeedUpdateModelDto> findByNeedUpdate();
