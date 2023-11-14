@@ -136,7 +136,7 @@ def getVoiceId():
             voice_id = voice["voice_id"]
             break
 
-    return jsonify({"result": voice_id})
+    return jsonify({"answer": voice_id, "url": voice_id}),200
 
 
 def videoMaker(text, voice_id, avatar_id, admin):
@@ -167,13 +167,15 @@ def videoMaker(text, voice_id, avatar_id, admin):
         "content-type": "application/json",
         "x-api-key": x_api_key,
     }
+    while True:
+        response_avatar = requests.post(url_avatar, json=payload_avatar, headers=headers)
+        tmp = json.loads(response_avatar.text)
+        print(tmp)
+        if tmp["data"]:
+            video_id = tmp["data"]["video_id"]
+            break
+        print("not yet, id")
 
-    response_avatar = requests.post(url_avatar, json=payload_avatar, headers=headers)
-
-    # print(response_avatar.text)
-    # print(response_avatar.text["data"]["video_id"])
-    tmp = json.loads(response_avatar.text)
-    video_id = tmp["data"]["video_id"]
     video_url = f"https://api.heygen.com/v1/video_status.get?video_id={video_id}"
 
     video_headers = {"accept": "application/json", "x-api-key": x_api_key}
@@ -183,7 +185,7 @@ def videoMaker(text, voice_id, avatar_id, admin):
         result = json.loads(response.text)
         if result["data"]["video_url"]:
             break
-        print("not yet")
+        print("not yet, url")
 
     return result["data"]["video_url"]
 
@@ -670,4 +672,4 @@ def signup_image():
 # 회원가입 image 저장 API : 561번째줄부터 시작
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    app.run(host="0.0.0.0", port=5000, debug=False)

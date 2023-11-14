@@ -108,20 +108,22 @@ public class ModelBoardController {
 
     @GetMapping("check-model")
     public ResponseEntity<List<NeedUpdateModelDto>> getNeedUpdate() {
+        log.info("request to /api/v1/model/check-model [Method: GET]");
         List<NeedUpdateModelDto> getNeedUpdateList = modelBoardService.getNeedUpdateList();
         return ResponseEntity.ok(getNeedUpdateList);
     }
 
     @PostMapping("update-heyId")
     public ResponseEntity updateHeyVoiceId(@RequestBody NeedUpdateModelDto needUpdateModelDto) throws IOException {
+        log.info("request to /api/v1/model/update-heyId [Method: POST]");
         modelBoardService.updateHeyVoiceId(needUpdateModelDto);
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("create-common")
-    public ResponseEntity<CommonVideoDto> createCommonVideo(@RequestParam("userNo") Integer userNo, @RequestParam("modelNo") Integer modelNo) throws IOException {
-        log.info("request to /api/v1/talking/transcribe [Method: POST]");
-        CommonVideoDto transcriptionResult = modelBoardService.createCommonVideo(userNo,modelNo);
+    public ResponseEntity<CommonVideoDto> createCommonVideo(@RequestBody NeedUpdateModelDto needUpdateModelDto) throws IOException {
+        log.info("request to /api/v1/model/create-common [Method: POST]");
+        CommonVideoDto transcriptionResult = modelBoardService.createCommonVideo(needUpdateModelDto);
         return ResponseEntity.ok(transcriptionResult);
     }
 }

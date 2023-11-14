@@ -25,7 +25,7 @@ import java.util.Map;
 public class FlaskService {
     private RestTemplate restTemplate;
     private UserService userService;
-    private final String FLASK_API_URL = "http://localhost:5000/api/v1/";
+    private final String FLASK_API_URL = "http://flask-app:5000/api/v1/";
 
     @Autowired
     public FlaskService(RestTemplate restTemplate) {
@@ -44,7 +44,7 @@ public class FlaskService {
         // userNo를 JSON 객체에 추가
         JSONObject jsonRequestObject = new JSONObject(jsonRequest);
         jsonRequestObject.put("userNo", userNo);
-
+        jsonRequestObject.put("type", type);
         // POST 요청 보내기
         String NEW_URL = " ";
         if (type.equals("video")) {
@@ -56,6 +56,8 @@ public class FlaskService {
             }
         } else if (type.equals("voice")) {
             NEW_URL = FLASK_API_URL + "conversation/voice";
+        } else {
+            NEW_URL = FLASK_API_URL + "heyVoiceId";
         }
 
         HttpEntity<String> request = new HttpEntity<>(jsonRequestObject.toString(), headers);
@@ -122,8 +124,6 @@ public class FlaskService {
             newURL = FLASK_API_URL + "transcribe";
         } else if (type.equals("profile")) {
             newURL = FLASK_API_URL + "signup";
-        } else {
-            newURL = FLASK_API_URL + "heyVoiceId";
         }
 
         ResponseEntity<FlaskResponseDto> responseEntity = restTemplate.exchange(

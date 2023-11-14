@@ -228,7 +228,8 @@ public class ModelBoardService {
 
     public void updateHeyVoiceId(NeedUpdateModelDto needUpdateModelDto) throws IOException{
         ModelBoardEntity getModel = modelBoardRepository.findByModelNo(needUpdateModelDto.getModelNo()).get();
-        String heyVoiceId = flaskService.callFlaskByMultipartFile(null,0,0,0, needUpdateModelDto.getModelName()).getResult();
+        ConversationDataDto newData = new ConversationDataDto();
+        String heyVoiceId = flaskService.callFlaskConversation(newData,needUpdateModelDto.getUserNo(), needUpdateModelDto.getModelName()).getAnswer();
         getModel.setHeyVoiceId(heyVoiceId);
         modelBoardRepository.save(getModel);
     }
@@ -249,14 +250,14 @@ public class ModelBoardService {
         }
     }
 
-    public CommonVideoDto createCommonVideo(Integer userNo, Integer modelNo) throws IOException {
-        ModelBoardEntity getModel = modelBoardRepository.findByModelNo(modelNo).get();
+    public CommonVideoDto createCommonVideo(NeedUpdateModelDto needUpdateModelDto) throws IOException {
+        ModelBoardEntity getModel = modelBoardRepository.findByModelNo(needUpdateModelDto.getModelNo()).get();
         ConversationDataDto getConversation = new ConversationDataDto();
-        getConversation.setModelNo(modelNo.toString());
+        getConversation.setModelNo(needUpdateModelDto.getModelNo().toString());
         getConversation.setAvatarId(getModel.getAvatarId());
         getConversation.setHeyVoiceId(getModel.getHeyVoiceId());
-        Boolean admin = userService.checkAdmin(userNo);
-        CommonVideoDto createCommon = flaskService.callFlaskCommonVideo(getConversation,userNo, admin);
+        Boolean admin = userService.checkAdmin(needUpdateModelDto.getUserNo());
+        CommonVideoDto createCommon = flaskService.callFlaskCommonVideo(getConversation,needUpdateModelDto.getUserNo(), admin);
         getModel.setCommonVideoPath(createCommon.getCommonVideoPath());
         getModel.setCommonHoloPath(createCommon.getCommonHoloPath());
         getModel.setMovingVideoPath(createCommon.getMovingVideoPath());
