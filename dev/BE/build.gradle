@@ -43,6 +43,7 @@ dependencies {
     implementation 'software.amazon.awssdk:core:2.17.89'
     implementation 'software.amazon.awssdk:netty-nio-client:2.17.89'
     implementation 'org.json:json:20210307'
+    implementation 'commons-io:commons-io:2.11.0'
 
 
     // Reactive Streams API 의존성

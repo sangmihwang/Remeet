@@ -5,6 +5,8 @@ import com.example.remeet.entity.*;
 import com.example.remeet.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
@@ -17,6 +19,7 @@ import javax.persistence.EntityNotFoundException;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -121,13 +124,29 @@ public class ModelBoardService {
 //                    .map(voice -> new FileSystemResource(new File(voice.getVoicePath())))
 //                    .collect(Collectors.toList());
 
+//            List<Resource> fileResources = uploadedVoices.stream()
+//                    .map(voice -> {
+//                        try {
+//                            return new UrlResource(voice.getVoicePath());
+//                        } catch (MalformedURLException e) {
+//                            log.error("잘못된 URL 형식", e);
+//                            throw new RuntimeException("파일 URL 형식 오류: " + voice.getVoicePath(), e);
+//                        }
+//                    })
+//                    .collect(Collectors.toList());
+
             List<Resource> fileResources = uploadedVoices.stream()
                     .map(voice -> {
                         try {
-                            return new UrlResource(voice.getVoicePath());
-                        } catch (MalformedURLException e) {
-                            log.error("잘못된 URL 형식", e);
-                            throw new RuntimeException("파일 URL 형식 오류: " + voice.getVoicePath(), e);
+                            URL url = new URL(voice.getVoicePath());
+                            String extension = FilenameUtils.getExtension(url.getPath());
+                            File tempFile = File.createTempFile("downloaded", "." + extension);
+                            tempFile.deleteOnExit();
+                            FileUtils.copyURLToFile(url, tempFile);
+                            return new FileSystemResource(tempFile);
+                        } catch (IOException e) {
+                            log.error("파일 다운로드 실패", e);
+                            throw new RuntimeException("파일 다운로드 중 오류 발생: " + voice.getVoicePath(), e);
                         }
                     })
                     .collect(Collectors.toList());
