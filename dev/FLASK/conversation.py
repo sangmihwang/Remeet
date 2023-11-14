@@ -826,25 +826,28 @@ def question_upload():
                 audio.export(target_path, format="mp3")
             folder_key = f"ASSET/{userNo}/{modelNo}/{conversationNo}"
             
-            if type == "voice":
-                merge_video = find_index(folder_key, "mp3")
-                temp_wav_path = os.path.join(temp_dir, merge_video)
-                convert_audio_to_mp3(temp_blob_path,temp_wav_path)
-            else :
-                new_url = url.split('ASSET')[1]
-                local_file_path = os.path.join(temp_dir, "tmp_video.mp4")
-                s3_client.download_file(BUCKET_NAME,'ASSET'+new_url, local_file_path)
-                merge_video = merge_video_audio(local_file_path, temp_wav_path, folder_key)
-                
-            try:
-                with open(merge_video, "rb") as file:
-                    s3_client.upload_fileobj(file, BUCKET_NAME, folder_key + merge_video)
-                    os.remove(merge_video)
-                    s3_url = f"https://remeet.s3.ap-northeast-2.amazonaws.com/{folder_key + merge_video}"
-                    return jsonify({"result": s3_url}), 200
-            except Exception as e:
-                app.logger.info("QEUSTION_UPLOAD API Response result : ", 405, "-", str(e))
-                return jsonify({"error": e}), 405
+            with tempfile.TemporaryDirectory() as temp_dir:
+                if type == "voice":
+                    output_file = find_index(folder_key, "mp3")
+                    temp_wav_path = os.path.join(temp_dir, output_file)
+                    convert_audio_to_mp3(temp_blob_path,temp_wav_path)
+                else :
+                    new_url = url.split('ASSET')[1]
+                    local_file_path = os.path.join(temp_dir, "tmp_video.mp4")
+                    s3_client.download_file(BUCKET_NAME,'ASSET'+new_url, local_file_path)
+                    output_file = find_index(folder_key, "mp4")
+                    temp_wav_path = os.path.join(temp_dir, output_file)
+                    merge_video_audio(local_file_path, temp_wav_path, temp_wav_path)
+                    
+                try:
+                    with open(temp_wav_path, "rb") as file:
+                        s3_client.upload_fileobj(file, BUCKET_NAME, folder_key + output_file)
+                        os.remove(temp_wav_path)
+                        s3_url = f"https://remeet.s3.ap-northeast-2.amazonaws.com/{folder_key + output_file}"
+                        return jsonify({"result": s3_url}), 200
+                except Exception as e:
+                    app.logger.info("QEUSTION_UPLOAD API Response result : ", 405, "-", str(e))
+                    return jsonify({"error": e}), 405
     else:
         app.logger.info("QEUSTION_UPLOAD API Response result : ", 403, "- No file part")
         return jsonify({"error": "No file part"}), 403
