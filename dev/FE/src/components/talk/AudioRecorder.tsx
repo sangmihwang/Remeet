@@ -1,164 +1,92 @@
-import { useState, useRef } from 'react';
-import { useMutation } from '@tanstack/react-query';
+import { useRef, useEffect, useState } from 'react';
 import styled from 'styled-components';
-import AudioPlayerTest from './AudioPlayerTest';
+import { useMutation } from '@tanstack/react-query';
 import { ModelInformation } from '@/types/peopleList';
-import { conversateVideo, conversateVoice, transcribeVoice } from '@/api/talk';
-import { History } from '@/types/talk';
 import useAuth from '@/hooks/useAuth';
+import { talkingQuestion } from '@/api/talk';
 
-const Wrapper = styled.div`
-  height: 25vh;
-`;
-
-const RecordButton = styled.button`
-  width: 2rem;
-  height: 2rem;
-  border-radius: 100%;
-  background-color: #f6f6f6;
-  background-image: url('/icon/mic_icon.svg');
-  background-repeat: no-repeat;
-  background-size: 80%;
-  background-position: center;
-`;
-
-const TextWrapper = styled.div`
-  width: 86vw;
-  height: 3rem;
-  margin: 0 auto;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px solid #ebebeb;
-`;
-
-const Text = styled.div`
-  font-size: 0.875rem;
-  width: 70vw;
-`;
+const Wrapper = styled.div``;
 
 interface AudioRecorderProps {
-  setVideoSrc?: (url: string) => void;
   modelInformation: ModelInformation | undefined;
-  pushHistory: (text: string, speakerType: number) => void;
-  history: History[];
   conversationNo: number;
+  audioRecording: boolean;
+  setVideoSrc?: (url: string) => void;
 }
 
 const AudioRecorder = ({
-  setVideoSrc,
   modelInformation,
-  pushHistory,
-  history,
   conversationNo,
+  audioRecording,
+  setVideoSrc,
 }: AudioRecorderProps) => {
-  const [recording, setRecording] = useState<boolean>(false);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const [audioSrc, setAudioSrc] = useState<string | null>(null);
-  const [currentTranscribe, setCurrentTranscribe] = useState<string>('');
   const { userInfo } = useAuth();
-  const conversateVideoMutation = useMutation(conversateVideo, {
-    onSuccess: (res) => {
-      console.log(res);
-      if (setVideoSrc) {
-        setVideoSrc(res.data.url);
-      }
-      pushHistory(res.data.answer, 2);
-    },
-    onError: (err) => {
-      console.log(err);
-    },
-  });
-  const conversateVoiceMutation = useMutation(conversateVoice, {
-    onSuccess: (res) => {
-      console.log(res);
-      setAudioSrc(res.data.url);
-      pushHistory(res.data.answer, 2);
-    },
-    onError: (err) => {
-      console.log(err);
-    },
-  });
-  const transcribeMutation = useMutation(transcribeVoice, {
-    onSuccess: (res) => {
-      console.log(res);
-      pushHistory(res.data.result, 1);
-      setCurrentTranscribe(res.data.result);
-      if (modelInformation && userInfo && !setVideoSrc) {
-        const voiceForm = {
-          question: res.data.result,
-          modelName: modelInformation.modelName,
-          conversationText: modelInformation.conversationText2,
-          history,
-          eleVoiceId: 'uxgSoqINxv9NZ5NwNoZb',
-          conversationNo,
-          userNo: userInfo.userId,
-          modelNo: modelInformation?.modelNo,
-        };
-        conversateVoiceMutation.mutate(voiceForm);
-      }
-      if (modelInformation && userInfo && setVideoSrc) {
-        const videoForm = {
-          question: res.data.result,
-          modelName: modelInformation.modelName,
-          conversationText: modelInformation.conversationText2,
-          history,
-          heyVoiceId: 'uxgSoqINxv9NZ5NwNoZb',
-          conversationNo,
-          userNo: userInfo.userId,
-          modelNo: modelInformation?.modelNo,
-          avatarId: modelInformation.avatarId,
-        };
-        conversateVideoMutation.mutate(videoForm);
-      }
-    },
+  const [audioSrc, setAudioSrc] = useState('');
+
+  const mutation = useMutation(talkingQuestion, {
+    onSuccess: (res) => console.log(res),
     onError: (err) => console.log(err),
   });
 
-  const startRecording = async () => {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    const mediaRecorder = new MediaRecorder(stream);
-    mediaRecorderRef.current = mediaRecorder;
+  useEffect(() => {
+    // 녹음 시작
+    const startRecording = async () => {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
 
-    const audioChunks: Blob[] = [];
-    mediaRecorder.ondataavailable = (event) => {
-      audioChunks.push(event.data);
+      const audioChunks: Blob[] = [];
+      mediaRecorder.ondataavailable = (event) => {
+        audioChunks.push(event.data);
+      };
+
+      mediaRecorder.onstop = async () => {
+        const newAudioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+        const audioURL = URL.createObjectURL(newAudioBlob);
+        const type = setVideoSrc ? 'video' : 'voice';
+        const formData = new FormData();
+        formData.append('file', newAudioBlob, 'audio.wav');
+        formData.append('conversationNo', conversationNo);
+        formData.append('modelNo', modelInformation?.modelNo);
+        formData.append('type', type);
+        mutation.mutate(formData);
+
+        setAudioSrc(audioURL);
+        console.log(audioURL, '??');
+      };
+
+      mediaRecorder.start();
     };
 
-    mediaRecorder.onstop = () => {
-      const newAudioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-      // You can save or send the audioBlob to the server now
-      // FormData를 만들어서 음성 파일 추가
-      const formData = new FormData();
-      formData.append('file', newAudioBlob, 'audio.wav'); // 'audio'는 서버에서 받을 이름, 'audio.wav'는 파일 이름
-
-      // axios를 사용하여 서버에 POST 요청 보내기
-      transcribeMutation.mutate(formData);
+    // 녹음 중지
+    const stopRecording = () => {
+      mediaRecorderRef.current?.stop();
     };
 
-    mediaRecorder.start();
-    setRecording(true);
+    // audioRecording 상태에 따라 녹음 시작 또는 중지
+    // if (audioRecording) {
+    //   startRecording();
+    // } else {
+    //   stopRecording();
+    // }
+    if (audioRecording) {
+      // 녹음 시작
+      startRecording();
+    } else {
+      // 녹음 멈춤
+      mediaRecorderRef.current?.stop();
+    }
 
-    // Stop recording after 6 seconds
-    setTimeout(() => {
-      mediaRecorder.stop();
-      setRecording(false);
-    }, 6000);
-  };
+    // 컴포넌트가 언마운트되거나 audioRecording이 false가 되기 전에 녹음을 멈추도록 함
+    return () => {
+      mediaRecorderRef.current?.stop();
+    };
+  }, [audioRecording]); // audioRecording 상태가 변경될 때마다 useEffect가 실행됩니다.
 
   return (
     <Wrapper>
-      <TextWrapper>
-        <RecordButton onClick={startRecording} disabled={recording} />
-        {/* <span>{recording ? 'Recording...' : 'Start Recording'}</span> */}
-        <Text>{currentTranscribe}</Text>
-      </TextWrapper>
-      {!setVideoSrc && (
-        <>
-          <div>상대방의 대답</div>
-          {audioSrc && <AudioPlayerTest src={audioSrc} />}
-        </>
-      )}
+      <audio src={audioSrc} controls />
     </Wrapper>
   );
 };

@@ -1,5 +1,10 @@
 import { AxiosResponse } from 'axios';
-import { ConversationVideoForm, ConversationVoiceForm } from '@/types/talk';
+import {
+  ConversationResponse,
+  ConversationVideoForm,
+  ConversationVoiceForm,
+  TalkSaveForm,
+} from '@/types/talk';
 import { authApi, authFormApi } from '.';
 
 const startConversation = async (
@@ -16,12 +21,31 @@ const transcribeVoice = async (formData: FormData) => {
   return authFormApi.post('talking/transcribe', formData);
 };
 
-const conversateVoice = async (voiceForm: ConversationVoiceForm) => {
+const conversateVoice = async (
+  voiceForm: ConversationVoiceForm,
+): Promise<AxiosResponse<ConversationResponse>> => {
   return authApi.post('talking/conversation/voice', voiceForm);
 };
 
-const conversateVideo = async (videoForm: ConversationVideoForm) => {
+const conversateVideo = async (
+  videoForm: ConversationVideoForm,
+): Promise<AxiosResponse<ConversationResponse>> => {
   return authApi.post('talking/converstaion/video', videoForm);
 };
 
-export { startConversation, transcribeVoice, conversateVoice, conversateVideo };
+const talkingQuestion = async (formData: FormData) => {
+  return authFormApi.post('talking/question', formData);
+};
+
+const saveTalking = async (data: TalkSaveForm) => {
+  return authApi.post('talking/combination', data);
+};
+
+export {
+  startConversation,
+  transcribeVoice,
+  conversateVoice,
+  conversateVideo,
+  talkingQuestion,
+  saveTalking,
+};

@@ -6,11 +6,10 @@ import withReactContent from 'sweetalert2-react-content';
 import Swal from 'sweetalert2';
 import PageHeader from '@/components/navbar/PageHeader';
 import { LargeButton, TalkBubble } from '@/components/common';
-import AudioRecorder from '@/components/talk/AudioRecorder';
 import { History } from '@/types/talk';
 import { ModelInformation } from '@/types/peopleList';
 import { getPeopleInfo } from '@/api/peoplelist';
-import { startConversation } from '@/api/talk';
+import { saveTalking, startConversation } from '@/api/talk';
 import Dictaphone from '@/components/talk/Dictaphone';
 
 const Wrapper = styled.div`
@@ -82,16 +81,48 @@ const TalkVoicePage = () => {
       .then((result) => {
         /* Read more about isConfirmed, isDenied below */
         if (result.isConfirmed) {
-          MySwal.fire('Saved!', '', 'success')
+          MySwal.fire({
+            title: '지금 대화의 이름을 정해주세요.',
+            input: 'text',
+            showCancelButton: true,
+            confirmButtonText: '저장',
+            showLoaderOnConfirm: true,
+            preConfirm: (conversationName) => {
+              try {
+                const data = {
+                  modelNo: Number(modelInfomation?.modelNo),
+                  conversationNo,
+                  conversationName,
+                  type: 'voice',
+                };
+                const response = saveTalking(data);
+                if (!response.status) {
+                  console.log(response, '확인');
+                }
+              } catch (error) {
+                console.log(error);
+              }
+            },
+            allowOutsideClick: () => {
+              return !MySwal.isLoading;
+            },
+          })
+            .then((res) => {
+              if (res.isConfirmed) {
+                MySwal.fire('저장되었습니다.', '', 'success')
+                  .then(() => {
+                    navigate('/board');
+                  })
+                  .catch(() => {});
+              }
+            })
+            .catch(() => {});
+        } else if (result.isDenied) {
+          MySwal.fire('저장하지 않고 종료합니다.', '', 'info')
             .then(() => {
               navigate('/board');
             })
             .catch(() => {});
-        } else if (result.isDenied) {
-          MySwal.fire('Changes are not saved', '', 'info')
-            .then(() => {})
-            .catch(() => {});
-          navigate('/board');
         }
       })
       .catch(() => {});
@@ -125,13 +156,11 @@ const TalkVoicePage = () => {
         </VideoWrapper>
       </TitleWrapper>
       <ContentWrpper>
-        <Dictaphone />
-        {/* <AudioRecorder
-          history={talkHistory}
+        <Dictaphone
           pushHistory={pushHistory}
           modelInformation={modelInfomation}
           conversationNo={conversationNo}
-        /> */}
+        />
         <LargeButton onClick={handleEndConversation} content="대화 종료" />
       </ContentWrpper>
     </Wrapper>

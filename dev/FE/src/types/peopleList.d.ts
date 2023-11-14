@@ -2,6 +2,8 @@ interface PeopleListItem {
   modelNo: number;
   modelName: string;
   imagePath: string;
+  eleVoiceId?: string;
+  heyVoiceId?: string;
 }
 
 interface VoiceList {
@@ -19,7 +21,6 @@ interface ModelInformation extends PeopleListItem {
   voiceList: VoiceList[];
   conversationText: { [key: string]: string }[];
   conversationText2: string;
-  eleVoiceId?: string;
   avatarId: string;
 }
 
