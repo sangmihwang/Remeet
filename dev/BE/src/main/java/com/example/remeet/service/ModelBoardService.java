@@ -94,7 +94,7 @@ public class ModelBoardService {
         return modelBoardEntity.getModelNo();
     }
 
-    @Transactional(readOnly = true)
+    @Transactional(readOnly = false)
     public String createVoiceModel(Integer modelNo) throws IOException {
         ModelBoardEntity modelEntity = modelBoardRepository.findById(modelNo)
                 .orElseThrow(() -> new IllegalArgumentException("모델 번호에 해당하는 모델이 존재하지 않습니다."));
