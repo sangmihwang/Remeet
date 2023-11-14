@@ -75,7 +75,7 @@ public class ModelBoardService {
 
         for (MultipartFile imageFile : imageFiles) {
             for (String imagePath : uploadedImagePaths){
-                String avatar = flaskService.callFlaskByMultipartFile(imageFile,0,0,0, "avatar").getResult();
+                String avatar = flaskService.callFlaskByMultipartFile(imageFile,0,0,0, null,"avatar").getResult();
                 ModelBoardEntity resetModel = modelBoardRepository.findByModelNo(modelNo).get();
                 resetModel.setImagePath(imagePath);
                 resetModel.setAvatarId(avatar);

@@ -14,7 +14,7 @@ import ffmpeg
 import json
 from flask_cors import CORS
 import logging
-from moviepy.editor import VideoFileClip, clips_array, ImageClip, AudioFileClip
+from moviepy.editor import VideoFileClip,concatenate_videoclips, concatenate_audioclips, clips_array, ImageClip, AudioFileClip
 
 app = Flask(__name__)
 # .env 파일에서 환경 변수를 로드합니다.
@@ -746,6 +746,7 @@ def signup_image():
     else:
         app.logger.info("SIGNUP_IMAGE API Response result : ", 403, "- No file part")
         return jsonify({"error": "No file part"}), 403
+
 def find_index(folder_key, type):
     existing_files = s3_client.list_objects_v2(Bucket=BUCKET_NAME, Prefix=folder_key)
     existing_file_keys = [
@@ -823,6 +824,7 @@ def question_upload():
             try:
                 with open(merge_video, "rb") as file:
                     s3_client.upload_fileobj(file, BUCKET_NAME, folder_key + merge_video)
+                    os.remove(merge_video)
                     s3_url = f"https://remeet.s3.ap-northeast-2.amazonaws.com/{folder_key + merge_video}"
                     return jsonify({"result": s3_url}), 200
             except Exception as e:
@@ -831,20 +833,59 @@ def question_upload():
     else:
         app.logger.info("QEUSTION_UPLOAD API Response result : ", 403, "- No file part")
         return jsonify({"error": "No file part"}), 403
-    
 
+@app.route('/api/v1/combinResult', methods=['POST'])
+def combin_result():
+    app.logger.info("COMBIN_RESULT API ATTEMPT")
+    # 다운로드할 영상 파일 목록
+    userNo = request.json.get("userNo")
+    modelNo = request.json.get("modelNo")
+    conversationNo = request.json.get("conversationNo")
+    type = request.json.get("type")
+    folder_key = f"ASSET/{userNo}/{modelNo}/{conversationNo}/"
+    response = s3_client.list_objects_v2(Bucket=BUCKET_NAME, Prefix=folder_key)
 
-# HEYGEN API 관련 : 65번째줄부터 시작
-# GPT API 관련 : 191번째줄부터 시작
-# ELEVENLABS API 관련 : 239번째줄부터 시작
-# FILE UPLOAD API : 342번쨰줄부터 시작
-# STT API : 402번쨰줄부터 시작
-# VOICE MODEL 생성 API :451번쨰줄부터 시작
-# AVATAR 생성 API : 474번째줄부터 시작
-# 기본 영상 생성 API : 513번째줄부터 시작
-# video 기반 대화 생성 API : 524번째줄부터 시작
-# voice 기반 대화 생성 API : 539번째줄부터 시작
-# 회원가입 image 저장 API : 561번째줄부터 시작
+    if response['KeyCount'] > 0:
+        files = [item['Key'] for item in sorted(response['Contents'], key=lambda x: x['LastModified'], reverse=False)]
+    else:
+        return jsonify({"error": "No videos found"}), 404
+    print(files)
+    # 로컬 시스템에 저장할 파일의 경로와 이름
+    local_paths = []
+    with tempfile.TemporaryDirectory() as temp_dir:
+
+        for i in range(1, len(files)):
+            local_filename = files[i].split('/')[-1]
+            local_file_path = os.path.join(temp_dir, local_filename)
+            local_paths.append(local_file_path)
+            s3_client.download_file(BUCKET_NAME, files[i], local_file_path)
+
+        if type == 'video':
+            merged_file_path = os.path.join(temp_dir, "merged_video.mp4")
+            video_clips = [VideoFileClip(path) for path in local_paths]
+            final_clip = concatenate_videoclips(video_clips)
+            final_clip.write_videofile(merged_file_path)
+            new_path = folder_key + "merged_video.mp4"
+        
+        elif type == 'voice' :
+            merged_file_path = os.path.join(temp_dir, "merged_audio.mp3")
+            audio_clips = [AudioFileClip(path) for path in local_paths]
+            final_clip = concatenate_audioclips(audio_clips)
+            final_clip.write_audiofile(merged_file_path)
+            new_path = folder_key + "merged_audio.mp3"
+        
+        try:
+            # 병합된 파일을 S3에 업로드
+            with open(merged_file_path, "rb") as file:
+                s3_client.upload_fileobj(file, BUCKET_NAME, new_path)
+            os.remove(merged_file_path)  # 임시 파일 삭제
+            s3_url = f"https://remeet.s3.ap-northeast-2.amazonaws.com/{new_path}"
+            return jsonify({'result': s3_url}), 200
+        except Exception as e:
+            error_message = str(e)
+            app.logger.info("API Response result : ", 405, "-", error_message)
+            return jsonify({'error': error_message}), 405
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=False)
