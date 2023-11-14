@@ -13,6 +13,7 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
@@ -112,7 +113,7 @@ public class FlaskService {
     }
 
     // 기존의 makeVoice 메소드를 수정하여 FileSystemResource 리스트를 받도록 함
-    public String makeVoice(ModelBoardEntity modelBoardEntity, List<FileSystemResource> audioFiles) throws IOException {
+    public String makeVoice(ModelBoardEntity modelBoardEntity, List<Resource> audioFiles) throws IOException {
         RestTemplate restTemplate = new RestTemplate();
 
         HttpHeaders headers = new HttpHeaders();
@@ -122,7 +123,7 @@ public class FlaskService {
         body.add("modelName", modelBoardEntity.getModelName());
         body.add("gender", modelBoardEntity.getGender());
 
-        for (FileSystemResource fileResource : audioFiles) {
+        for (Resource fileResource : audioFiles) {
             body.add("files", fileResource);
         }
 

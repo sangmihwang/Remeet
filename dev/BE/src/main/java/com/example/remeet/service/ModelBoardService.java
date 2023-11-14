@@ -6,6 +6,8 @@ import com.example.remeet.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,6 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.persistence.EntityNotFoundException;
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -114,8 +117,19 @@ public class ModelBoardService {
 //                .orElseThrow(() -> new IllegalArgumentException("모델이 존재하지 않습니다."));
 
             // Flask 서버로 전송할 파일 리스트 생성
-            List<FileSystemResource> fileResources = uploadedVoices.stream()
-                    .map(voice -> new FileSystemResource(new File(voice.getVoicePath())))
+//            List<FileSystemResource> fileResources = uploadedVoices.stream()
+//                    .map(voice -> new FileSystemResource(new File(voice.getVoicePath())))
+//                    .collect(Collectors.toList());
+
+            List<Resource> fileResources = uploadedVoices.stream()
+                    .map(voice -> {
+                        try {
+                            return new UrlResource(voice.getVoicePath());
+                        } catch (MalformedURLException e) {
+                            log.error("잘못된 URL 형식", e);
+                            throw new RuntimeException("파일 URL 형식 오류: " + voice.getVoicePath(), e);
+                        }
+                    })
                     .collect(Collectors.toList());
 
             String voiceId = flaskService.makeVoice(modelEntity, fileResources);
