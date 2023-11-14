@@ -72,7 +72,7 @@ public class TalkingController {
     }
 
     @PostMapping("combination")
-    public ResponseEntity combinationResult(HttpServletRequest request, CombinationDto combinationDto) throws JsonProcessingException {
+    public ResponseEntity combinationResult(HttpServletRequest request,@RequestBody CombinationDto combinationDto) throws JsonProcessingException {
         Integer userNo = (Integer)request.getAttribute("userNo");
         talkingService.combinationResult(combinationDto, userNo);
         return ResponseEntity.ok().build();
