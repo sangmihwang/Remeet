@@ -576,7 +576,7 @@ def make_voice_model():
         return jsonify({"voice_id": voice_id})
     except Exception as e:
         print(str(e))
-        app.logger.info("MAKE_VOICE API Response result : ", 500, "-", str(e))
+        app.logger.info("MAKE_VOICE API Response result: %d - %s", 500, str(e))
         return jsonify({"error": str(e)}), 500
 
 
