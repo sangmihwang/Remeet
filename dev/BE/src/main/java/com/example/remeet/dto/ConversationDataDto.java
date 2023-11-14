@@ -12,4 +12,5 @@ public class ConversationDataDto {
     private String avatarId;
     private String eleVoiceId;
     private String conversationText;
+    private String movingHoloPath;
 }

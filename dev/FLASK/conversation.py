@@ -674,6 +674,9 @@ def make_common_video():
         200,
     )
 
+def make_holo_path(voice_url, )
+
+
 
 # video 기반 대화 생성 API
 # video 기반 대화 생성 API
@@ -684,11 +687,33 @@ def make_conversation_video():
     model_name = request.json.get("modelName")
     conversation_text = request.json.get("conversationText")
     answer = gpt_answer(model_name, conversation_text, input_text)
-    voice = request.json.get("heyVoiceId")
-    avatar = request.json.get("avatarId")
-    is_admin = request.json.get("admin")
-    videoPath = videoMaker(answer, voice, avatar, is_admin)
-    return jsonify({"answer": answer, "url": videoPath})
+    ele_voice_id = request.json.get("eleVoiceId")
+    user_no = request.json.get("userNo")
+    model_no = request.json.get("modelNo")
+    conversation_no = request.json.get("conversationNo")
+    url = request.json.get("movingHoloPath")
+    voice_url = make_tts(ele_voice_id, answer, user_no, model_no, conversation_no)
+    folder_key = f"ASSET/{user_no}/{model_no}/{conversation_no}"
+    with tempfile.TemporaryDirectory() as temp_dir:
+        video_url = url.split('ASSET')[1]
+        video_file_path = os.path.join(temp_dir, video_url)
+        s3_client.download_file(BUCKET_NAME,'ASSET'+video_url, video_file_path)
+        voice_url = url.split('ASSET')[1]
+        voice_file_path = os.path.join(temp_dir, voice_url)
+        s3_client.download_file(BUCKET_NAME,'ASSET'+voice_url, voice_file_path)
+        new_path = find_index(folder_key, "mp4")
+        make_path = os.path.join(temp_dir, new_path)
+        temp_wav_path = os.path.join(temp_dir, new_path)
+        merge_video_audio(make_path, video_file_path, voice_file_path)
+        try:
+            with open(make_path, "rb") as file:
+                s3_client.upload_fileobj(file, BUCKET_NAME, folder_key + new_path)
+                os.remove(temp_wav_path)
+                s3_url = f"https://remeet.s3.ap-northeast-2.amazonaws.com/{folder_key + new_path}"
+                return jsonify({"answer": answer, "url": s3_url}), 200
+        except Exception as e:
+            app.logger.info("QEUSTION_UPLOAD API Response result : ", 405, "-", str(e))
+            return jsonify({"error": e}), 405
 
 
 # voice 기반 대화 생성 API
@@ -766,7 +791,7 @@ def find_index(folder_key, type):
     return output_file
 
 
-def merge_video_audio(videoPath, audioPath, folder_key):
+def merge_video_audio(videoPath, audioPath, path):
     video_clip = VideoFileClip(videoPath)
     audio_clip = AudioFileClip(audioPath)
     audio_duration = audio_clip.duration
@@ -774,11 +799,7 @@ def merge_video_audio(videoPath, audioPath, folder_key):
     video_clip = video_clip.subclip(0, audio_duration)
     final_clip = video_clip.set_audio(audio_clip)
     
-    output_file = find_index(folder_key, "mp4")
-
-    final_clip.write_videofile(output_file, codec="libx264", audio_codec="aac")
-
-    return output_file
+    final_clip.write_videofile(path, codec="libx264", audio_codec="aac")
 
 
 @app.route('/api/v1/upload/talking', methods=["POST"])
@@ -805,31 +826,34 @@ def question_upload():
             file.save(temp_blob_path)
             #
             # .wav 파일로 변환
-            temp_wav_path = os.path.join(temp_dir, "temp_info_check.wav")
             def convert_audio_to_mp3(source_path, target_path):
                 audio = AudioSegment.from_file(source_path)
                 # 필요한 경우, 샘플 레이트, 채널 등을 조정
                 audio.export(target_path, format="mp3")
-            convert_audio_to_mp3(temp_blob_path,temp_wav_path)
             folder_key = f"ASSET/{userNo}/{modelNo}/{conversationNo}"
             
-            if type == "voice":
-                merge_video = find_index(folder_key, "mp3")
-            else :
-                new_url = url.split('ASSET')[1]
-                local_file_path = os.path.join(temp_dir, "tmp_video.mp4")
-                s3_client.download_file(BUCKET_NAME,'ASSET'+new_url, local_file_path)
-                merge_video = merge_video_audio(local_file_path, temp_wav_path, folder_key)
-                
-            try:
-                with open(merge_video, "rb") as file:
-                    s3_client.upload_fileobj(file, BUCKET_NAME, folder_key + merge_video)
-                    os.remove(merge_video)
-                    s3_url = f"https://remeet.s3.ap-northeast-2.amazonaws.com/{folder_key + merge_video}"
-                    return jsonify({"result": s3_url}), 200
-            except Exception as e:
-                app.logger.info("QEUSTION_UPLOAD API Response result : ", 405, "-", str(e))
-                return jsonify({"error": e}), 405
+            with tempfile.TemporaryDirectory() as temp_dir:
+                if type == "voice":
+                    output_file = find_index(folder_key, "mp3")
+                    temp_wav_path = os.path.join(temp_dir, output_file)
+                    convert_audio_to_mp3(temp_blob_path,temp_wav_path)
+                else :
+                    new_url = url.split('ASSET')[1]
+                    local_file_path = os.path.join(temp_dir, "tmp_video.mp4")
+                    s3_client.download_file(BUCKET_NAME,'ASSET'+new_url, local_file_path)
+                    output_file = find_index(folder_key, "mp4")
+                    temp_wav_path = os.path.join(temp_dir, output_file)
+                    merge_video_audio(local_file_path, temp_wav_path, temp_wav_path)
+                    
+                try:
+                    with open(temp_wav_path, "rb") as file:
+                        s3_client.upload_fileobj(file, BUCKET_NAME, folder_key + output_file)
+                        os.remove(temp_wav_path)
+                        s3_url = f"https://remeet.s3.ap-northeast-2.amazonaws.com/{folder_key + output_file}"
+                        return jsonify({"result": s3_url}), 200
+                except Exception as e:
+                    app.logger.info("QEUSTION_UPLOAD API Response result : ", 405, "-", str(e))
+                    return jsonify({"error": e}), 405
     else:
         app.logger.info("QEUSTION_UPLOAD API Response result : ", 403, "- No file part")
         return jsonify({"error": "No file part"}), 403
