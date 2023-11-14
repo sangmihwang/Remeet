@@ -322,10 +322,12 @@ def gpt_answer(model_name, conversation_text, input_text):
 def make_voice(model_name, gender, audio_files):
     app.logger.info("MAKE_VOICE API ATTEMPT")
     app.logger.info(f"Received gender: {gender}")
+    app.logger.info(f"Received gender: '{gender}'")  # 따옴표 추가하여 로깅
     app.logger.info(f"Received gender type: {type(gender)}")
-    make_voice_url = "https://api.elevenlabs.io/v1/voices/add"
 
-    gender = gender.strip()
+    gender = gender.strip()  # 앞뒤 공백 제거
+    app.logger.info(f"Stripped gender: '{gender}'")  # 공백 제거 후 로깅
+    make_voice_url = "https://api.elevenlabs.io/v1/voices/add"
 
     if gender == 'M':
         gender_label = 'male'
