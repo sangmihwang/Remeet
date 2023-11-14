@@ -1,7 +1,7 @@
 import { atom } from 'recoil';
-import { User } from '@/types/user';
+import { UserResponse } from '@/types/user';
 
-const userState = atom<User | null>({
+const userState = atom<UserResponse | null>({
   key: 'userState',
   default: null,
 });
