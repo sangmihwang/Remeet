@@ -11,6 +11,7 @@ import { History } from '@/types/talk';
 import { ModelInformation } from '@/types/peopleList';
 import { getPeopleInfo } from '@/api/peoplelist';
 import { startConversation } from '@/api/talk';
+import Dictaphone from '@/components/talk/Dictaphone';
 
 const Wrapper = styled.div`
   background-color: var(--primary-color);
@@ -124,12 +125,13 @@ const TalkVoicePage = () => {
         </VideoWrapper>
       </TitleWrapper>
       <ContentWrpper>
-        <AudioRecorder
+        <Dictaphone />
+        {/* <AudioRecorder
           history={talkHistory}
           pushHistory={pushHistory}
           modelInformation={modelInfomation}
           conversationNo={conversationNo}
-        />
+        /> */}
         <LargeButton onClick={handleEndConversation} content="대화 종료" />
       </ContentWrpper>
     </Wrapper>

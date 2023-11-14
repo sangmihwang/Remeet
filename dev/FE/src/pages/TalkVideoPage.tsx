@@ -136,21 +136,23 @@ const TalkVideoPage = () => {
     setIsOpentalkHistoryModal(false);
   };
 
-  useEffect(() => {
-    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
-      const message =
-        'You have unsaved changes. Are you sure you want to leave?';
-      event.returnValue = message; // Gecko and Trident
-      return message; // Gecko and WebKit
-    };
+  // useEffect(() => {
+  //   const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+  //     const message =
+  //       'You have unsaved changes. Are you sure you want to leave?';
+  //     event.returnValue = message; // Gecko and Trident
+  //     return handleBeforeUnload; // Gecko and WebKit
+  //   };
 
-    window.addEventListener('beforeunload', handleBeforeUnload);
+  //   window.addEventListener('beforeunload', handleBeforeUnload);
+  //   // window.addEventListener('beforeunload', handleEndConversation);
 
-    // cleanup 함수에서 이벤트 리스너를 제거합니다.
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-    };
-  }, []);
+  //   // cleanup 함수에서 이벤트 리스너를 제거합니다.
+  //   return () => {
+  //     window.removeEventListener('beforeunload', handleBeforeUnload);
+  //     // window.removeEventListener('beforeunload', handleEndConversation);
+  //   };
+  // }, []);
 
   return (
     <Wrapper>
