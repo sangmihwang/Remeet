@@ -323,11 +323,18 @@ def make_voice(model_name, gender, audio_files):
     app.logger.info("MAKE_VOICE API ATTEMPT")
     make_voice_url = "https://api.elevenlabs.io/v1/voices/add"
 
+    if gender == 'M':
+        gender_label = 'male'
+    elif gender == 'F':
+        gender_label = 'female'
+    else:
+        raise ValueError("Invalid gender value")
+
     headers = {"Accept": "application/json", "xi-api-key": ELEVENLABS_API_KEY}
 
     data = {
         "name": model_name,
-        "labels": f'{{"gender": "{gender}"}}',
+        "labels": f'{{"gender": "{gender_label}"}}',
         "description": f"{model_name} Voice TestModel",
     }
 
