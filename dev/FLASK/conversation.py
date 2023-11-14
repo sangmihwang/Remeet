@@ -917,9 +917,9 @@ def combin_result():
             # 병합된 파일을 S3에 업로드
             with open(merged_file_path, "rb") as file:
                 s3_client.upload_fileobj(file, BUCKET_NAME, new_path)
-            os.remove(merged_file_path)  # 임시 파일 삭제
-            s3_url = f"https://remeet.s3.ap-northeast-2.amazonaws.com/{new_path}"
-            return jsonify({'anwer': s3_url, 'url': s3_url}), 200
+                os.remove(merged_file_path)  # 임시 파일 삭제
+                s3_url = f"https://remeet.s3.ap-northeast-2.amazonaws.com/{new_path}"
+                return jsonify({'anwer': s3_url, 'url': s3_url}), 200
         except Exception as e:
             error_message = str(e)
             app.logger.info("API Response result : ", 405, "-", error_message)

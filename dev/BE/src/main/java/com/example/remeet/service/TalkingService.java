@@ -43,7 +43,7 @@ public class TalkingService {
             getConversation.setVoicePath(getResult.getAnswer());
             producedVoiceRepository.save(getConversation);
         } else {
-            ConversationResponseDto getResult = flaskService.callFlaskConversation(tmpDto, userNo, "mp4");
+            ConversationResponseDto getResult = flaskService.callFlaskConversation(tmpDto, userNo,  "mp4");
             ProducedVideoEntity getConversation = producedVideoRepository.findByProVideoNo(combinationDto.getConversationNo()).get();
             getConversation.setProVideoName(combinationDto.getConversationName());
             getConversation.setVideoPath(getResult.getAnswer());
