@@ -4,6 +4,7 @@ import com.example.remeet.dto.*;
 import com.example.remeet.entity.*;
 import com.example.remeet.repository.*;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -22,6 +23,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ModelBoardService {
     private final FlaskService flaskService;
     private final ModelBoardRepository modelBoardRepository;
@@ -94,36 +96,45 @@ public class ModelBoardService {
         return modelBoardEntity.getModelNo();
     }
 
-    @Transactional(readOnly = false)
+    @Transactional
     public String createVoiceModel(Integer modelNo) throws IOException {
         ModelBoardEntity modelEntity = modelBoardRepository.findById(modelNo)
                 .orElseThrow(() -> new IllegalArgumentException("모델 번호에 해당하는 모델이 존재하지 않습니다."));
 
-        List<UploadedVoiceEntity> uploadedVoices = uploadedVoiceRepository.findByModelNo(modelEntity);
+        try {
+            List<UploadedVoiceEntity> uploadedVoices = uploadedVoiceRepository.findByModelNo(modelEntity);
 
-        // 음성 파일이 없는 경우 예외 처리
-        if (uploadedVoices.isEmpty()) {
-            throw new IllegalArgumentException("음성 파일이 존재하지 않습니다.");
+            // 음성 파일이 없는 경우 예외 처리
+            if (uploadedVoices.isEmpty()) {
+                throw new IllegalArgumentException("음성 파일이 존재하지 않습니다.");
+            }
+
+            // ModelBoardEntity 가져오기 (모델 이름과 성별 정보에 사용)
+//        ModelBoardEntity modelBoardEntity = modelBoardRepository.findById(modelNo)
+//                .orElseThrow(() -> new IllegalArgumentException("모델이 존재하지 않습니다."));
+
+            // Flask 서버로 전송할 파일 리스트 생성
+            List<FileSystemResource> fileResources = uploadedVoices.stream()
+                    .map(voice -> new FileSystemResource(new File(voice.getVoicePath())))
+                    .collect(Collectors.toList());
+
+            String voiceId = flaskService.makeVoice(modelEntity, fileResources);
+
+            if (voiceId != null && !voiceId.isEmpty()) {
+                // Update the ModelBoardEntity with the new voice ID
+                modelEntity.setEleVoiceId(voiceId); // Assuming 'eleVoiceId' is the correct field to update
+                modelBoardRepository.save(modelEntity);
+            }
+
+            return voiceId;
+
+        } catch (IllegalArgumentException e) {
+            log.error("예외 발생: 모델 번호 " + modelNo + "에 대한 오류", e);
+            throw e;
+        } catch (Exception e) {
+            log.error("알 수 없는 예외 발생", e);
+            throw new RuntimeException("음성 모델 생성 중 오류 발생", e);
         }
-
-        // ModelBoardEntity 가져오기 (모델 이름과 성별 정보에 사용)
-        ModelBoardEntity modelBoardEntity = modelBoardRepository.findById(modelNo)
-                .orElseThrow(() -> new IllegalArgumentException("모델이 존재하지 않습니다."));
-
-        // Flask 서버로 전송할 파일 리스트 생성
-        List<FileSystemResource> fileResources = uploadedVoices.stream()
-                .map(voice -> new FileSystemResource(new File(voice.getVoicePath())))
-                .collect(Collectors.toList());
-
-        String voiceId = flaskService.makeVoice(modelBoardEntity, fileResources);
-
-        if (voiceId != null && !voiceId.isEmpty()) {
-            // Update the ModelBoardEntity with the new voice ID
-            modelEntity.setEleVoiceId(voiceId); // Assuming 'eleVoiceId' is the correct field to update
-            modelBoardRepository.save(modelEntity);
-        }
-
-        return voiceId;
     }
 
     @Transactional(readOnly = true)

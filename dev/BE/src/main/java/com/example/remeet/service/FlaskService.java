@@ -8,6 +8,7 @@ import com.example.remeet.entity.ModelBoardEntity;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
@@ -16,6 +17,7 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -25,6 +27,7 @@ import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class FlaskService {
     private RestTemplate restTemplate;
     private UserService userService;
@@ -126,18 +129,24 @@ public class FlaskService {
         HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
         String voiceApiUrl = FLASK_API_URL + "conversation/makevoice";
 
-        ResponseEntity<Map> response = restTemplate.postForEntity(voiceApiUrl, requestEntity, Map.class);
+        try {
+            ResponseEntity<Map> response = restTemplate.postForEntity(voiceApiUrl, requestEntity, Map.class);
 
-        if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
-            Map responseBody = response.getBody();
-            if (responseBody.containsKey("voice_id")) {
-                return responseBody.get("voice_id").toString();
+            if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
+                Map responseBody = response.getBody();
+                if (responseBody.containsKey("voice_id")) {
+                    return responseBody.get("voice_id").toString();
+                } else {
+                    throw new RuntimeException("Voice ID not found in the response");
+                }
             } else {
-                throw new RuntimeException("Voice ID not found in the response");
+                throw new RuntimeException("Failed to create voice model: " + response.getStatusCode());
             }
-        } else {
-            throw new RuntimeException("Failed to create voice model: " + response.getStatusCode());
+        } catch (RestClientException e) {
+            log.error("Flask 서버 통신 중 오류 발생", e);
+            throw new RuntimeException("음성 생성 API 호출 실패", e);
         }
+
     }
 
     public List<String> uploadFilesToFlask(List<MultipartFile> Files, Integer userNo, Integer modelNo, String type) throws IOException {
