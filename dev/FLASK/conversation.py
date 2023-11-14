@@ -325,8 +325,8 @@ def make_voice(model_name, gender, audio_files):
     app.logger.info(f"Received gender: '{gender}'")  # 따옴표 추가하여 로깅
     app.logger.info(f"Received gender type: {type(gender)}")
 
-    gender = gender.strip()  # 앞뒤 공백 제거
-    app.logger.info(f"Stripped gender: '{gender}'")  # 공백 제거 후 로깅
+    gender = gender.replace('"', '').strip()
+    app.logger.info(f"Processed gender: {gender}")
     make_voice_url = "https://api.elevenlabs.io/v1/voices/add"
 
     if gender == 'M':
@@ -334,6 +334,7 @@ def make_voice(model_name, gender, audio_files):
     elif gender == 'F':
         gender_label = 'female'
     else:
+        app.logger.error("Invalid gender value received")
         raise ValueError("Invalid gender value")
 
     headers = {"Accept": "application/json", "xi-api-key": ELEVENLABS_API_KEY}
