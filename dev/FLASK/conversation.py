@@ -147,7 +147,7 @@ def videoMaker(text, voice_id, avatar_id, admin):
     # voice ID 와 talking photo ID를 선택해 input text로 영상 생성
     url_avatar = "https://api.heygen.com/v1/video.generate"
     payload_avatar = {
-        "background": "#ffffff",
+        "background": "#000000",
         "ratio": "16:9",
         "test": test,
         "version": "v1alpha",
@@ -568,11 +568,20 @@ def make_common_video():
     avatar = request.json.get("avatarId")
     userNo = request.json.get("userNo")
     modelNo = request.json.get("modelNo")
-    commonVideoPath = commonvideoMaker(avatar)
+    is_admin = request.json.get("admin")
+    commonVideoPath = commonvideoMaker(avatar,is_admin)
     answer = process_video(commonVideoPath, userNo, modelNo)
     return jsonify({"answer" :answer, "url": commonVideoPath}), 200
 
-
+@app.route("/api/v1/conversation/movingvideo", methods=["POST"])
+def make_moving_video():
+    app.logger.info("CONVERSATION_VIDEO API ATTEMPT")
+    answer = "안녕하세요! 저는 인공지능 기술의 발전에 대해 이야기하고 싶어요. 우리는 지금 인공지능이 우리 일상 속에 깊숙이 들어와 있다는 것을 실감하고 있죠. 예를 들어, 스마트폰에서 음성 인식 기능을 사용하거나, 온라인 쇼핑을 할 때 개인 맞춤형 추천을 받는 것 모두 인공지능 덕분입니다 하지만 인공지능 기술은 여기서 멈추지 않아요. 앞으로 우리는 더욱 똑똑하고, 더욱 인간처럼 반응하는 인공지능을 만나게 될 거예요."
+    voice = request.json.get("heyVoiceId")
+    avatar = request.json.get("avatarId")
+    is_admin = request.json.get("admin")
+    videoPath = videoMaker(answer, voice, avatar, is_admin)
+    return jsonify({"answer": answer, "url": videoPath})
 
 
 # video 기반 대화 생성 API

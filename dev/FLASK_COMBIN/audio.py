@@ -49,8 +49,6 @@ def combin_result():
             s3_client.download_file(bucket_name, audio_key, local_filename)
             audio_clips.append(AudioFileClip(local_filename))
 
-        if not audio_clips:
-            return jsonify({"error": "No audio files downloaded"}), 404
 
         # 병합된 파일 경로
         merged_file_path = os.path.join(temp_dir, "merged_audio.mp3")
