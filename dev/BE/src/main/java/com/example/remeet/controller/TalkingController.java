@@ -59,7 +59,7 @@ public class TalkingController {
     public ResponseEntity<ConversationResponseDto> conversationVideo(HttpServletRequest request, @RequestBody ConversationDataDto conversationDataDto) throws JsonProcessingException {
         log.info("request to /api/v1/talking/conversation/video [Method: POST]");
         Integer userNo = (Integer)request.getAttribute("userNo");
-        ConversationResponseDto answer = flaskService.callFlaskConversation(conversationDataDto, userNo, "video");
+        ConversationResponseDto answer = talkingService.conversationVideo(conversationDataDto, userNo, "video");
         return ResponseEntity.ok(answer);
     }
 
