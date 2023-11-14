@@ -60,6 +60,8 @@ public class FlaskService {
             }
         } else if (type.equals("voice")) {
             NEW_URL = FLASK_API_URL + "conversation/voice";
+        } else if (type.equals("mp3") || type.equals("mp4")) {
+            NEW_URL = FLASK_API_URL + "combinResult";
         } else {
             NEW_URL = FLASK_API_URL + "heyVoiceId";
         }

@@ -1,5 +1,6 @@
 package com.example.remeet.controller;
 
+import com.example.remeet.dto.CombinationDto;
 import com.example.remeet.dto.ConversationDataDto;
 import com.example.remeet.dto.ConversationResponseDto;
 import com.example.remeet.dto.FlaskResponseDto;
@@ -66,9 +67,15 @@ public class TalkingController {
     public ResponseEntity uploadQuestion(HttpServletRequest request, @RequestParam("file") MultipartFile file, @RequestParam("modelNo") Integer modelNo, @RequestParam("conversationNo") Integer conversationNo,  @RequestParam("type") String type) throws IOException {
         log.info("request to /api/v1/talking/question [Method: POST]");
         Integer userNo = (Integer)request.getAttribute("userNo");
-        FlaskResponseDto transcriptionResult = talkingService.uploadQuestion(file,userNo,modelNo, conversationNo, type);
-        return ResponseEntity.ok(transcriptionResult);
+        talkingService.uploadQuestion(file,userNo,modelNo, conversationNo, type);
+        return ResponseEntity.ok().build();
+    }
 
+    @PostMapping("combination")
+    public ResponseEntity combinationResult(HttpServletRequest request, CombinationDto combinationDto) throws JsonProcessingException {
+        Integer userNo = (Integer)request.getAttribute("userNo");
+        talkingService.combinationResult(combinationDto, userNo);
+        return ResponseEntity.ok().build();
     }
 
 }

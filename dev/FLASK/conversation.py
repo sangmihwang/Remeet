@@ -849,7 +849,6 @@ def combin_result():
         files = [item['Key'] for item in sorted(response['Contents'], key=lambda x: x['LastModified'], reverse=False)]
     else:
         return jsonify({"error": "No videos found"}), 404
-    print(files)
     # 로컬 시스템에 저장할 파일의 경로와 이름
     local_paths = []
     with tempfile.TemporaryDirectory() as temp_dir:
@@ -860,14 +859,14 @@ def combin_result():
             local_paths.append(local_file_path)
             s3_client.download_file(BUCKET_NAME, files[i], local_file_path)
 
-        if type == 'video':
+        if type == 'mp4':
             merged_file_path = os.path.join(temp_dir, "merged_video.mp4")
             video_clips = [VideoFileClip(path) for path in local_paths]
             final_clip = concatenate_videoclips(video_clips)
             final_clip.write_videofile(merged_file_path)
             new_path = folder_key + "merged_video.mp4"
         
-        elif type == 'voice' :
+        elif type == 'mp3' :
             merged_file_path = os.path.join(temp_dir, "merged_audio.mp3")
             audio_clips = [AudioFileClip(path) for path in local_paths]
             final_clip = concatenate_audioclips(audio_clips)
@@ -880,7 +879,7 @@ def combin_result():
                 s3_client.upload_fileobj(file, BUCKET_NAME, new_path)
             os.remove(merged_file_path)  # 임시 파일 삭제
             s3_url = f"https://remeet.s3.ap-northeast-2.amazonaws.com/{new_path}"
-            return jsonify({'result': s3_url}), 200
+            return jsonify({'anwer': s3_url, 'url': s3_url}), 200
         except Exception as e:
             error_message = str(e)
             app.logger.info("API Response result : ", 405, "-", error_message)
