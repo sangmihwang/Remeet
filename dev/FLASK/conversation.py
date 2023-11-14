@@ -563,8 +563,8 @@ def transcribe_audio():
 @app.route("/api/v1/conversation/makevoice", methods=["POST"])
 def make_voice_model():
     app.logger.info("MAKE_VOICE API ATTEMPT")
-    model_name = request.json.get("modelName")
-    gender_label = request.json.get("gender")
+    model_name = request.form.get("modelName")
+    gender_label = request.form.get("gender")
     audio_files = request.files.getlist("files")
 
     files = [
