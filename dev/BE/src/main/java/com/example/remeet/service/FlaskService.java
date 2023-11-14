@@ -60,6 +60,8 @@ public class FlaskService {
             }
         } else if (type.equals("voice")) {
             NEW_URL = FLASK_API_URL + "conversation/voice";
+        } else if (type.equals("mp3") || type.equals("mp4")) {
+            NEW_URL = FLASK_API_URL + "combinResult";
         } else {
             NEW_URL = FLASK_API_URL + "heyVoiceId";
         }
@@ -101,7 +103,7 @@ public class FlaskService {
     }
 
 
-    public FlaskResponseDto callFlaskByMultipartFile(MultipartFile file, Integer userNo, Integer modelNo, Integer conversationNo , String type) throws IOException {
+    public FlaskResponseDto callFlaskByMultipartFile(MultipartFile file, Integer userNo, Integer modelNo, Integer conversationNo ,String url, String type) throws IOException {
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.MULTIPART_FORM_DATA); // Content-Type을 multipart/form-data로 설정
@@ -116,6 +118,7 @@ public class FlaskService {
         });
         body.add("type", type);
         body.add("userNo", userNo);
+        body.add("url", url);
         body.add("modelNo", modelNo);
         body.add("conversationNo", conversationNo);
         HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<>(body, headers);
@@ -128,6 +131,8 @@ public class FlaskService {
             newURL = FLASK_API_URL + "transcribe";
         } else if (type.equals("profile")) {
             newURL = FLASK_API_URL + "signup";
+        } else {
+            newURL = FLASK_API_URL + "upload/talking";
         }
 
         ResponseEntity<FlaskResponseDto> responseEntity = restTemplate.exchange(
