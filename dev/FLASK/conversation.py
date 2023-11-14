@@ -321,6 +321,8 @@ def gpt_answer(model_name, conversation_text, input_text):
 
 def make_voice(model_name, gender, audio_files):
     app.logger.info("MAKE_VOICE API ATTEMPT")
+    app.logger.info(f"Received gender: {gender}")
+    app.logger.info(f"Received gender type: {type(gender)}")
     make_voice_url = "https://api.elevenlabs.io/v1/voices/add"
 
     if gender == 'M':
