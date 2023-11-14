@@ -570,16 +570,22 @@ def make_voice_model():
     # S3에서 오디오 파일 다운로드
     local_audio_files = []
     with tempfile.TemporaryDirectory() as temp_dir:
-        for file_path in audio_file_paths:
-            local_filename = file_path.split('/')[-1]
-            local_file_path = os.path.join(temp_dir, local_filename)
-            local_audio_files.append(local_file_path)
-            s3_client.download_file(bucket_name, file_path, local_file_path)
+        try:
+            for file_path in audio_file_paths:
+                print('가져온 경로', file_path)
+                local_filename = file_path.split('/')[-1]
+                local_file_path = os.path.join(temp_dir, local_filename)
+                print('로컬경로', local_file_path)
+                local_audio_files.append(local_file_path)
+                s3_client.download_file(bucket_name, file_path, local_file_path)
+        except Exception as e:
+            print("다운로드 중 오류 발생:", e)
+            return jsonify({"error": "파일 다운로드 중 오류 발생"}), 500
 
-        # 오디오 파일을 업로드 형식으로 변환
-        files = [
-            ("files", (os.path.basename(file), open(file, 'rb'), "audio/mpeg")) for file in local_audio_files
-        ]
+    # 오디오 파일을 업로드 형식으로 변환
+    files = [
+        ("files", (os.path.basename(file), open(file, 'rb'), "audio/mpeg")) for file in local_audio_files
+    ]
 
     try:
         voice_id = make_voice(model_name, gender_label, files)
