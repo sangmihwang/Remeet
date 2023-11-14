@@ -691,6 +691,9 @@ def make_common_video():
         200,
     )
 
+def make_holo_path(voice_url, )
+
+
 
 # video 기반 대화 생성 API
 # video 기반 대화 생성 API
@@ -701,11 +704,33 @@ def make_conversation_video():
     model_name = request.json.get("modelName")
     conversation_text = request.json.get("conversationText")
     answer = gpt_answer(model_name, conversation_text, input_text)
-    voice = request.json.get("heyVoiceId")
-    avatar = request.json.get("avatarId")
-    is_admin = request.json.get("admin")
-    videoPath = videoMaker(answer, voice, avatar, is_admin)
-    return jsonify({"answer": answer, "url": videoPath})
+    ele_voice_id = request.json.get("eleVoiceId")
+    user_no = request.json.get("userNo")
+    model_no = request.json.get("modelNo")
+    conversation_no = request.json.get("conversationNo")
+    url = request.json.get("movingHoloPath")
+    voice_url = make_tts(ele_voice_id, answer, user_no, model_no, conversation_no)
+    folder_key = f"ASSET/{user_no}/{model_no}/{conversation_no}"
+    with tempfile.TemporaryDirectory() as temp_dir:
+        video_url = url.split('ASSET')[1]
+        video_file_path = os.path.join(temp_dir, video_url)
+        s3_client.download_file(BUCKET_NAME,'ASSET'+video_url, video_file_path)
+        voice_url = url.split('ASSET')[1]
+        voice_file_path = os.path.join(temp_dir, voice_url)
+        s3_client.download_file(BUCKET_NAME,'ASSET'+voice_url, voice_file_path)
+        new_path = find_index(folder_key, "mp4")
+        make_path = os.path.join(temp_dir, new_path)
+        temp_wav_path = os.path.join(temp_dir, new_path)
+        merge_video_audio(make_path, video_file_path, voice_file_path)
+        try:
+            with open(make_path, "rb") as file:
+                s3_client.upload_fileobj(file, BUCKET_NAME, folder_key + new_path)
+                os.remove(temp_wav_path)
+                s3_url = f"https://remeet.s3.ap-northeast-2.amazonaws.com/{folder_key + new_path}"
+                return jsonify({"answer": answer, "url": s3_url}), 200
+        except Exception as e:
+            app.logger.info("QEUSTION_UPLOAD API Response result : ", 405, "-", str(e))
+            return jsonify({"error": e}), 405
 
 
 # voice 기반 대화 생성 API
@@ -783,7 +808,7 @@ def find_index(folder_key, type):
     return output_file
 
 
-def merge_video_audio(videoPath, audioPath, folder_key):
+def merge_video_audio(videoPath, audioPath, path):
     video_clip = VideoFileClip(videoPath)
     audio_clip = AudioFileClip(audioPath)
     audio_duration = audio_clip.duration
@@ -791,11 +816,7 @@ def merge_video_audio(videoPath, audioPath, folder_key):
     video_clip = video_clip.subclip(0, audio_duration)
     final_clip = video_clip.set_audio(audio_clip)
     
-    output_file = find_index(folder_key, "mp4")
-
-    final_clip.write_videofile(output_file, codec="libx264", audio_codec="aac")
-
-    return output_file
+    final_clip.write_videofile(path, codec="libx264", audio_codec="aac")
 
 
 @app.route('/api/v1/upload/talking', methods=["POST"])

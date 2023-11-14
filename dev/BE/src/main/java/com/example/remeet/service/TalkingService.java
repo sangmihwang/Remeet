@@ -50,4 +50,12 @@ public class TalkingService {
             producedVideoRepository.save(getConversation);
         }
     }
+
+    public ConversationResponseDto conversationVideo(ConversationDataDto conversationDataDto,Integer userNo, String type) throws JsonProcessingException {
+        ModelBoardEntity getModel = modelBoardRepository.findByModelNo(conversationDataDto.getModelNo()).get();
+        conversationDataDto.setMovingHoloPath(getModel.getMovingHoloPath());
+        ConversationResponseDto answer = flaskService.callFlaskConversation(conversationDataDto, userNo, "video");
+        return answer;
+
+    }
 }
