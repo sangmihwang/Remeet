@@ -9,7 +9,7 @@ const Wrapper = styled.div`
 
 const Title = styled.div`
   position: absolute;
-  top: 17vh;
+  top: 15vh;
   left: 10vw;
   color: #fff;
   font-size: 2.5rem;
@@ -52,7 +52,7 @@ const Button = styled.button`
 `;
 const ImageWrapper = styled.div`
   position: absolute;
-  top: 37vh;
+  top: 35vh;
   left: 10vw;
   width: 80vw;
 `;

@@ -1,11 +1,13 @@
 import { useRecoilState } from 'recoil';
 import { useCallback, useEffect } from 'react';
-import { User } from '@/types/user';
+import { UserResponse } from '@/types/user';
 import userState from '@/store/user';
 import { getUserInfo } from '@/api/user';
 
 const useAuth = () => {
-  const [userInfo, setUserInfo] = useRecoilState<User | null>(userState);
+  const [userInfo, setUserInfo] = useRecoilState<UserResponse | null>(
+    userState,
+  );
   const refreshUserInfo = useCallback(async () => {
     getUserInfo()
       .then((res) => {
