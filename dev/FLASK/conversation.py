@@ -325,6 +325,8 @@ def make_voice(model_name, gender, audio_files):
     app.logger.info(f"Received gender type: {type(gender)}")
     make_voice_url = "https://api.elevenlabs.io/v1/voices/add"
 
+    gender = gender.strip()
+
     if gender == 'M':
         gender_label = 'male'
     elif gender == 'F':
