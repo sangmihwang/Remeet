@@ -26,7 +26,7 @@ AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
 ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY")
 x_api_key = os.getenv("x_api_key")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-key_path = 'C:/Users/SSAFY/Desktop/자율/dev/FLASK/google.json'
+key_path = "C:/Users/SSAFY/Desktop/자율/dev/FLASK/google.json"
 
 REGION_NAME = "ap-northeast-2"
 BUCKET_NAME = "remeet"
@@ -212,7 +212,7 @@ def getVoiceId():
             voice_id = voice["voice_id"]
             break
 
-    return jsonify({"answer": voice_id, "url": voice_id}),200
+    return jsonify({"answer": voice_id, "url": voice_id}), 200
 
 
 def videoMaker(text, voice_id, avatar_id, admin):
@@ -244,7 +244,9 @@ def videoMaker(text, voice_id, avatar_id, admin):
         "x-api-key": x_api_key,
     }
     while True:
-        response_avatar = requests.post(url_avatar, json=payload_avatar, headers=headers)
+        response_avatar = requests.post(
+            url_avatar, json=payload_avatar, headers=headers
+        )
         tmp = json.loads(response_avatar.text)
         print(tmp)
         if tmp["data"]:
@@ -451,10 +453,10 @@ def upload_files():
                         target_path, vcodec="libx264", acodec="aac"
                     ).run(overwrite_output=True)
 
-            if fileType == "voice" and file.filename.split(".")[1].lower() != 'mp3':
+            if fileType == "voice" and file.filename.split(".")[1].lower() != "mp3":
                 new_path = f'{file.filename.split(".")[0]}' + ".mp3"
                 convert_audio_to_mp3(temp_blob_path, new_path)
-            elif fileType == "video" and file.filename.split(".")[1].lower() != 'mp4':
+            elif fileType == "video" and file.filename.split(".")[1].lower() != "mp4":
                 new_path = f'{file.filename.split(".")[0]}.mp4'
                 convert_video_to_mp4(temp_blob_path, new_path)
             else:
@@ -497,7 +499,7 @@ def transcribe_audio():
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_blob_path = os.path.join(temp_dir, "temp_blob_data.webm")
             file.save(temp_blob_path)
-
+            #
             # .wav 파일로 변환
             temp_wav_path = os.path.join(temp_dir, "temp_info_check.wav")
             audio = AudioSegment.from_file(temp_blob_path)
@@ -508,31 +510,45 @@ def transcribe_audio():
                 audio_content = audio_file.read()
                 try:
                     # 오디오 파일을 텍스트로 변환
-                    credentials = service_account.Credentials.from_service_account_file(key_path)
+                    credentials = service_account.Credentials.from_service_account_file(
+                        key_path
+                    )
                     client = speech.SpeechClient(credentials=credentials)
 
                     audio = speech.RecognitionAudio(content=audio_content)
                     config = speech.RecognitionConfig(
                         encoding=speech.RecognitionConfig.AudioEncoding.LINEAR16,
                         sample_rate_hertz=16000,
-                        language_code='ko-KR'
+                        language_code="ko-KR",
                     )
 
                     response = client.recognize(config=config, audio=audio)
 
                     # 변환된 텍스트를 수집
-                    transcripts = [result.alternatives[0].transcript for result in response.results]
-                    return jsonify({"result" : transcripts[0]}), 200
+                    transcripts = [
+                        result.alternatives[0].transcript for result in response.results
+                    ]
+                    return jsonify({"result": transcripts[0]}), 200
                 except response.GoogleAPICallError as e:
-                    app.logger.info("STT API Response result : ", 500, "- Error calling Google API")
+                    app.logger.info(
+                        "STT API Response result : ", 500, "- Error calling Google API"
+                    )
                     return jsonify({"error": "Error calling Google API"}), 500
                 except response.RetryError as e:
-                    app.logger.info("STT API Response result : ", 500, "- Error with API retry logic")
+                    app.logger.info(
+                        "STT API Response result : ",
+                        500,
+                        "- Error with API retry logic",
+                    )
                     return jsonify({"error": "Error with API retry logic"}), 500
                 except response.TooManyRequests as e:
-                    app.logger.info("STT API Response result : ", 429, "- Too many requests to the API")
+                    app.logger.info(
+                        "STT API Response result : ",
+                        429,
+                        "- Too many requests to the API",
+                    )
                     return jsonify({"error": "Too many requests to the API"}), 429
-                    
+
             # 임시 파일은 이 블록을 벗어나면 자동으로 삭제됩니다.
     app.logger.info("STT API Response result : ", 400, "- Invalid file")
     return jsonify({"error": "Invalid file"}), 400
@@ -604,14 +620,13 @@ def upload_avatar():
             data=file,  # 파일의 내용을 읽어서 줘야함
             headers={"Content-Type": "image/jpeg", "x-api-key": x_api_key},
         )
-    return jsonify({"result" : resp.json()["data"]["talking_photo_id"]}), 200
+    return jsonify({"result": resp.json()["data"]["talking_photo_id"]}), 200
 
 
 # Function to create hologram video and upload to S3
 def make_hologram_video(input_video_path, bucket_name, s3_file_path):
     # Load video
     clip = VideoFileClip(input_video_path)
-   
 
     # Create hologram effect
     top_clip = clip.rotate(angle=45, resample="bicubic")
@@ -635,9 +650,9 @@ def make_hologram_video(input_video_path, bucket_name, s3_file_path):
 
 # Flask route to process video
 # @app.route("/process-video", methods=["POST"])
-def process_video(path, userNo,modelNo, name):
+def process_video(path, userNo, modelNo, name):
     app.logger.info("process_video API ATTEMPT")
-    s3_output_path = f'ASSET/{userNo}/{modelNo}/' + name
+    s3_output_path = f"ASSET/{userNo}/{modelNo}/" + name
     bucket_name = BUCKET_NAME
 
     make_hologram_video(path, bucket_name, s3_output_path)
@@ -656,12 +671,22 @@ def make_common_video():
     userNo = request.json.get("userNo")
     modelNo = request.json.get("modelNo")
     is_admin = request.json.get("admin")
-    commonVideoPath = commonvideoMaker(avatar,is_admin)
+    commonVideoPath = commonvideoMaker(avatar, is_admin)
     holoUrl = process_video(commonVideoPath, userNo, modelNo, "holo_video.mp4")
     answer = "안녕하세요! 저는 인공지능 기술의 발전에 대해 이야기하고 싶어요. 우리는 지금 인공지능이 우리 일상 속에 깊숙이 들어와 있다는 것을 실감하고 있죠. 예를 들어, 스마트폰에서 음성 인식 기능을 사용하거나, 온라인 쇼핑을 할 때 개인 맞춤형 추천을 받는 것 모두 인공지능 덕분입니다 하지만 인공지능 기술은 여기서 멈추지 않아요. 앞으로 우리는 더욱 똑똑하고, 더욱 인간처럼 반응하는 인공지능을 만나게 될 거예요."
     videoPath = videoMaker(answer, voice, avatar, is_admin)
     holoUrl2 = process_video(videoPath, userNo, modelNo, "holo_moving.mp4")
-    return jsonify({"commonVideoPath" :commonVideoPath, "commonHoloPath": holoUrl, "movingVideoPath": videoPath, "movingHoloPath": holoUrl2}), 200
+    return (
+        jsonify(
+            {
+                "commonVideoPath": commonVideoPath,
+                "commonHoloPath": holoUrl,
+                "movingVideoPath": videoPath,
+                "movingHoloPath": holoUrl2,
+            }
+        ),
+        200,
+    )
 
 
 # video 기반 대화 생성 API
