@@ -13,7 +13,8 @@ import Modal from '@/components/common/Modal';
 import { History } from '@/types/talk';
 import { ModelInformation } from '@/types/peopleList';
 import { getPeopleInfo } from '@/api/peoplelist';
-import { startConversation } from '@/api/talk';
+import { saveTalking, startConversation } from '@/api/talk';
+import Dictaphone from '@/components/talk/Dictaphone';
 
 const Wrapper = styled.div`
   background-color: var(--primary-color);
@@ -123,10 +124,44 @@ const TalkVideoPage = () => {
       .then((result) => {
         /* Read more about isConfirmed, isDenied below */
         if (result.isConfirmed) {
-          MySwal.fire('Saved!', '', 'success');
-          navigate('/board');
+          MySwal.fire({
+            title: '지금 대화의 이름을 정해주세요.',
+            input: 'text',
+            showCancelButton: true,
+            confirmButtonText: '저장',
+            showLoaderOnConfirm: true,
+            preConfirm: (conversationName) => {
+              try {
+                const data = {
+                  modelNo: Number(modelInfomation?.modelNo),
+                  conversationNo,
+                  conversationName,
+                  type: 'video',
+                };
+                const response = saveTalking(data);
+                if (!response.status) {
+                  console.log(response, '확인');
+                }
+              } catch (error) {
+                console.log(error);
+              }
+            },
+            allowOutsideClick: () => {
+              return !MySwal.isLoading;
+            },
+          })
+            .then((res) => {
+              if (res.isConfirmed) {
+                MySwal.fire('저장되었습니다.', '', 'success')
+                  .then(() => {
+                    navigate('/board');
+                  })
+                  .catch(() => {});
+              }
+            })
+            .catch(() => {});
         } else if (result.isDenied) {
-          MySwal.fire('Changes are not saved', '', 'info');
+          MySwal.fire('저장하지 않고 종료합니다.', '', 'info');
           navigate('/board');
         }
       })
@@ -163,12 +198,11 @@ const TalkVideoPage = () => {
         </VideoWrapper>
       </TitleWrapper>
       <ContentWrpper>
-        <AudioRecorder
-          history={talkHistory}
+        <Dictaphone
+          setVideoSrc={setVideoSrc}
           pushHistory={pushHistory}
           modelInformation={modelInfomation}
           conversationNo={conversationNo}
-          setVideoSrc={setVideoSrc}
         />
         <ButtonWrapper>
           <SmallButton
