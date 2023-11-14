@@ -813,16 +813,16 @@ def question_upload():
             file.save(temp_blob_path)
             #
             # .wav 파일로 변환
-            temp_wav_path = os.path.join(temp_dir, "temp_info_check.wav")
             def convert_audio_to_mp3(source_path, target_path):
                 audio = AudioSegment.from_file(source_path)
                 # 필요한 경우, 샘플 레이트, 채널 등을 조정
                 audio.export(target_path, format="mp3")
-            convert_audio_to_mp3(temp_blob_path,temp_wav_path)
             folder_key = f"ASSET/{userNo}/{modelNo}/{conversationNo}"
             
             if type == "voice":
                 merge_video = find_index(folder_key, "mp3")
+                temp_wav_path = os.path.join(temp_dir, merge_video)
+                convert_audio_to_mp3(temp_blob_path,temp_wav_path)
             else :
                 new_url = url.split('ASSET')[1]
                 local_file_path = os.path.join(temp_dir, "tmp_video.mp4")
