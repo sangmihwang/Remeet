@@ -37,9 +37,10 @@ public class TalkingController {
 
 
     @PostMapping("transcribe")
-    public ResponseEntity<FlaskResponseDto> transcribeFile(@RequestParam("file") MultipartFile file) throws IOException {
+    public ResponseEntity<FlaskResponseDto> transcribeFile(HttpServletRequest request, @RequestParam("file") MultipartFile file, @RequestParam("modelNo") Integer modelNo, @RequestParam("conversationNo") Integer conversationNo) throws IOException {
         log.info("request to /api/v1/talking/transcribe [Method: POST]");
-        FlaskResponseDto transcriptionResult = flaskService.callFlaskByMultipartFile(file, "stt");
+        Integer userNo = (Integer)request.getAttribute("userNo");
+        FlaskResponseDto transcriptionResult = flaskService.callFlaskByMultipartFile(file,userNo,modelNo, conversationNo, "stt");
         return ResponseEntity.ok(transcriptionResult);
     }
 

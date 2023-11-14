@@ -9,4 +9,5 @@ public class UserInfoDto {
     private String imagePath;
     private TokenResponseDto tokenResponse;
     private String userEmail;
+    private String isAdmin;
 }

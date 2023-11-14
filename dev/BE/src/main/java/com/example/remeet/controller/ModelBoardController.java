@@ -1,9 +1,7 @@
 package com.example.remeet.controller;
 
-import com.example.remeet.dto.ModelBoardCreateDto;
-import com.example.remeet.dto.ModelBoardDetailDto;
-import com.example.remeet.dto.ModelBoardDto;
-import com.example.remeet.dto.NeedUpdateModelDto;
+import com.example.remeet.dto.*;
+import com.example.remeet.service.FlaskService;
 import com.example.remeet.service.ModelBoardService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -26,7 +24,7 @@ import java.util.List;
 public class ModelBoardController {
     private final ModelBoardService modelBoardService;
 
-    public ModelBoardController(ModelBoardService modelBoardService) {
+    public ModelBoardController(ModelBoardService modelBoardService, FlaskService flaskService) {
         this.modelBoardService = modelBoardService;
     }
 
@@ -110,13 +108,22 @@ public class ModelBoardController {
 
     @GetMapping("check-model")
     public ResponseEntity<List<NeedUpdateModelDto>> getNeedUpdate() {
+        log.info("request to /api/v1/model/check-model [Method: GET]");
         List<NeedUpdateModelDto> getNeedUpdateList = modelBoardService.getNeedUpdateList();
         return ResponseEntity.ok(getNeedUpdateList);
     }
 
     @PostMapping("update-heyId")
     public ResponseEntity updateHeyVoiceId(@RequestBody NeedUpdateModelDto needUpdateModelDto) throws IOException {
+        log.info("request to /api/v1/model/update-heyId [Method: POST]");
         modelBoardService.updateHeyVoiceId(needUpdateModelDto);
         return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("create-common")
+    public ResponseEntity<CommonVideoDto> createCommonVideo(@RequestBody NeedUpdateModelDto needUpdateModelDto) throws IOException {
+        log.info("request to /api/v1/model/create-common [Method: POST]");
+        CommonVideoDto transcriptionResult = modelBoardService.createCommonVideo(needUpdateModelDto);
+        return ResponseEntity.ok(transcriptionResult);
     }
 }
