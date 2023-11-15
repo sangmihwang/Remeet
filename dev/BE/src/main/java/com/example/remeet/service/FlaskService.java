@@ -28,15 +28,14 @@ import java.util.Map;
 @Slf4j
 public class FlaskService {
     private RestTemplate restTemplate;
-    private UserService userService;
     private final String FLASK_API_URL = "http://flask-app:5000/api/v1/";
 
     @Autowired
-    public FlaskService(RestTemplate restTemplate) {
+    public FlaskService(RestTemplate restTemplate ) {
         this.restTemplate = restTemplate;
     }
 
-    public ConversationResponseDto callFlaskConversation(ConversationDataDto conversationDataDto, Integer userNo, String type) throws JsonProcessingException {
+    public ConversationResponseDto callFlaskConversation(ConversationDataDto conversationDataDto, Integer userNo,Boolean admin, String type) throws JsonProcessingException {
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON); // Content-Type JSON으로 설정
@@ -51,12 +50,14 @@ public class FlaskService {
         jsonRequestObject.put("type", type);
         // POST 요청 보내기
         String NEW_URL = " ";
+        System.out.println(userNo);
+
         if (type.equals("video")) {
             NEW_URL = FLASK_API_URL +"conversation/video";
-            if (userService.checkAdmin(userNo)) {
-                jsonRequestObject.put("admin", "true");
+            if (admin) {
+                jsonRequestObject.put("admin", 1);
             } else{
-                jsonRequestObject.put("admin", "false");
+                jsonRequestObject.put("admin", 0);
             }
         } else if (type.equals("voice")) {
             NEW_URL = FLASK_API_URL + "conversation/voice";
@@ -65,7 +66,7 @@ public class FlaskService {
         } else {
             NEW_URL = FLASK_API_URL + "heyVoiceId";
         }
-
+        System.out.println(jsonRequestObject);
         HttpEntity<String> request = new HttpEntity<>(jsonRequestObject.toString(), headers);
         ResponseEntity<ConversationResponseDto> responseEntity = restTemplate.exchange(
                 NEW_URL,

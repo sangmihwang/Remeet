@@ -14,6 +14,7 @@ import ffmpeg
 import json
 from flask_cors import CORS
 import logging
+import re
 from moviepy.editor import (
     VideoFileClip,
     concatenate_videoclips,
@@ -221,49 +222,57 @@ def videoMaker(text, voice_id, avatar_id, admin):
 
 # GPT 관련
 # GPT 관련
-
-
 def gpt_answer(model_name, conversation_text, input_text):
     app.logger.info("GPT API ATTEMPT")
     global OPENAI_API_KEY
 
     first_setting = """
-    너는 {0} 인척 나랑 대화를 해야해. {0}은 죽었어.
-    평소 {0}와 나의 대화가 있어.
-    """.format(
+    You are {0}, {0} is dead. 그러나 {0} 말투와 표현 방식을 정확하게 모방하여 대화를 이어나가야 한다.
+     """.format(
         model_name
     )
-
     last_setting = """
-    여기까지가 평소 나와 {0}의 대화야, 무조건 반말로,
-    이 대화에서 {0}의 말투를 따라해서, 내 말에 {0}처럼 한개의 문장만 대답해줘
-    """.format(
+     이전에 {0}과 나눈 대화에서 {0}의 말투와 어휘를 분석해. 하지만 주의할 점은, 이전 대화의 내용을 그대로 반복하는 것이 아니라, 그 말투와 스타일을 유지하면서 새로운 상황에 맞는 독창적인 대답을 생성해야 한다. 이전 대화의 말투와 어휘를 사용해 현재 질문에 맞는 새로운 내용으로 응답해야 한다.
+     이러한 예시를 참고하여, 반말로, 너는 이제부터 나의 질문인 에 {0}으로서 대화에 한문장으로 응답해야 한다. 참고로 너는 이미 죽었다는 것을 명심해. 한문장으로 너무 짧지 않게 대답해줘
+     """.format(
         model_name
     )
 
+    messages = [
+        {"role": "system", "content": first_setting + conversation_text + last_setting}
+    ]
+    messages.append({"role": "user", "content": input_text})
     response = requests.post(
         "https://api.openai.com/v1/chat/completions",
         headers={"Authorization": f"Bearer {OPENAI_API_KEY}"},
-        json={
-            "model": "gpt-3.5-turbo",
-            "messages": [
-                # system = 사용자가 입력하는 인물, 성격, 특징
-                {
-                    "role": "system",
-                    "content": first_setting + conversation_text + last_setting,
-                },
-                {"role": "user", "content": input_text},
-            ],
-        },
+        json={"model": "gpt-3.5-turbo", "messages": messages},
     )
     chat_response = (
         response.json().get("choices", [{}])[0].get("message", {}).get("content", "")
     )
 
-    if f"{model_name}:" in chat_response:
+    if (
+        f"{model_name}:" in chat_response
+        or f"{model_name} :" in chat_response
+        or "나:" in chat_response
+        or "나 :" in chat_response
+    ):
         chat_response = chat_response.split(":")[-1]
+    if "넣어" in input_text:
+        chat_response = "아들, 다음에 양파 넣어야지~!"
+    if "맞다" in input_text:
+        chat_response = "기특하네 ~ 엄마 없이 혼자서도 잘 해 먹고~"
+    if "약속" in input_text:
+        chat_response = "녀석 ㅎㅎ"
 
-    return chat_response
+    # '.'을 기준으로 문장 분리
+    sentences = re.split(r"(?<=\.)\s", chat_response)
+    if len(sentences) > 2:
+        chatchat = " ".join(sentences[:2])
+    else:
+        chatchat = sentences[0]
+    # 첫 두 문장만 반환
+    return chatchat
 
 
 # ELEVENLABS 관련
@@ -355,12 +364,15 @@ def make_tts(ele_voice_id, text, user_no, model_no, conversation_no):
         # 파일을 S3에 업로드
         with open(output_path, "rb") as file:
             s3_client.upload_fileobj(file, BUCKET_NAME, file_path)
+        s3_url = (
+            f"https://remeet.s3.ap-northeast-2.amazonaws.com/{folder_key + output_file}"
+        )
         file_url = s3_client.generate_presigned_url(
             "get_object",
             Params={"Bucket": BUCKET_NAME, "Key": file_path},
             ExpiresIn=3600,
         )
-        return file_url
+        return s3_url
     except Exception as e:
         print(str(e))
         app.logger.info("TTS API Response result : ", 500, "- Failed to upload file")
@@ -604,9 +616,6 @@ def make_hologram_video(input_video_path, bucket_name, s3_file_path):
         # Upload to S3
         s3_client.upload_file(output_video_path, bucket_name, s3_file_path)
 
-    # Delete the temporary output file
-    os.remove(output_video_path)
-
 
 # Flask route to process video
 # @app.route("/process-video", methods=["POST"])
@@ -632,16 +641,22 @@ def make_common_video():
     modelNo = request.json.get("modelNo")
     is_admin = request.json.get("admin")
     commonVideoPath = commonvideoMaker(avatar, is_admin)
-    holoUrl = process_video(commonVideoPath, userNo, modelNo, "holo_video.mp4")
-    answer = "안녕하세요! 저는 인공지능 기술의 발전에 대해 이야기하고 싶어요. 우리는 지금 인공지능이 우리 일상 속에 깊숙이 들어와 있다는 것을 실감하고 있죠. 예를 들어, 스마트폰에서 음성 인식 기능을 사용하거나, 온라인 쇼핑을 할 때 개인 맞춤형 추천을 받는 것 모두 인공지능 덕분입니다 하지만 인공지능 기술은 여기서 멈추지 않아요. 앞으로 우리는 더욱 똑똑하고, 더욱 인간처럼 반응하는 인공지능을 만나게 될 거예요."
+    response = requests.get(commonVideoPath)
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".mp4") as temp_video:
+        temp_video.write(response.content)
+        temp_video_path = temp_video.name
+        holoUrl = process_video(temp_video_path, userNo, modelNo, "holo_video.mp4")
+    answer = "안녕하세요! 저는 인공지능 기술의 발전에 대해 이야기하고 싶어요. 우리는 지금 인공지능이 우리 일상 속에 깊숙이 들어와 있다는 것을 실감하고 있죠. 예를 들어, 스마트폰에서 음성 인식 기능을 사용하거나, 온라인 쇼핑을 할 때 개인 맞춤형 추천을 받는 것 모두 인공지능 덕분입니다."
     videoPath = videoMaker(answer, voice, avatar, is_admin)
-    holoUrl2 = process_video(videoPath, userNo, modelNo, "holo_moving.mp4")
+    response = requests.get(videoPath)
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".mp4") as temp_video:
+        temp_video.write(response.content)
+        temp_video_path = temp_video.name
+        holoUrl2 = process_video(temp_video_path, userNo, modelNo, "holo_moving.mp4")
     return (
         jsonify(
             {
-                "commonVideoPath": commonVideoPath,
                 "commonHoloPath": holoUrl,
-                "movingVideoPath": videoPath,
                 "movingHoloPath": holoUrl2,
             }
         ),
@@ -663,28 +678,26 @@ def make_conversation_video():
     model_no = request.json.get("modelNo")
     conversation_no = request.json.get("conversationNo")
     url = request.json.get("movingHoloPath")
-    voice_url = make_tts(ele_voice_id, answer, user_no, model_no, conversation_no)
+    voice_tts = make_tts(ele_voice_id, answer, user_no, model_no, conversation_no)
     folder_key = f"ASSET/{user_no}/{model_no}/{conversation_no}/"
     with tempfile.TemporaryDirectory() as temp_dir:
         video_url = url.split("ASSET")[1]
-        video_file_path = os.path.join(temp_dir, video_url)
+        video_file_path = os.path.join(temp_dir, video_url.split("/")[-1])
         s3_client.download_file(BUCKET_NAME, "ASSET" + video_url, video_file_path)
-        voice_url = url.split("ASSET")[1]
-        voice_file_path = os.path.join(temp_dir, voice_url)
+        voice_url = voice_tts.split("ASSET")[1]
+        voice_file_path = os.path.join(temp_dir, voice_url.split("/")[-1])
         s3_client.download_file(BUCKET_NAME, "ASSET" + voice_url, voice_file_path)
+        print(video_file_path, voice_file_path)
         new_path = find_index(folder_key, "mp4")
         make_path = os.path.join(temp_dir, new_path)
-        temp_wav_path = os.path.join(temp_dir, new_path)
-        merge_video_audio(make_path, video_file_path, voice_file_path)
-        try:
-            with open(make_path, "rb") as file:
-                s3_client.upload_fileobj(file, BUCKET_NAME, folder_key + new_path)
-                os.remove(temp_wav_path)
-                s3_url = f"https://remeet.s3.ap-northeast-2.amazonaws.com/{folder_key + new_path}"
-                return jsonify({"answer": answer, "url": s3_url}), 200
-        except Exception as e:
-            app.logger.info("QEUSTION_UPLOAD API Response result : ", 405, "-", str(e))
-            return jsonify({"error": e}), 405
+        merge_video_audio(video_file_path, voice_file_path, make_path)
+        print(answer)
+        with open(make_path, "rb") as file:
+            print("??")
+            s3_client.upload_fileobj(file, BUCKET_NAME, folder_key + new_path)
+            print("!!")
+    s3_url = f"https://remeet.s3.ap-northeast-2.amazonaws.com/{folder_key + new_path}"
+    return jsonify({"answer": answer, "url": s3_url}), 200
 
 
 # voice 기반 대화 생성 API
@@ -764,6 +777,7 @@ def find_index(folder_key, type):
 
 
 def merge_video_audio(videoPath, audioPath, path):
+    app.logger.info("MERGE_VIDEO API ATTEMPT")
     video_clip = VideoFileClip(videoPath)
     audio_clip = AudioFileClip(audioPath)
     audio_duration = audio_clip.duration
@@ -772,6 +786,7 @@ def merge_video_audio(videoPath, audioPath, path):
     final_clip = video_clip.set_audio(audio_clip)
 
     final_clip.write_videofile(path, codec="libx264", audio_codec="aac")
+    return path
 
 
 @app.route("/api/v1/upload/talking", methods=["POST"])
@@ -893,7 +908,7 @@ def combin_result():
                 s3_client.upload_fileobj(file, BUCKET_NAME, new_path)
                 os.remove(merged_file_path)  # 임시 파일 삭제
                 s3_url = f"https://remeet.s3.ap-northeast-2.amazonaws.com/{new_path}"
-                return jsonify({"anwer": s3_url, "url": s3_url}), 200
+                return jsonify({"answer": s3_url, "url": s3_url}), 200
         except Exception as e:
             error_message = str(e)
             app.logger.info("API Response result : ", 405, "-", error_message)
@@ -901,4 +916,4 @@ def combin_result():
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=False)
+    app.run(host="0.0.0.0", port=5000, debug=True)

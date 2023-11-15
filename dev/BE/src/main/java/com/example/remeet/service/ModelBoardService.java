@@ -243,7 +243,7 @@ public class ModelBoardService {
     public void updateHeyVoiceId(NeedUpdateModelDto needUpdateModelDto) throws IOException{
         ModelBoardEntity getModel = modelBoardRepository.findByModelNo(needUpdateModelDto.getModelNo()).get();
         ConversationDataDto newData = new ConversationDataDto();
-        String heyVoiceId = flaskService.callFlaskConversation(newData,needUpdateModelDto.getUserNo(), needUpdateModelDto.getModelName()).getAnswer();
+        String heyVoiceId = flaskService.callFlaskConversation(newData,needUpdateModelDto.getUserNo(),userService.checkAdmin(needUpdateModelDto.getUserNo()), needUpdateModelDto.getModelName()).getAnswer();
         getModel.setHeyVoiceId(heyVoiceId);
         modelBoardRepository.save(getModel);
     }
@@ -279,9 +279,7 @@ public class ModelBoardService {
         getConversation.setHeyVoiceId(getModel.getHeyVoiceId());
         Boolean admin = userService.checkAdmin(needUpdateModelDto.getUserNo());
         CommonVideoDto createCommon = flaskService.callFlaskCommonVideo(getConversation,needUpdateModelDto.getUserNo(), admin);
-        getModel.setCommonVideoPath(createCommon.getCommonVideoPath());
         getModel.setCommonHoloPath(createCommon.getCommonHoloPath());
-        getModel.setMovingVideoPath(createCommon.getMovingVideoPath());
         getModel.setMovingHoloPath(createCommon.getMovingHoloPath());
         modelBoardRepository.save(getModel);
         return createCommon;
