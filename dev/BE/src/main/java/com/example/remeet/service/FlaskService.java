@@ -152,7 +152,7 @@ public class FlaskService {
         headers.setContentType(MediaType.MULTIPART_FORM_DATA);
 
         MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-        body.add("modelName", modelBoardEntity.getModelName());
+        body.add("modelName", modelBoardEntity.getModelNo());
         body.add("gender", modelBoardEntity.getGender());
 
         filePaths.forEach(path -> body.add("filePaths", path));
