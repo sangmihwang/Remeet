@@ -780,7 +780,7 @@ def question_upload():
     if "file" not in request.files:
         app.logger.info("QEUSTION_UPLOAD API Response result : ", 400, "- No file part")
         return jsonify({"error": "No file part"}), 400
-    app.logger.info("파일전엔 옴")
+
     file = request.files["file"]
     app.logger.info(file)
     url = request.form.get("url")
@@ -822,7 +822,9 @@ def question_upload():
                     )
                     output_file = find_index(folder_key, "mp4")
                     temp_wav_path = os.path.join(temp_dir, output_file)
-                    merge_video_audio(local_file_path, temp_wav_path, temp_wav_path)
+                    audio_path = os.path.join(temp_dir, "tmp.mp3")
+                    convert_audio_to_mp3(temp_blob_path, audio_path)
+                    merge_video_audio(local_file_path, audio_path, temp_wav_path)
 
                 try:
                     with open(temp_wav_path, "rb") as file:
