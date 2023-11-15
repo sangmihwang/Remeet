@@ -306,6 +306,7 @@ def make_tts(ele_voice_id, text, user_no, model_no, conversation_no):
     stability, similarity_boost = 0.5, 0.75
     # voice_id = request.json.get('voiceId')
     # text = request.json.get('answer')
+    app.logger.info('보이스아이디: ', ele_voice_id)
     tts_url = f"https://api.elevenlabs.io/v1/text-to-speech/{ele_voice_id}/stream"
 
     headers = {
@@ -674,7 +675,7 @@ def make_conversation_video():
         new_path = find_index(folder_key, "mp4")
         make_path = os.path.join(temp_dir, new_path)
         temp_wav_path = os.path.join(temp_dir, new_path)
-        merge_video_audio(make_path, video_file_path, voice_file_path)
+        merge_video_audio(video_file_path, voice_file_path, make_path)
         try:
             with open(make_path, "rb") as file:
                 s3_client.upload_fileobj(file, BUCKET_NAME, folder_key + new_path)
@@ -901,4 +902,4 @@ def combin_result():
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    app.run(host="0.0.0.0", port=4000, debug=True)
