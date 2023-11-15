@@ -54,9 +54,9 @@ public class FlaskService {
         if (type.equals("video")) {
             NEW_URL = FLASK_API_URL +"conversation/video";
             if (userService.checkAdmin(userNo)) {
-                jsonRequestObject.put("admin", "true");
+                jsonRequestObject.put("admin", 1);
             } else{
-                jsonRequestObject.put("admin", "false");
+                jsonRequestObject.put("admin", 0);
             }
         } else if (type.equals("voice")) {
             NEW_URL = FLASK_API_URL + "conversation/voice";
