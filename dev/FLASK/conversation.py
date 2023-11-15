@@ -56,66 +56,6 @@ s3_client = boto3.client(
     region_name=REGION_NAME,
 )
 
-
-######
-# Function to download video from S3
-def download_from_s3(bucket, object_name, local_file_path):
-    s3_client.download_file(bucket, object_name, local_file_path)
-
-
-# Function to create hologram video and upload to S3
-def make_hologram_video(input_video_path, bucket_name, s3_file_path):
-    # Load video
-    clip = VideoFileClip(input_video_path)
-    duration = clip.duration
-    transparent_clip = (
-        ImageClip("transparent.png", duration=duration)
-        .set_opacity(0)
-        .resize(height=clip.size[1])
-    )
-
-    # Create hologram effect
-    top_clip = clip.rotate(angle=45, resample="bicubic")
-    bottom_clip = clip.rotate(angle=315, resample="bicubic")
-    left_clip = clip.rotate(angle=135, resample="bicubic")
-    right_clip = clip.rotate(angle=225, resample="bicubic")
-    final_clip = clips_array([[top_clip, bottom_clip], [left_clip, right_clip]])
-
-    # Use a temporary file for output to ensure it's deleted after use
-    with tempfile.NamedTemporaryFile(suffix=".mp4", delete=False) as temp_output_video:
-        output_video_path = temp_output_video.name
-        # final_clip = clips_array([...])  # Your clips array logic
-        final_clip.write_videofile(output_video_path, codec="libx264")
-
-        # Upload to S3
-        s3_client.upload_file(output_video_path, bucket_name, s3_file_path)
-
-    # Delete the temporary output file
-    os.remove(output_video_path)
-
-
-# Flask route to process video
-@app.route("/process-video", methods=["POST"])
-def process_video():
-    data = request.json
-    path = data["path"]
-    input_object_name = path + "merged_video.mp4"
-    s3_output_path = path + "holo_video.mp4"
-    bucket_name = BUCKET_NAME
-
-    # Use a temporary file for input to ensure it's deleted after use
-    with tempfile.NamedTemporaryFile(delete=True) as temp_input_video:
-        input_video_path = temp_input_video.name
-        download_from_s3(bucket_name, input_object_name, input_video_path)
-        # Process the video and upload to S3
-        make_hologram_video(input_video_path, bucket_name, s3_output_path)
-
-    return jsonify({"message": "Video processed and uploaded successfully."})
-
-
-#######
-
-
 def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
