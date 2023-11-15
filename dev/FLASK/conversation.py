@@ -15,7 +15,8 @@ import json
 from flask_cors import CORS
 import logging
 from moviepy.editor import VideoFileClip,concatenate_videoclips, concatenate_audioclips, clips_array, ImageClip, AudioFileClip
-
+from dotenv import load_dotenv
+load_dotenv()
 app = Flask(__name__)
 # .env 파일에서 환경 변수를 로드합니다.
 CORS(app)
