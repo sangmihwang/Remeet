@@ -22,6 +22,7 @@ interface ModelInformation extends PeopleListItem {
   conversationText: { [key: string]: string }[];
   conversationText2: string;
   avatarId: string;
+  commonHoloPath?: string;
 }
 
 export { PeopleListItem, ModelInformation, VoiceList, VideoList };

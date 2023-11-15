@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect } from 'react';
 import styled from 'styled-components';
 import { useMutation } from '@tanstack/react-query';
 import { ModelInformation } from '@/types/peopleList';
@@ -20,7 +20,6 @@ const AudioRecorder = ({
   setVideoSrc,
 }: AudioRecorderProps) => {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const [audioSrc, setAudioSrc] = useState('');
 
   const mutation = useMutation(talkingQuestion, {
     onSuccess: (res) => console.log(res),
@@ -41,8 +40,9 @@ const AudioRecorder = ({
 
       mediaRecorder.onstop = async () => {
         const newAudioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-        const audioURL = URL.createObjectURL(newAudioBlob);
+        // const audioURL = URL.createObjectURL(newAudioBlob);
         const type = setVideoSrc ? 'video' : 'voice';
+        console.log(type);
 
         const formData = new FormData();
         formData.append('conversationNo', `${conversationNo}`);
@@ -50,9 +50,6 @@ const AudioRecorder = ({
         formData.append('type', type);
         formData.append('file', newAudioBlob, 'audio.wav');
         mutation.mutate(formData);
-
-        setAudioSrc(audioURL);
-        console.log(audioURL, '??');
       };
 
       mediaRecorder.start();
