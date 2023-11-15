@@ -12,7 +12,8 @@ import java.awt.image.PixelGrabber;
 public enum InterceptorExceptionEnum {
     UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "E0001", "권한이 없습니다."),
     EXPIREDTOKEN(HttpStatus.BAD_REQUEST, "E0002", "만료된 토큰입니다."),
-    COUNTERFEIT(HttpStatus.INTERNAL_SERVER_ERROR, "E0003", "위조시도");
+    COUNTERFEIT(HttpStatus.INTERNAL_SERVER_ERROR, "E0003", "위조시도"),
+    Conflict(HttpStatus.CONFLICT, "E0004", "권한이 없습니다.");
 
 
     private final HttpStatus status;
