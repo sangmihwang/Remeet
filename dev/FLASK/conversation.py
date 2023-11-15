@@ -15,7 +15,8 @@ import json
 from flask_cors import CORS
 import logging
 from moviepy.editor import VideoFileClip,concatenate_videoclips, concatenate_audioclips, clips_array, ImageClip, AudioFileClip
-
+from dotenv import load_dotenv
+load_dotenv()
 app = Flask(__name__)
 # .env 파일에서 환경 변수를 로드합니다.
 CORS(app)
@@ -55,67 +56,6 @@ s3_client = boto3.client(
     aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
     region_name=REGION_NAME,
 )
-
-
-######
-# Function to download video from S3
-def download_from_s3(bucket, object_name, local_file_path):
-    s3_client.download_file(bucket, object_name, local_file_path)
-
-
-# Function to create hologram video and upload to S3
-def make_hologram_video(input_video_path, bucket_name, s3_file_path):
-    # Load video
-    clip = VideoFileClip(input_video_path)
-    duration = clip.duration
-    transparent_clip = (
-        ImageClip("transparent.png", duration=duration)
-        .set_opacity(0)
-        .resize(height=clip.size[1])
-    )
-
-    # Create hologram effect
-    top_clip = clip.rotate(angle=45, resample="bicubic")
-    bottom_clip = clip.rotate(angle=315, resample="bicubic")
-    left_clip = clip.rotate(angle=135, resample="bicubic")
-    right_clip = clip.rotate(angle=225, resample="bicubic")
-    final_clip = clips_array([[top_clip, bottom_clip], [left_clip, right_clip]])
-
-    # Use a temporary file for output to ensure it's deleted after use
-    with tempfile.NamedTemporaryFile(suffix=".mp4", delete=False) as temp_output_video:
-        output_video_path = temp_output_video.name
-        # final_clip = clips_array([...])  # Your clips array logic
-        final_clip.write_videofile(output_video_path, codec="libx264")
-
-        # Upload to S3
-        s3_client.upload_file(output_video_path, bucket_name, s3_file_path)
-
-    # Delete the temporary output file
-    os.remove(output_video_path)
-
-
-# Flask route to process video
-@app.route("/process-video", methods=["POST"])
-def process_video():
-    data = request.json
-    path = data["path"]
-    input_object_name = path + "merged_video.mp4"
-    s3_output_path = path + "holo_video.mp4"
-    bucket_name = BUCKET_NAME
-
-    # Use a temporary file for input to ensure it's deleted after use
-    with tempfile.NamedTemporaryFile(delete=True) as temp_input_video:
-        input_video_path = temp_input_video.name
-        download_from_s3(bucket_name, input_object_name, input_video_path)
-        # Process the video and upload to S3
-        make_hologram_video(input_video_path, bucket_name, s3_output_path)
-
-    return jsonify({"message": "Video processed and uploaded successfully."})
-
-
-#######
-
-
 def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
@@ -681,16 +621,22 @@ def make_common_video():
     modelNo = request.json.get("modelNo")
     is_admin = request.json.get("admin")
     commonVideoPath = commonvideoMaker(avatar, is_admin)
-    holoUrl = process_video(commonVideoPath, userNo, modelNo, "holo_video.mp4")
-    answer = "안녕하세요! 저는 인공지능 기술의 발전에 대해 이야기하고 싶어요. 우리는 지금 인공지능이 우리 일상 속에 깊숙이 들어와 있다는 것을 실감하고 있죠. 예를 들어, 스마트폰에서 음성 인식 기능을 사용하거나, 온라인 쇼핑을 할 때 개인 맞춤형 추천을 받는 것 모두 인공지능 덕분입니다 하지만 인공지능 기술은 여기서 멈추지 않아요. 앞으로 우리는 더욱 똑똑하고, 더욱 인간처럼 반응하는 인공지능을 만나게 될 거예요."
+    response = requests.get(commonVideoPath)
+    with tempfile.NamedTemporaryFile(delete=False, suffix='.mp4') as temp_video:
+        temp_video.write(response.content)
+        temp_video_path = temp_video.name
+        holoUrl = process_video(temp_video_path, userNo, modelNo, "holo_video.mp4")
+    answer = "안녕하세요! 저는 인공지능 기술의 발전에 대해 이야기하고 싶어요. 우리는 지금 인공지능이 우리 일상 속에 깊숙이 들어와 있다는 것을 실감하고 있죠. 예를 들어, 스마트폰에서 음성 인식 기능을 사용하거나, 온라인 쇼핑을 할 때 개인 맞춤형 추천을 받는 것 모두 인공지능 덕분입니다."
     videoPath = videoMaker(answer, voice, avatar, is_admin)
-    holoUrl2 = process_video(videoPath, userNo, modelNo, "holo_moving.mp4")
+    response = requests.get(videoPath)
+    with tempfile.NamedTemporaryFile(delete=False, suffix='.mp4') as temp_video:
+        temp_video.write(response.content)
+        temp_video_path = temp_video.name
+        holoUrl2 = process_video(temp_video_path, userNo, modelNo, "holo_moving.mp4")
     return (
         jsonify(
             {
-                "commonVideoPath": commonVideoPath,
                 "commonHoloPath": holoUrl,
-                "movingVideoPath": videoPath,
                 "movingHoloPath": holoUrl2,
             }
         ),
@@ -863,7 +809,7 @@ def question_upload():
                     s3_client.download_file(BUCKET_NAME,'ASSET'+new_url, local_file_path)
                     output_file = find_index(folder_key, "mp4")
                     temp_wav_path = os.path.join(temp_dir, output_file)
-                    merge_video_audio(local_file_path, temp_wav_path, temp_wav_path)
+                    merge_video_audio(local_file_path, temp_blob_path, temp_wav_path)
                     
                 try:
                     with open(temp_wav_path, "rb") as file:
@@ -923,7 +869,7 @@ def combin_result():
                 s3_client.upload_fileobj(file, BUCKET_NAME, new_path)
                 os.remove(merged_file_path)  # 임시 파일 삭제
                 s3_url = f"https://remeet.s3.ap-northeast-2.amazonaws.com/{new_path}"
-                return jsonify({'anwer': s3_url, 'url': s3_url}), 200
+                return jsonify({'answer': s3_url, 'url': s3_url}), 200
         except Exception as e:
             error_message = str(e)
             app.logger.info("API Response result : ", 405, "-", error_message)
@@ -931,4 +877,4 @@ def combin_result():
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=False)
+    app.run(host="0.0.0.0", port=5000, debug=True)
