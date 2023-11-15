@@ -674,12 +674,11 @@ def make_conversation_video():
         s3_client.download_file(BUCKET_NAME, "ASSET" + voice_url, voice_file_path)
         new_path = find_index(folder_key, "mp4")
         make_path = os.path.join(temp_dir, new_path)
-        temp_wav_path = os.path.join(temp_dir, new_path)
         merge_video_audio(video_file_path, voice_file_path, make_path)
         try:
             with open(make_path, "rb") as file:
                 s3_client.upload_fileobj(file, BUCKET_NAME, folder_key + new_path)
-                os.remove(temp_wav_path)
+                os.remove(make_path)
                 s3_url = f"https://remeet.s3.ap-northeast-2.amazonaws.com/{folder_key + new_path}"
                 return jsonify({"answer": answer, "url": s3_url}), 200
         except Exception as e:
@@ -764,6 +763,7 @@ def find_index(folder_key, type):
 
 
 def merge_video_audio(videoPath, audioPath, path):
+    app.logger.info("MERGE_VIDEO API ATTEMPT")
     video_clip = VideoFileClip(videoPath)
     audio_clip = AudioFileClip(audioPath)
     audio_duration = audio_clip.duration
