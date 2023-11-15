@@ -63,6 +63,7 @@ public class ModelBoardService {
                 .imagePath("tmp")
                 .conversationText(formattedText)
                 .userNo(userEntity)
+                .heyVoiceId("086b225655694cd9ae60e712469ce474")
                 .conversationCount(0)
                 .build();
 
