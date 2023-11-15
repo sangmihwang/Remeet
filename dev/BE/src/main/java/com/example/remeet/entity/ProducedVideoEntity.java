@@ -35,6 +35,10 @@ public class ProducedVideoEntity {
     @CreatedDate
     @Column(name="create_time", columnDefinition = "TIMESTAMP")
     private LocalDateTime createdTime;
+    @PrePersist
+    protected void onCreate() {
+        createdTime = LocalDateTime.now();
+    }
 
     @ManyToOne
     @JoinColumn(name="model_no", nullable = false)

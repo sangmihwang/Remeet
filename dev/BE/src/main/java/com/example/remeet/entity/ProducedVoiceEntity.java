@@ -32,6 +32,10 @@ public class ProducedVoiceEntity {
     @CreatedDate
     @Column(name="created_time", columnDefinition = "TIMESTAMP")
     private LocalDateTime createdTime;
+    @PrePersist
+    protected void onCreate() {
+        createdTime = LocalDateTime.now();
+    }
 
 //    @ManyToOne(fetch = FetchType.LAZY)
     @ManyToOne
