@@ -36,6 +36,7 @@ const AdminPage = () => {
     createHeyIdMutation.mutate(data);
   };
   const handleCreateBasicVideo = (data: HeyModel) => {
+    console.log('제작');
     createVideoMutation.mutate(data);
   };
 
