@@ -30,7 +30,7 @@ const conversateVoice = async (
 const conversateVideo = async (
   videoForm: ConversationVideoForm,
 ): Promise<AxiosResponse<ConversationResponse>> => {
-  return authApi.post('talking/converstaion/video', videoForm);
+  return authApi.post('talking/conversation/video', videoForm);
 };
 
 const talkingQuestion = async (formData: FormData) => {

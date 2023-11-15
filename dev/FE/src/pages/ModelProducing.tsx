@@ -5,7 +5,6 @@ import { useNavigate, useParams } from 'react-router-dom';
 import PageHeader from '@/components/navbar/PageHeader';
 import BottomNavigation from '@/components/navbar/BottomNavigation';
 import { Image, SmallButton } from '@/components/common';
-import useAuth from '@/hooks/useAuth';
 import { ModelInformation } from '@/types/peopleList';
 import { getPeopleInfo } from '@/api/peoplelist';
 import { makeVoiceId } from '@/api/create';
@@ -134,10 +133,8 @@ const ModelProducing = () => {
     }
   };
   const [progress, setProgress] = useState(0);
-  console.log(modelInfomation);
   useEffect(() => {
     if (modelInfomation && !modelInfomation.eleVoiceId) {
-      console.log('확인');
       makeVoiceId(Number(modelNo))
         .then((res) => {
           console.log(res);

@@ -87,7 +87,7 @@ const TalkVoicePage = () => {
             showCancelButton: true,
             confirmButtonText: '저장',
             showLoaderOnConfirm: true,
-            preConfirm: (conversationName) => {
+            preConfirm: async (conversationName: string) => {
               try {
                 const data = {
                   modelNo: Number(modelInfomation?.modelNo),
@@ -95,8 +95,8 @@ const TalkVoicePage = () => {
                   conversationName,
                   type: 'voice',
                 };
-                const response = saveTalking(data);
-                if (!response.status) {
+                const response = await saveTalking(data);
+                if (response.data) {
                   console.log(response, '확인');
                 }
               } catch (error) {

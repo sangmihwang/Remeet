@@ -5,6 +5,7 @@ import SpeechRecognition, {
 import { useEffect, useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { AxiosResponse } from 'axios';
+import styled from 'styled-components';
 import { ModelInformation } from '@/types/peopleList';
 import useAuth from '@/hooks/useAuth';
 import { conversateVideo, conversateVoice } from '@/api/talk';
@@ -14,6 +15,37 @@ import {
   ConversationVoiceForm,
 } from '@/types/talk';
 import AudioRecorder from './AudioRecorder';
+import AudioPlayerTest from './AudioPlayerTest';
+
+const Wrapper = styled.div`
+  height: 25vh;
+`;
+
+const RecordButton = styled.button`
+  width: 2rem;
+  height: 2rem;
+  border-radius: 100%;
+  background-color: #f6f6f6;
+  background-image: url('/icon/mic_icon.svg');
+  background-repeat: no-repeat;
+  background-size: 80%;
+  background-position: center;
+`;
+
+const TextWrapper = styled.div`
+  width: 86vw;
+  height: 3rem;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #ebebeb;
+`;
+
+const Text = styled.div`
+  font-size: 0.875rem;
+  width: 70vw;
+`;
 
 interface DictaphoneProps {
   setVideoSrc?: (url: string) => void;
@@ -88,24 +120,34 @@ const Dictaphone = ({
       .then(() => {})
       .catch(() => {});
     pushHistory(finalTranscript, 1);
-    if (modelInformation && userInfo && !setVideoSrc) {
+    if (
+      modelInformation &&
+      userInfo &&
+      !setVideoSrc &&
+      modelInformation.eleVoiceId
+    ) {
       const voiceForm = {
         question: finalTranscript,
         modelName: modelInformation.modelName,
         conversationText: modelInformation.conversationText2,
-        eleVoiceId: 'uxgSoqINxv9NZ5NwNoZb',
+        eleVoiceId: modelInformation.eleVoiceId,
         conversationNo,
         userNo: userInfo.userId,
         modelNo: modelInformation?.modelNo,
       };
       conversateVoiceMutation.mutate(voiceForm);
     }
-    if (modelInformation && userInfo && setVideoSrc) {
+    if (
+      modelInformation &&
+      userInfo &&
+      setVideoSrc &&
+      modelInformation.heyVoiceId
+    ) {
       const videoForm = {
         question: finalTranscript,
         modelName: modelInformation.modelName,
         conversationText: modelInformation.conversationText2,
-        heyVoiceId: 'uxgSoqINxv9NZ5NwNoZb',
+        heyVoiceId: modelInformation.heyVoiceId,
         conversationNo,
         userNo: userInfo.userId,
         modelNo: modelInformation?.modelNo,
@@ -143,18 +185,27 @@ const Dictaphone = ({
   }, []);
 
   return (
-    <div>
-      <p>Microphone: {listening ? 'on' : 'off'}</p>
-      <AudioRecorder
-        modelInformation={modelInformation}
-        conversationNo={conversationNo}
-        audioRecording={audioRecording}
-        setVideoSrc={setVideoSrc}
-      />
-      <button onClick={resetTranscript}>Reset</button>
-      <p>{transcript}</p>
-      <p>{finalTranscript}</p>
-    </div>
+    <Wrapper>
+      <TextWrapper>
+        {listening}
+        <RecordButton disabled={listening} />
+        <Text>{transcript}</Text>
+      </TextWrapper>
+      {!setVideoSrc && (
+        <>
+          <div>상대방의 대답</div>
+          {audioSrc && <AudioPlayerTest src={audioSrc} />}
+        </>
+      )}
+      {modelInformation && (
+        <AudioRecorder
+          modelInformation={modelInformation}
+          conversationNo={conversationNo}
+          audioRecording={audioRecording}
+          setVideoSrc={setVideoSrc}
+        />
+      )}
+    </Wrapper>
   );
 };
 export default Dictaphone;

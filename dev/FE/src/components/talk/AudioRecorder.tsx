@@ -2,13 +2,12 @@ import { useRef, useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { useMutation } from '@tanstack/react-query';
 import { ModelInformation } from '@/types/peopleList';
-import useAuth from '@/hooks/useAuth';
 import { talkingQuestion } from '@/api/talk';
 
 const Wrapper = styled.div``;
 
 interface AudioRecorderProps {
-  modelInformation: ModelInformation | undefined;
+  modelInformation: ModelInformation;
   conversationNo: number;
   audioRecording: boolean;
   setVideoSrc?: (url: string) => void;
@@ -21,7 +20,6 @@ const AudioRecorder = ({
   setVideoSrc,
 }: AudioRecorderProps) => {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const { userInfo } = useAuth();
   const [audioSrc, setAudioSrc] = useState('');
 
   const mutation = useMutation(talkingQuestion, {
@@ -45,11 +43,12 @@ const AudioRecorder = ({
         const newAudioBlob = new Blob(audioChunks, { type: 'audio/wav' });
         const audioURL = URL.createObjectURL(newAudioBlob);
         const type = setVideoSrc ? 'video' : 'voice';
+
         const formData = new FormData();
-        formData.append('file', newAudioBlob, 'audio.wav');
-        formData.append('conversationNo', conversationNo);
-        formData.append('modelNo', modelInformation?.modelNo);
+        formData.append('conversationNo', `${conversationNo}`);
+        formData.append('modelNo', `${modelInformation.modelNo}`);
         formData.append('type', type);
+        formData.append('file', newAudioBlob, 'audio.wav');
         mutation.mutate(formData);
 
         setAudioSrc(audioURL);
@@ -59,20 +58,9 @@ const AudioRecorder = ({
       mediaRecorder.start();
     };
 
-    // 녹음 중지
-    const stopRecording = () => {
-      mediaRecorderRef.current?.stop();
-    };
-
-    // audioRecording 상태에 따라 녹음 시작 또는 중지
-    // if (audioRecording) {
-    //   startRecording();
-    // } else {
-    //   stopRecording();
-    // }
     if (audioRecording) {
       // 녹음 시작
-      startRecording();
+      startRecording().catch(() => {});
     } else {
       // 녹음 멈춤
       mediaRecorderRef.current?.stop();
@@ -84,11 +72,7 @@ const AudioRecorder = ({
     };
   }, [audioRecording]); // audioRecording 상태가 변경될 때마다 useEffect가 실행됩니다.
 
-  return (
-    <Wrapper>
-      <audio src={audioSrc} controls />
-    </Wrapper>
-  );
+  return <Wrapper />;
 };
 
 export default AudioRecorder;
