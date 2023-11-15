@@ -45,6 +45,7 @@ ALLOWED_EXTENSIONS = {
     "mov",
     "flv",
     "wmv",
+    "m4a"
 }
 
 # S3 클라이언트 설정
@@ -322,16 +323,19 @@ def gpt_answer(model_name, conversation_text, input_text):
 def make_voice(model_name, gender, audio_files):
     app.logger.info("MAKE_VOICE API ATTEMPT")
     app.logger.info(f"Received gender: {gender}")
+    app.logger.info(f"Received gender: '{gender}'")  # 따옴표 추가하여 로깅
     app.logger.info(f"Received gender type: {type(gender)}")
-    make_voice_url = "https://api.elevenlabs.io/v1/voices/add"
 
-    gender = gender.strip()
+    gender = gender.replace('"', '').strip()
+    app.logger.info(f"Processed gender: {gender}")
+    make_voice_url = "https://api.elevenlabs.io/v1/voices/add"
 
     if gender == 'M':
         gender_label = 'male'
     elif gender == 'F':
         gender_label = 'female'
     else:
+        app.logger.error("Invalid gender value received")
         raise ValueError("Invalid gender value")
 
     headers = {"Accept": "application/json", "xi-api-key": ELEVENLABS_API_KEY}
@@ -387,7 +391,7 @@ def make_tts(ele_voice_id, text, user_no, model_no, conversation_no):
     os.makedirs(output_folder, exist_ok=True)
 
     # S3 버킷에서 기존 파일 목록 가져오기
-    folder_key = f"ASSET/{user_no}/{model_no}/{conversation_no}"
+    folder_key = f"ASSET/{user_no}/{model_no}/{conversation_no}/"
     output_file = find_index(folder_key, "mp3")
     output_path = os.path.join(output_folder, output_file)
 
@@ -709,7 +713,7 @@ def make_conversation_video():
     conversation_no = request.json.get("conversationNo")
     url = request.json.get("movingHoloPath")
     voice_url = make_tts(ele_voice_id, answer, user_no, model_no, conversation_no)
-    folder_key = f"ASSET/{user_no}/{model_no}/{conversation_no}"
+    folder_key = f"ASSET/{user_no}/{model_no}/{conversation_no}/"
     with tempfile.TemporaryDirectory() as temp_dir:
         video_url = url.split('ASSET')[1]
         video_file_path = os.path.join(temp_dir, video_url)
@@ -846,7 +850,7 @@ def question_upload():
                 audio = AudioSegment.from_file(source_path)
                 # 필요한 경우, 샘플 레이트, 채널 등을 조정
                 audio.export(target_path, format="mp3")
-            folder_key = f"ASSET/{userNo}/{modelNo}/{conversationNo}"
+            folder_key = f"ASSET/{userNo}/{modelNo}/{conversationNo}/"
             
             with tempfile.TemporaryDirectory() as temp_dir:
                 if type == "voice":
