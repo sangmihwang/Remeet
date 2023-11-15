@@ -156,7 +156,7 @@ public class ModelBoardService {
                             entity.getEleVoiceId(),
                             entity.getHeyVoiceId(),
                             entity.getGender(),
-                            entity.getCommonVideoPath(),
+                            entity.getCommonHoloPath(),
                             transformValue(entity.getConversationText()),
                             entity.getConversationText(),
                             entity.getConversationCount(),

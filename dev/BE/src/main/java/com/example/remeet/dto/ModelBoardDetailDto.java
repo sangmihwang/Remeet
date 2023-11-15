@@ -16,10 +16,10 @@ public class ModelBoardDetailDto {
     private String modelName;
     private String imagePath;
     private String avatarId;
-    private String heyVoiceId;
     private String eleVoiceId;
+    private String heyVoiceId;
     private char gender;
-    private String commonVideoPath;
+    private String commonHoloPath;
     private List<Map<String, String>> conversationText;
     private String conversationText2;
     private Integer conversationCount;
