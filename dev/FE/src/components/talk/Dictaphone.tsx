@@ -70,7 +70,6 @@ const Dictaphone = ({
   const { userInfo } = useAuth();
   const [audioSrc, setAudioSrc] = useState<string | null>(null);
   const [audioRecording, setAudioRecording] = useState<boolean>(false);
-  console.log(userInfo);
 
   if (!browserSupportsSpeechRecognition) {
     return <span />;
@@ -116,6 +115,7 @@ const Dictaphone = ({
     },
   });
   const handleFinalTranscript = () => {
+    console.log('보내기');
     SpeechRecognition.stopListening()
       .then(() => {})
       .catch(() => {});

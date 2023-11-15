@@ -59,14 +59,22 @@ const TalkVideoPage = () => {
     () => getPeopleInfo(Number(modelNo)),
   );
   const [conversationNo, setConversationNo] = useState<number>(0);
+  // const []
+  const defaultVideoSrc = modelInfomation?.commonHoloPath;
+
+  const [videoSrc, setVideoSrc] = useState<string | undefined>(defaultVideoSrc);
+
   useEffect(() => {
     startConversation(Number(modelNo), 'voice')
       .then((res) => {
         setConversationNo(res.data.conversationNo);
       })
       .catch(() => {});
+
+    return () => {
+      setVideoSrc(undefined);
+    };
   }, []);
-  console.log(modelInfomation);
   const pushHistory = (text: string, speakerType: number) => {
     setTalkHistory((prevState: History[]) => {
       if (speakerType === 1) {
@@ -82,13 +90,11 @@ const TalkVideoPage = () => {
     right: '',
   };
 
-  const defaultVideoSrc = modelInfomation?.commonHoloPath;
-  const [videoSrc, setVideoSrc] = useState<string | undefined>(defaultVideoSrc);
   useEffect(() => {
     if (modelInfomation?.commonHoloPath && !videoSrc) {
       setVideoSrc(modelInfomation.commonHoloPath); // Set the default video source once it's available
     }
-  }, [modelInfomation, videoSrc]);
+  }, [modelInfomation]);
 
   const handleEndConversation = () => {
     MySwal.fire({
@@ -132,6 +138,7 @@ const TalkVideoPage = () => {
                 MySwal.fire('저장되었습니다.', '', 'success')
                   .then(() => {
                     navigate('/board');
+                    setVideoSrc(undefined);
                   })
                   .catch(() => {});
               }
@@ -141,6 +148,7 @@ const TalkVideoPage = () => {
           MySwal.fire('저장하지 않고 종료합니다.', '', 'info')
             .then(() => {
               navigate('/board');
+              setVideoSrc(undefined);
             })
             .catch(() => {});
           navigate('/board');
