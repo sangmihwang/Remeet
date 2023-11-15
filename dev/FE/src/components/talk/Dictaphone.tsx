@@ -70,7 +70,7 @@ const Dictaphone = ({
   const { userInfo } = useAuth();
   const [audioSrc, setAudioSrc] = useState<string | null>(null);
   const [audioRecording, setAudioRecording] = useState<boolean>(false);
-  console.log(conversationNo);
+  console.log(userInfo);
 
   if (!browserSupportsSpeechRecognition) {
     return <span />;
@@ -132,7 +132,7 @@ const Dictaphone = ({
         conversationText: modelInformation.conversationText2,
         eleVoiceId: modelInformation.eleVoiceId,
         conversationNo,
-        userNo: userInfo.userId,
+        userNo: userInfo.userNo,
         modelNo: modelInformation?.modelNo,
       };
       conversateVoiceMutation.mutate(voiceForm);
@@ -149,7 +149,7 @@ const Dictaphone = ({
         conversationText: modelInformation.conversationText2,
         heyVoiceId: modelInformation.heyVoiceId,
         conversationNo,
-        userNo: userInfo.userId,
+        userNo: userInfo.userNo,
         modelNo: modelInformation?.modelNo,
         avatarId: modelInformation.avatarId,
       };

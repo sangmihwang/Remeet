@@ -1,13 +1,12 @@
 import styled from 'styled-components';
-import { useEffect, useState, useRef } from 'react';
-import videojs from 'video.js';
+import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import withReactContent from 'sweetalert2-react-content';
 import Swal from 'sweetalert2';
+import ReactPlayer from 'react-player';
 import PageHeader from '@/components/navbar/PageHeader';
 import { SmallButton, TalkBubble } from '@/components/common';
-import Video from '@/components/talk/Video';
 import Modal from '@/components/common/Modal';
 import { History } from '@/types/talk';
 import { ModelInformation } from '@/types/peopleList';
@@ -85,68 +84,11 @@ const TalkVideoPage = () => {
 
   const defaultVideoSrc = modelInfomation?.commonHoloPath;
   const [videoSrc, setVideoSrc] = useState<string | undefined>(defaultVideoSrc);
-  const playerRef = useRef<any>(null);
-
-  const videoJsOptions = {
-    autoplay: true,
-    controls: true,
-    responsive: true,
-    fluid: true,
-    loop: true,
-    sources: [
-      {
-        src: videoSrc,
-        type: 'video/mp4',
-      },
-    ],
-  };
-
-  const handlePlayerReady = (player: any) => {
-    playerRef.current = player;
-
-    // You can handle player events here, for example:
-    player.on('waiting', () => {
-      videojs.log('player is waiting');
-    });
-
-    player.on('dispose', () => {
-      videojs.log('player will dispose');
-    });
-  };
   useEffect(() => {
     if (modelInfomation?.commonHoloPath && !videoSrc) {
       setVideoSrc(modelInfomation.commonHoloPath); // Set the default video source once it's available
     }
   }, [modelInfomation, videoSrc]);
-
-  useEffect(() => {
-    if (playerRef.current) {
-      // If the player is already initialized, just update the source
-      playerRef.current.src({ src: videoSrc, type: 'video/mp4' });
-    } else if (videoSrc) {
-      // Otherwise, initialize the player with the given source
-      const videoElement = document.querySelector('.video-js');
-      const player = videojs(videoElement as Element, videoJsOptions);
-
-      playerRef.current = player;
-
-      player.on('ended', () => {
-        // When the video ends, if it's not the default video, revert back to the default
-        if (videoSrc !== defaultVideoSrc) {
-          setVideoSrc(defaultVideoSrc);
-        } else {
-          // If it is the default video, play it again
-          player.play();
-        }
-      });
-
-      // Cleanup function to dispose of the player on unmount
-      return () => {
-        player.dispose();
-        playerRef.current = null;
-      };
-    }
-  }, [videoSrc, defaultVideoSrc]);
 
   const handleEndConversation = () => {
     MySwal.fire({
@@ -215,7 +157,20 @@ const TalkVideoPage = () => {
       <TitleWrapper>
         <PageHeader content={headerContent} type={2} />
         <VideoWrapper>
-          <Video options={videoJsOptions} onReady={handlePlayerReady} />
+          <ReactPlayer
+            url={videoSrc}
+            playing
+            controls
+            loop={videoSrc === defaultVideoSrc} // Only loop the default video
+            onEnded={() => {
+              // When the video ends, if it's not the default video, revert back to the default
+              if (videoSrc !== defaultVideoSrc) {
+                setVideoSrc(defaultVideoSrc);
+              }
+            }}
+            width="100%"
+            height="100%"
+          />
         </VideoWrapper>
       </TitleWrapper>
       <ContentWrpper>
