@@ -780,9 +780,9 @@ def question_upload():
     if "file" not in request.files:
         app.logger.info("QEUSTION_UPLOAD API Response result : ", 400, "- No file part")
         return jsonify({"error": "No file part"}), 400
-    print("파일전엔 옴")
+    app.logger.info("파일전엔 옴")
     file = request.files["file"]
-    print(file)
+    app.logger.info(file)
     url = request.form.get("url")
     type = request.form.get("type")
     userNo = request.form.get("userNo")
