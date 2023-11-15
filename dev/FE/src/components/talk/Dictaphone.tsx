@@ -148,6 +148,7 @@ const Dictaphone = ({
         modelName: modelInformation.modelName,
         conversationText: modelInformation.conversationText2,
         heyVoiceId: modelInformation.heyVoiceId,
+        eleVoiceId: modelInformation.eleVoiceId,
         conversationNo,
         userNo: userInfo.userNo,
         modelNo: modelInformation?.modelNo,
