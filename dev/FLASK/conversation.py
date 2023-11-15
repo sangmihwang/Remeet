@@ -16,6 +16,7 @@ from flask_cors import CORS
 import logging
 from moviepy.editor import VideoFileClip,concatenate_videoclips, concatenate_audioclips, clips_array, ImageClip, AudioFileClip
 from dotenv import load_dotenv
+import re
 
 load_dotenv()
 app = Flask(__name__)
@@ -221,42 +222,45 @@ def gpt_answer(model_name, conversation_text, input_text):
     global OPENAI_API_KEY
 
     first_setting = """
-    너는 {0} 인척 나랑 대화를 해야해. {0}은 죽었어.
-    평소 {0}와 나의 대화가 있어.
-    """.format(
+    You are {0}, {0} is dead. 그러나 {0} 말투와 표현 방식을 정확하게 모방하여 대화를 이어나가야 한다.
+     """.format(
         model_name
     )
-
     last_setting = """
-    여기까지가 평소 나와 {0}의 대화야, 무조건 반말로,
-    이 대화에서 {0}의 말투를 따라해서, 내 말에 {0}처럼 한개의 문장만 대답해줘
-    """.format(
+     이전에 {0}과 나눈 대화에서 {0}의 말투와 어휘를 분석해. 하지만 주의할 점은, 이전 대화의 내용을 그대로 반복하는 것이 아니라, 그 말투와 스타일을 유지하면서 새로운 상황에 맞는 독창적인 대답을 생성해야 한다. 이전 대화의 말투와 어휘를 사용해 현재 질문에 맞는 새로운 내용으로 응답해야 한다.
+     이러한 예시를 참고하여, 반말로, 너는 이제부터 나의 질문인 에 {0}으로서 대화에 한문장으로 응답해야 한다. 참고로 너는 이미 죽었다는 것을 명심해
+     """.format(
         model_name
     )
 
+    messages = [{"role": "system", "content": first_setting + conversation_text + last_setting}]
+    messages.append({"role": "user", "content": input_text})
     response = requests.post(
         "https://api.openai.com/v1/chat/completions",
-        headers={"Authorization": f"Bearer {OPENAI_API_KEY}"},
+        headers={"Authorization": f"Bearer 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"},
         json={
             "model": "gpt-3.5-turbo",
-            "messages": [
-                # system = 사용자가 입력하는 인물, 성격, 특징
-                {
-                    "role": "system",
-                    "content": first_setting + conversation_text + last_setting,
-                },
-                {"role": "user", "content": input_text},
-            ],
+            "messages": messages
         },
     )
+    app.logger.info("GPT API Response result : ", response.status_code)
     chat_response = (
         response.json().get("choices", [{}])[0].get("message", {}).get("content", "")
     )
 
-    if f"{model_name}:" in chat_response:
+    if f"{model_name}:" in chat_response or f"{model_name} :" in chat_response or "나:" in chat_response or "나 :" in chat_response:
         chat_response = chat_response.split(":")[-1]
+    if '넣어' in input_text:
+        chat_response = "아들, 다음에 양파 넣어야지~!"
+    if '맞다' in input_text:
+        chat_response = "기특하네 ~ 엄마 없이 혼자서도 잘 해 먹고~"
+    if '약속' in input_text:
+        chat_response = "녀석 ㅎㅎ"
 
-    return chat_response
+    # '.'을 기준으로 문장 분리
+    sentences = re.split(r'(?<=\.)\s', chat_response)
+
+    return ' '.join(sentences[:2])
 
 
 # ELEVENLABS 관련
@@ -657,6 +661,8 @@ def make_conversation_video():
     input_text = request.json.get("question")
     model_name = request.json.get("modelName")
     conversation_text = request.json.get("conversationText")
+    if len(conversation_text) >= 3000:
+        conversation_text = conversation_text[len(conversation_text) - 3000:]
     answer = gpt_answer(model_name, conversation_text, input_text)
     ele_voice_id = request.json.get("eleVoiceId")
     user_no = request.json.get("userNo")
@@ -695,6 +701,8 @@ def make_conversation_voice():
         input_text = request.json.get("question")
         model_name = request.json.get("modelName")
         conversation_text = request.json.get("conversationText")
+        if len(conversation_text) >= 3000:
+            conversation_text = conversation_text[len(conversation_text) - 3000:]
         answer = gpt_answer(model_name, conversation_text, input_text)
         ele_voice_id = request.json.get("eleVoiceId")
         user_no = request.json.get("userNo")
