@@ -8,6 +8,7 @@ import com.example.remeet.dto.FlaskResponseDto;
 import com.example.remeet.service.FlaskService;
 import com.example.remeet.service.ModelBoardService;
 import com.example.remeet.service.TalkingService;
+import com.example.remeet.service.UserService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,6 +30,7 @@ public class TalkingController {
     private final FlaskService flaskService;
     private final ModelBoardService modelBoardService;
     private final TalkingService talkingService;
+    private final UserService   userService;
 
     @PostMapping("{modelNo}")
     public ResponseEntity<Map<String, Integer>> makeConversation(@PathVariable("modelNo") Integer modelNo, @RequestBody String type) {
@@ -51,7 +53,7 @@ public class TalkingController {
     public ResponseEntity<ConversationResponseDto> conversationVoice(HttpServletRequest request, @RequestBody ConversationDataDto conversationDataDto) throws JsonProcessingException {
         log.info("request to /api/v1/talking/conversation/voice [Method: POST]");
         Integer userNo = (Integer)request.getAttribute("userNo");
-        ConversationResponseDto answer = flaskService.callFlaskConversation(conversationDataDto, userNo, "voice");
+        ConversationResponseDto answer = flaskService.callFlaskConversation(conversationDataDto, userNo,userService.checkAdmin(userNo), "voice");
         return ResponseEntity.ok(answer);
     }
 

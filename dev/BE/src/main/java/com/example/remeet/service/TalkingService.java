@@ -23,6 +23,7 @@ public class TalkingService {
     private final FlaskService flaskService;
     private final ModelBoardRepository modelBoardRepository;
     private final ProducedVoiceRepository producedVoiceRepository;
+    private final UserService userService;
     private final ProducedVideoRepository producedVideoRepository;
 
 
@@ -37,13 +38,13 @@ public class TalkingService {
         tmpDto.setConversationNo(combinationDto.getConversationNo());
         tmpDto.setModelNo(combinationDto.getModelNo());
         if (combinationDto.getType().equals("voice")) {
-            ConversationResponseDto getResult = flaskService.callFlaskConversation(tmpDto, userNo, "mp3");
+            ConversationResponseDto getResult = flaskService.callFlaskConversation(tmpDto, userNo,userService.checkAdmin(userNo), "mp3");
             ProducedVoiceEntity getConversation = producedVoiceRepository.findByProVoiceNo(combinationDto.getConversationNo()).get();
             getConversation.setProVoiceName(combinationDto.getConversationName());
             getConversation.setVoicePath(getResult.getAnswer());
             producedVoiceRepository.save(getConversation);
         } else {
-            ConversationResponseDto getResult = flaskService.callFlaskConversation(tmpDto, userNo,  "mp4");
+            ConversationResponseDto getResult = flaskService.callFlaskConversation(tmpDto, userNo,userService.checkAdmin(userNo),  "mp4");
             ProducedVideoEntity getConversation = producedVideoRepository.findByProVideoNo(combinationDto.getConversationNo()).get();
             getConversation.setProVideoName(combinationDto.getConversationName());
             getConversation.setVideoPath(getResult.getAnswer());
@@ -54,8 +55,7 @@ public class TalkingService {
     public ConversationResponseDto conversationVideo(ConversationDataDto conversationDataDto,Integer userNo, String type) throws JsonProcessingException {
         ModelBoardEntity getModel = modelBoardRepository.findByModelNo(conversationDataDto.getModelNo()).get();
         conversationDataDto.setMovingHoloPath(getModel.getMovingHoloPath());
-        ConversationResponseDto answer = flaskService.callFlaskConversation(conversationDataDto, userNo, "video");
+        ConversationResponseDto answer = flaskService.callFlaskConversation(conversationDataDto, userNo, userService.checkAdmin(userNo), "video");
         return answer;
-
     }
 }
