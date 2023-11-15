@@ -237,7 +237,7 @@ def gpt_answer(model_name, conversation_text, input_text):
     messages.append({"role": "user", "content": input_text})
     response = requests.post(
         "https://api.openai.com/v1/chat/completions",
-        headers={"Authorization": f"Bearer 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"},
+        headers={"Authorization": f"Bearer {OPENAI_API_KEY}"},
         json={
             "model": "gpt-3.5-turbo",
             "messages": messages
