@@ -14,21 +14,9 @@ import ffmpeg
 import json
 from flask_cors import CORS
 import logging
-<<<<<<< HEAD
 from moviepy.editor import VideoFileClip,concatenate_videoclips, concatenate_audioclips, clips_array, ImageClip, AudioFileClip
 from dotenv import load_dotenv
-=======
-from moviepy.editor import (
-    VideoFileClip,
-    concatenate_videoclips,
-    concatenate_audioclips,
-    clips_array,
-    ImageClip,
-    AudioFileClip,
-)
-from dotenv import load_dotenv
 
->>>>>>> e755bbbf047fa82dfbc07dff6d412ae561b9d647
 load_dotenv()
 app = Flask(__name__)
 # .env 파일에서 환경 변수를 로드합니다.
@@ -69,11 +57,8 @@ s3_client = boto3.client(
     aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
     region_name=REGION_NAME,
 )
-<<<<<<< HEAD
-=======
 
 
->>>>>>> e755bbbf047fa82dfbc07dff6d412ae561b9d647
 def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
@@ -836,13 +821,11 @@ def question_upload():
                     )
                     output_file = find_index(folder_key, "mp4")
                     temp_wav_path = os.path.join(temp_dir, output_file)
-<<<<<<< HEAD
-                    merge_video_audio(local_file_path, temp_blob_path, temp_wav_path)
+                    audio_path = os.path.join(temp_dir, "tmp.mp3")
+                    convert_audio_to_mp3(temp_blob_path, audio_path)
+                    merge_video_audio(local_file_path, audio_path, temp_wav_path)
                     
-=======
-                    merge_video_audio(local_file_path, temp_wav_path, temp_wav_path)
 
->>>>>>> e755bbbf047fa82dfbc07dff6d412ae561b9d647
                 try:
                     with open(temp_wav_path, "rb") as file:
                         s3_client.upload_fileobj(
@@ -910,11 +893,7 @@ def combin_result():
                 s3_client.upload_fileobj(file, BUCKET_NAME, new_path)
                 os.remove(merged_file_path)  # 임시 파일 삭제
                 s3_url = f"https://remeet.s3.ap-northeast-2.amazonaws.com/{new_path}"
-<<<<<<< HEAD
                 return jsonify({'answer': s3_url, 'url': s3_url}), 200
-=======
-                return jsonify({"anwer": s3_url, "url": s3_url}), 200
->>>>>>> e755bbbf047fa82dfbc07dff6d412ae561b9d647
         except Exception as e:
             error_message = str(e)
             app.logger.info("API Response result : ", 405, "-", error_message)
