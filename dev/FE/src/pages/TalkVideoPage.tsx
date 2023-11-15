@@ -7,7 +7,6 @@ import withReactContent from 'sweetalert2-react-content';
 import Swal from 'sweetalert2';
 import PageHeader from '@/components/navbar/PageHeader';
 import { SmallButton, TalkBubble } from '@/components/common';
-import AudioRecorder from '@/components/talk/AudioRecorder';
 import Video from '@/components/talk/Video';
 import Modal from '@/components/common/Modal';
 import { History } from '@/types/talk';
@@ -56,7 +55,7 @@ const TalkVideoPage = () => {
   const [isOpenTalkHistoryModal, setIsOpentalkHistoryModal] =
     useState<boolean>(false);
   const [talkHistory, setTalkHistory] = useState<History[]>([]);
-  const { data: modelInfomation } = useQuery<ModelInformation | undefined>(
+  const { data: modelInfomation } = useQuery<ModelInformation>(
     ['getModelInfo'],
     () => getPeopleInfo(Number(modelNo)),
   );
@@ -83,15 +82,17 @@ const TalkVideoPage = () => {
     title: modelInfomation?.modelName ?? '로딩중',
     right: '',
   };
-  const [videoSrc, setVideoSrc] = useState<string | null>(null);
 
-  const playerRef = useRef(null);
+  const defaultVideoSrc = modelInfomation?.commonHoloPath;
+  const [videoSrc, setVideoSrc] = useState<string | undefined>(defaultVideoSrc);
+  const playerRef = useRef<any>(null);
 
   const videoJsOptions = {
     autoplay: true,
     controls: true,
     responsive: true,
     fluid: true,
+    loop: true,
     sources: [
       {
         src: videoSrc,
@@ -112,6 +113,40 @@ const TalkVideoPage = () => {
       videojs.log('player will dispose');
     });
   };
+  useEffect(() => {
+    if (modelInfomation?.commonHoloPath && !videoSrc) {
+      setVideoSrc(modelInfomation.commonHoloPath); // Set the default video source once it's available
+    }
+  }, [modelInfomation, videoSrc]);
+
+  useEffect(() => {
+    if (playerRef.current) {
+      // If the player is already initialized, just update the source
+      playerRef.current.src({ src: videoSrc, type: 'video/mp4' });
+    } else if (videoSrc) {
+      // Otherwise, initialize the player with the given source
+      const videoElement = document.querySelector('.video-js');
+      const player = videojs(videoElement as Element, videoJsOptions);
+
+      playerRef.current = player;
+
+      player.on('ended', () => {
+        // When the video ends, if it's not the default video, revert back to the default
+        if (videoSrc !== defaultVideoSrc) {
+          setVideoSrc(defaultVideoSrc);
+        } else {
+          // If it is the default video, play it again
+          player.play();
+        }
+      });
+
+      // Cleanup function to dispose of the player on unmount
+      return () => {
+        player.dispose();
+        playerRef.current = null;
+      };
+    }
+  }, [videoSrc, defaultVideoSrc]);
 
   const handleEndConversation = () => {
     MySwal.fire({
@@ -130,7 +165,7 @@ const TalkVideoPage = () => {
             showCancelButton: true,
             confirmButtonText: '저장',
             showLoaderOnConfirm: true,
-            preConfirm: (conversationName) => {
+            preConfirm: async (conversationName: string) => {
               try {
                 const data = {
                   modelNo: Number(modelInfomation?.modelNo),
@@ -138,8 +173,8 @@ const TalkVideoPage = () => {
                   conversationName,
                   type: 'video',
                 };
-                const response = saveTalking(data);
-                if (!response.status) {
+                const response = await saveTalking(data);
+                if (response.data) {
                   console.log(response, '확인');
                 }
               } catch (error) {
@@ -161,7 +196,11 @@ const TalkVideoPage = () => {
             })
             .catch(() => {});
         } else if (result.isDenied) {
-          MySwal.fire('저장하지 않고 종료합니다.', '', 'info');
+          MySwal.fire('저장하지 않고 종료합니다.', '', 'info')
+            .then(() => {
+              navigate('/board');
+            })
+            .catch(() => {});
           navigate('/board');
         }
       })
@@ -170,24 +209,6 @@ const TalkVideoPage = () => {
   const handleCloseTalkHistory = () => {
     setIsOpentalkHistoryModal(false);
   };
-
-  // useEffect(() => {
-  //   const handleBeforeUnload = (event: BeforeUnloadEvent) => {
-  //     const message =
-  //       'You have unsaved changes. Are you sure you want to leave?';
-  //     event.returnValue = message; // Gecko and Trident
-  //     return handleBeforeUnload; // Gecko and WebKit
-  //   };
-
-  //   window.addEventListener('beforeunload', handleBeforeUnload);
-  //   // window.addEventListener('beforeunload', handleEndConversation);
-
-  //   // cleanup 함수에서 이벤트 리스너를 제거합니다.
-  //   return () => {
-  //     window.removeEventListener('beforeunload', handleBeforeUnload);
-  //     // window.removeEventListener('beforeunload', handleEndConversation);
-  //   };
-  // }, []);
 
   return (
     <Wrapper>
