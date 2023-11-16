@@ -682,6 +682,8 @@ def make_conversation_video():
     model_name = request.json.get("modelName")
     conversation_text = request.json.get("conversationText")
     app.logger.info(input_text)
+    app.logger.info(conversation_text)
+    app.logger.info(model_name)
     answer = gpt_answer(model_name, conversation_text, input_text)
     user_no = request.json.get("userNo")
     model_no = request.json.get("modelNo")
