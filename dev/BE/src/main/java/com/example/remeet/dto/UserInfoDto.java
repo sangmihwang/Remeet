@@ -8,4 +8,5 @@ public class UserInfoDto {
     private String userName;
     private String imagePath;
     private TokenResponseDto tokenResponse;
+    private String userEmail;
 }

@@ -85,11 +85,15 @@ const ProfilePage = () => {
     MySwal.fire({
       title: <ModalTitle>정말 탈퇴하시겠습니까?</ModalTitle>,
       text: '',
+      customClass: {
+        title: 'swal2-title-custom',
+      },
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#3085d6',
       cancelButtonColor: '#d33',
-      confirmButtonText: '회원 탈퇴',
+      confirmButtonText: '탈퇴',
+      cancelButtonText: `취소`,
     })
       .then((result) => {
         if (result.isConfirmed) {
@@ -106,13 +110,17 @@ const ProfilePage = () => {
 
   const handleLogout = () => {
     MySwal.fire({
-      title: <ModalTitle>로그아웃 하시겠습니까?</ModalTitle>,
+      title: <ModalTitle>로그아웃하시겠습니까?</ModalTitle>,
+      customClass: {
+        title: 'swal2-title-custom',
+      },
       text: '',
       icon: 'question',
       showCancelButton: true,
       confirmButtonColor: '#3085d6',
       cancelButtonColor: '#d33',
-      confirmButtonText: '로그아웃',
+      confirmButtonText: '확인',
+      cancelButtonText: `취소`,
     })
       .then((result) => {
         if (result.isConfirmed) {

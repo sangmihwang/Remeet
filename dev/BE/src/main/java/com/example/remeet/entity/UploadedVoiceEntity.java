@@ -3,6 +3,8 @@ package com.example.remeet.entity;
 import com.sun.istack.NotNull;
 import lombok.*;
 import org.hibernate.annotations.DynamicInsert;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import javax.persistence.*;
 
@@ -27,6 +29,7 @@ public class UploadedVoiceEntity {
     @NotNull
     @ManyToOne
     @JoinColumn(name="model_no")
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private ModelBoardEntity modelNo;
     
 }

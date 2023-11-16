@@ -19,7 +19,7 @@ interface ImageProps {
 
 const Image = ({ src }: ImageProps) => {
   return (
-    <ImageWrapper $imageUrl={src === 'common' ? '/dummy/갱얼쥐.jpg' : src} />
+    <ImageWrapper $imageUrl={src === 'common' ? '/dummy/Vector.png' : src} />
   );
 };
 

@@ -98,10 +98,18 @@ const TalkVideoPage = () => {
   const handleEndConversation = () => {
     MySwal.fire({
       title: '대화를 종료하시겠습니까?',
-      // showDenyButton: true,
       showCancelButton: true,
       confirmButtonText: '네',
       // denyButtonText: `Don't save`,
+      // title: '대화를 저장하고 종료하시겠습니까?',
+      customClass: {
+        title: 'swal2-title-custom',
+      },
+      // showDenyButton: true,
+      // showCancelButton: true,
+      // confirmButtonText: '저장',
+      // denyButtonText: `저장 안 함`,
+      cancelButtonText: `취소`,
     })
       .then((result) => {
         /* Read more about isConfirmed, isDenied below */
