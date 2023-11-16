@@ -52,6 +52,7 @@ interface DictaphoneProps {
   modelInformation: ModelInformation | undefined;
   pushHistory: (text: string, speakerType: number) => void;
   conversationNo: number;
+  isSaving: boolean;
 }
 
 const Dictaphone = ({
@@ -59,6 +60,7 @@ const Dictaphone = ({
   modelInformation,
   pushHistory,
   conversationNo,
+  isSaving,
 }: DictaphoneProps) => {
   const {
     transcript,
@@ -160,16 +162,16 @@ const Dictaphone = ({
 
   useEffect(() => {
     // transcript가 있는데 finalTranscript가 아직 없는 경우, 녹음을 시작합니다.
-    if (transcript && !finalTranscript && !audioRecording) {
+    if (transcript && !finalTranscript && !audioRecording && !isSaving) {
       setAudioRecording(true);
     }
 
     // finalTranscript가 있는 경우, 녹음을 중지하고 대화를 처리합니다.
-    if (finalTranscript && audioRecording) {
+    if (finalTranscript && audioRecording && !isSaving) {
       setAudioRecording(false);
       handleFinalTranscript(); // 대화 처리를 위한 별도의 함수
     }
-  }, [transcript, finalTranscript, audioRecording]);
+  }, [transcript, finalTranscript, audioRecording, isSaving]);
 
   useEffect(() => {
     SpeechRecognition.startListening({ continuous: true })

@@ -47,6 +47,8 @@ const TalkVoicePage = () => {
     () => getPeopleInfo(Number(modelNo)),
   );
   const [conversationNo, setConversationNo] = useState<number>(0);
+  const [isSaving, setIsSaving] = useState<boolean>(false);
+
   useEffect(() => {
     startConversation(Number(modelNo), 'voice')
       .then((res) => {
@@ -81,6 +83,7 @@ const TalkVoicePage = () => {
       .then((result) => {
         /* Read more about isConfirmed, isDenied below */
         if (result.isConfirmed) {
+          setIsSaving(true);
           MySwal.fire({
             title: '지금 대화의 이름을 정해주세요.',
             input: 'text',
@@ -104,6 +107,7 @@ const TalkVoicePage = () => {
               }
             },
             allowOutsideClick: () => {
+              setIsSaving(false);
               return !MySwal.isLoading;
             },
           })
@@ -157,6 +161,7 @@ const TalkVoicePage = () => {
       </TitleWrapper>
       <ContentWrpper>
         <Dictaphone
+          isSaving={isSaving}
           pushHistory={pushHistory}
           modelInformation={modelInfomation}
           conversationNo={conversationNo}

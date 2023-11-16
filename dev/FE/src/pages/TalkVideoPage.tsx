@@ -59,10 +59,10 @@ const TalkVideoPage = () => {
     () => getPeopleInfo(Number(modelNo)),
   );
   const [conversationNo, setConversationNo] = useState<number>(0);
-  // const []
   const defaultVideoSrc = modelInfomation?.commonHoloPath;
 
   const [videoSrc, setVideoSrc] = useState<string | undefined>(defaultVideoSrc);
+  const [isSaving, setIsSaving] = useState<boolean>(false);
 
   useEffect(() => {
     startConversation(Number(modelNo), 'voice')
@@ -107,6 +107,8 @@ const TalkVideoPage = () => {
       .then((result) => {
         /* Read more about isConfirmed, isDenied below */
         if (result.isConfirmed) {
+          setIsSaving(true);
+
           MySwal.fire({
             title: '지금 대화의 이름을 정해주세요.',
             input: 'text',
@@ -130,6 +132,7 @@ const TalkVideoPage = () => {
               }
             },
             allowOutsideClick: () => {
+              setIsSaving(false);
               return !MySwal.isLoading;
             },
           })
@@ -183,6 +186,7 @@ const TalkVideoPage = () => {
       </TitleWrapper>
       <ContentWrpper>
         <Dictaphone
+          isSaving={isSaving}
           setVideoSrc={setVideoSrc}
           pushHistory={pushHistory}
           modelInformation={modelInfomation}
