@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { ModelConversation } from '@/types/board';
+import { TalkInformation } from '@/types/board';
 import { VideoInformation } from '@/types/upload';
 
 const Wrapper = styled.div`
@@ -28,7 +28,7 @@ const Item = styled.div<{ $imagePath: string }>`
 `;
 
 interface RecentVideosProps {
-  videos: ModelConversation[] | undefined;
+  videos: TalkInformation[] | undefined;
   setVideoInformation: (videoSrc: VideoInformation) => void;
 }
 
@@ -40,12 +40,12 @@ const RecentVideos = ({ videos, setVideoInformation }: RecentVideosProps) => {
         {videos &&
           videos.map((video) => {
             const videoInformation = {
-              videoSrc: video.videoPath,
-              videoName: video.proVideoName,
+              videoSrc: video.filePath,
+              videoName: video.fileName,
             };
             return (
               <Item
-                key={video.proVideoNo}
+                key={video.fileNo}
                 $imagePath={video.imagePath}
                 onClick={() => setVideoInformation(videoInformation)}
               />

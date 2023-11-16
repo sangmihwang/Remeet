@@ -8,7 +8,7 @@ import PageHeader from '@/components/navbar/PageHeader';
 import { Image, SmallButton } from '@/components/common';
 import BottomNavigation from '@/components/navbar/BottomNavigation';
 import Modal from '@/components/common/Modal';
-import { ModelConversation } from '@/types/board';
+import { TalkInformation } from '@/types/board';
 import { getVideos } from '@/api/board';
 import VideoListItem from '@/components/profile/VideoListItem';
 import VideoContent from '@/components/profile/VideoContent';
@@ -146,7 +146,7 @@ const ModelProfile = () => {
     () => getPeopleInfo(Number(modelNo)),
   );
 
-  const { data: videoLists } = useQuery<ModelConversation[]>(
+  const { data: videoLists } = useQuery<TalkInformation[]>(
     ['getModelConversationList'],
     () => getVideos(Number(modelNo)),
   );
@@ -190,6 +190,7 @@ const ModelProfile = () => {
     setIsVideoPlayerModal(false);
   };
 
+  console.log(videoLists);
   return (
     <CreateWrapper>
       <HeaderBackGround />
@@ -227,7 +228,7 @@ const ModelProfile = () => {
             videoLists.map((item) => {
               return (
                 <VideoListItem
-                  key={item.proVideoNo}
+                  key={item.fileNo}
                   {...item}
                   setIsVideoPlayerModal={setIsVideoPlayerModal}
                   setVideoInformation={setVideoInformation}

@@ -1,12 +1,12 @@
-import { ModelConversation } from '@/types/board';
+import { TalkInformation } from '@/types/board';
 import { authApi } from '.';
 
 const getRecentVideos = async () => {
   return authApi.get('video/recent');
 };
 
-const getVideos = async (modelNo: number): Promise<ModelConversation[]> => {
-  const response = await authApi.get<ModelConversation[]>(`video/${modelNo}`);
+const getVideos = async (modelNo: number): Promise<TalkInformation[]> => {
+  const response = await authApi.get<TalkInformation[]>(`video/${modelNo}`);
   return response.data;
 };
 

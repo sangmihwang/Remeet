@@ -1,8 +1,6 @@
 import styled from 'styled-components';
-import { ModelConversation } from '@/types/board';
+import { TalkInformation } from '@/types/board';
 import { VideoInformation } from '@/types/upload';
-
-const URL = import.meta.env.VITE_API_BASE_URL as string;
 
 const Wrapper = styled.div`
   width: 86vw;
@@ -18,7 +16,7 @@ const Imgbox = styled.div<{ $imagePath: string }>`
   height: 3.125rem;
   border-radius: 8px;
   background-color: #f6f6f6;
-  background-image: url(${(props) => URL + props.$imagePath.slice(1)});
+  background-image: url(${(props) => props.$imagePath});
   background-repeat: no-repeat;
   background-size: contain;
   background-position: center;
@@ -54,16 +52,15 @@ const Button = styled.button`
   color: #fff;
 `;
 
-interface VideoListItemProps extends ModelConversation {
+interface VideoListItemProps extends TalkInformation {
   setVideoInformation: (videoInfo: VideoInformation) => void;
   setIsVideoPlayerModal: (check: boolean) => void;
   setIsModal: (status: boolean) => void;
 }
 
 const VideoListItem = ({
-  proVideoName,
-  videoPath,
-  holoPath,
+  fileName,
+  filePath,
   imagePath,
   setVideoInformation,
   setIsVideoPlayerModal,
@@ -72,13 +69,13 @@ const VideoListItem = ({
   const changeVideoSrc = (type: string) => {
     if (type === '2D') {
       setVideoInformation({
-        videoName: proVideoName,
-        videoSrc: videoPath,
+        videoName: fileName,
+        videoSrc: filePath,
       });
     } else {
       setVideoInformation({
-        videoName: proVideoName,
-        videoSrc: holoPath,
+        videoName: fileName,
+        videoSrc: filePath,
       });
     }
     setIsVideoPlayerModal(true);
@@ -88,10 +85,10 @@ const VideoListItem = ({
     <Wrapper>
       <Imgbox $imagePath={imagePath} />
       <ContentWrapper>
-        <NameBox>{proVideoName}</NameBox>
+        <NameBox>{fileName}</NameBox>
         <ButtonWrapper>
-          <Button onClick={() => changeVideoSrc('2D')}>2D</Button>
-          <Button onClick={() => changeVideoSrc('3D')}>3D</Button>
+          <Button onClick={() => changeVideoSrc('2D')}>영상보기</Button>
+          {/* <Button onClick={() => changeVideoSrc('3D')}>3D</Button> */}
         </ButtonWrapper>
       </ContentWrapper>
     </Wrapper>

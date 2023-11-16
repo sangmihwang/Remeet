@@ -47,7 +47,6 @@ const TalkVoicePage = () => {
     () => getPeopleInfo(Number(modelNo)),
   );
   const [conversationNo, setConversationNo] = useState<number>(0);
-  const [isSaving, setIsSaving] = useState<boolean>(false);
 
   useEffect(() => {
     startConversation(Number(modelNo), 'voice')
@@ -83,7 +82,6 @@ const TalkVoicePage = () => {
       .then((result) => {
         /* Read more about isConfirmed, isDenied below */
         if (result.isConfirmed) {
-          setIsSaving(true);
           MySwal.fire({
             title: '지금 대화의 이름을 정해주세요.',
             input: 'text',
@@ -107,7 +105,6 @@ const TalkVoicePage = () => {
               }
             },
             allowOutsideClick: () => {
-              setIsSaving(false);
               return !MySwal.isLoading;
             },
           })
@@ -132,22 +129,6 @@ const TalkVoicePage = () => {
       .catch(() => {});
   };
 
-  useEffect(() => {
-    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
-      const message =
-        'You have unsaved changes. Are you sure you want to leave?';
-      event.returnValue = message; // Gecko and Trident
-      return message; // Gecko and WebKit
-    };
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
-
-    // cleanup 함수에서 이벤트 리스너를 제거합니다.
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-    };
-  }, []);
-
   return (
     <Wrapper>
       <TitleWrapper>
@@ -161,7 +142,6 @@ const TalkVoicePage = () => {
       </TitleWrapper>
       <ContentWrpper>
         <Dictaphone
-          isSaving={isSaving}
           pushHistory={pushHistory}
           modelInformation={modelInfomation}
           conversationNo={conversationNo}

@@ -11,7 +11,7 @@ import Modal from '@/components/common/Modal';
 import { History } from '@/types/talk';
 import { ModelInformation } from '@/types/peopleList';
 import { getPeopleInfo } from '@/api/peoplelist';
-import { saveTalking, startConversation } from '@/api/talk';
+import { startConversation } from '@/api/talk';
 import Dictaphone from '@/components/talk/Dictaphone';
 
 const Wrapper = styled.div`
@@ -62,7 +62,6 @@ const TalkVideoPage = () => {
   const defaultVideoSrc = modelInfomation?.commonHoloPath;
 
   const [videoSrc, setVideoSrc] = useState<string | undefined>(defaultVideoSrc);
-  const [isSaving, setIsSaving] = useState<boolean>(false);
 
   useEffect(() => {
     startConversation(Number(modelNo), 'voice')
@@ -98,63 +97,62 @@ const TalkVideoPage = () => {
 
   const handleEndConversation = () => {
     MySwal.fire({
-      title: '대화를 저장하고 종료하시겠습니까?',
-      showDenyButton: true,
+      title: '대화를 종료하시겠습니까?',
+      // showDenyButton: true,
       showCancelButton: true,
-      confirmButtonText: 'Save',
-      denyButtonText: `Don't save`,
+      confirmButtonText: '네',
+      // denyButtonText: `Don't save`,
     })
       .then((result) => {
         /* Read more about isConfirmed, isDenied below */
         if (result.isConfirmed) {
-          setIsSaving(true);
-
-          MySwal.fire({
-            title: '지금 대화의 이름을 정해주세요.',
-            input: 'text',
-            showCancelButton: true,
-            confirmButtonText: '저장',
-            showLoaderOnConfirm: true,
-            preConfirm: async (conversationName: string) => {
-              try {
-                const data = {
-                  modelNo: Number(modelInfomation?.modelNo),
-                  conversationNo,
-                  conversationName,
-                  type: 'video',
-                };
-                const response = await saveTalking(data);
-                if (response.data) {
-                  console.log(response, '확인');
-                }
-              } catch (error) {
-                console.log(error);
-              }
-            },
-            allowOutsideClick: () => {
-              setIsSaving(false);
-              return !MySwal.isLoading;
-            },
-          })
-            .then((res) => {
-              if (res.isConfirmed) {
-                MySwal.fire('저장되었습니다.', '', 'success')
-                  .then(() => {
-                    navigate('/board');
-                    setVideoSrc(undefined);
-                  })
-                  .catch(() => {});
-              }
-            })
-            .catch(() => {});
-        } else if (result.isDenied) {
-          MySwal.fire('저장하지 않고 종료합니다.', '', 'info')
-            .then(() => {
-              navigate('/board');
-              setVideoSrc(undefined);
-            })
-            .catch(() => {});
           navigate('/board');
+
+          //   MySwal.fire({
+          //     title: '지금 대화의 이름을 정해주세요.',
+          //     input: 'text',
+          //     showCancelButton: true,
+          //     confirmButtonText: '저장',
+          //     showLoaderOnConfirm: true,
+          //     preConfirm: async (conversationName: string) => {
+          //       try {
+          //         const data = {
+          //           modelNo: Number(modelInfomation?.modelNo),
+          //           conversationNo,
+          //           conversationName,
+          //           type: 'video',
+          //         };
+          //         const response = await saveTalking(data);
+          //         if (response.data) {
+          //           console.log(response, '확인');
+          //         }
+          //       } catch (error) {
+          //         console.log(error);
+          //       }
+          //     },
+          //     allowOutsideClick: () => {
+          //       return !MySwal.isLoading;
+          //     },
+          //   })
+          //     .then((res) => {
+          //       if (res.isConfirmed) {
+          //         MySwal.fire('저장되었습니다.', '', 'success')
+          //           .then(() => {
+          //             navigate('/board');
+          //             setVideoSrc(undefined);
+          //           })
+          //           .catch(() => {});
+          //       }
+          //     })
+          //     .catch(() => {});
+          // } else if (result.isDenied) {
+          //   MySwal.fire('저장하지 않고 종료합니다.', '', 'info')
+          //     .then(() => {
+          //       navigate('/board');
+          //       setVideoSrc(undefined);
+          //     })
+          //     .catch(() => {});
+          //   navigate('/board');
         }
       })
       .catch(() => {});
@@ -188,7 +186,6 @@ const TalkVideoPage = () => {
       </TitleWrapper>
       <ContentWrpper>
         <Dictaphone
-          isSaving={isSaving}
           setVideoSrc={setVideoSrc}
           pushHistory={pushHistory}
           modelInformation={modelInfomation}

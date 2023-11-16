@@ -8,7 +8,7 @@ import BottomNavigation from '@/components/navbar/BottomNavigation';
 import { getRecentVideos } from '@/api/board';
 import Modal from '@/components/common/Modal';
 import RecentVideos from '@/components/videostroage/RecentVideos';
-import { ModelConversation } from '@/types/board';
+import { TalkInformation } from '@/types/board';
 import { VideoContent } from '@/components/profile';
 import { VideoInformation } from '@/types/upload';
 import { getPeopleList } from '@/api/peoplelist';
@@ -28,7 +28,7 @@ const VideoStorage = () => {
   };
   const [videoInformation, setVideoInformation] =
     useState<VideoInformation | null>(null);
-  const { data: recentVideos } = useQuery<AxiosResponse<ModelConversation[]>>(
+  const { data: recentVideos } = useQuery<AxiosResponse<TalkInformation[]>>(
     ['getRecentVideos'],
     getRecentVideos,
   );

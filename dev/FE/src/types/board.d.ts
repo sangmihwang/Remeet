@@ -6,4 +6,11 @@ interface ModelConversation {
   imagePath: string;
 }
 
-export { ModelConversation };
+interface TalkInformation {
+  fileName: string;
+  fileNo: number;
+  filePath: string;
+  imagePath: string;
+}
+
+export { ModelConversation, TalkInformation };
