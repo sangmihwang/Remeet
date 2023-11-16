@@ -55,7 +55,6 @@ const TalkVoicePage = () => {
       })
       .catch(() => {});
   }, []);
-  console.log(modelInfomation);
   const pushHistory = (text: string, speakerType: number) => {
     setTalkHistory((prevState: History[]) => {
       if (speakerType === 1) {
@@ -106,10 +105,10 @@ const TalkVoicePage = () => {
                 };
                 const response = await saveTalking(data);
                 if (response.data) {
-                  console.log(response, '확인');
+                  console.log();
                 }
-              } catch (error) {
-                console.log(error);
+              } catch (err) {
+                console.log(err);
               }
             },
             allowOutsideClick: () => {

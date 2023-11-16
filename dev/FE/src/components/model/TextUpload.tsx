@@ -69,13 +69,10 @@ const TextUpload = ({
       const file = event.target.files[0];
       const url = URL.createObjectURL(file);
       setTextFiles([...textFiles, { blob: file, url, checked: true }]);
-      console.log(textFiles);
     }
   };
 
   const handleCheckboxChange = (index: number) => {
-    console.log(textFiles);
-
     setTextFiles((prev) =>
       prev.map((file, idx) =>
         idx === index ? { ...file, checked: !file.checked } : file,

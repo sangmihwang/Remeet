@@ -102,10 +102,10 @@ const ProfilePage = () => {
             title: '탈퇴되었습니다.',
             text: '',
             icon: 'success',
-          }).catch((err) => console.log(err));
+          }).catch(() => {});
         }
       })
-      .catch((err) => console.log(err));
+      .catch(() => {});
   };
 
   const handleLogout = () => {

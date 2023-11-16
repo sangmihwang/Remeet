@@ -5,7 +5,7 @@ const AudioPlayerTest = ({ src }: { src: string }) => (
   <AudioPlayer
     autoPlay
     src={src}
-    onPlay={() => console.log('onPlay')}
+    onPlay={() => {}}
     // other props here
   />
 );

@@ -137,16 +137,13 @@ const ModelProducing = () => {
   useEffect(() => {
     if (modelInfomation && !modelInfomation.eleVoiceId) {
       makeVoiceId(Number(modelNo))
-        .then((res) => {
-          console.log(res);
+        .then(() => {
           queryClient
             .invalidateQueries({ queryKey: ['getModelInfo'] })
             .then(() => {})
             .catch(() => {});
         })
-        .catch((err) => {
-          console.log(err);
-        });
+        .catch(() => {});
     }
   }, [modelInfomation]);
 

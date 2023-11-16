@@ -10,33 +10,29 @@ const AdminPage = () => {
     ['getModelList'],
     getHeygenId,
   );
-  console.log(modelList);
   const { userInfo } = useAuth();
   const createHeyIdMutation = useMutation(createHeygenId, {
-    onSuccess: (res) => {
-      console.log(res);
+    onSuccess: () => {
       client
         .invalidateQueries({ queryKey: ['getModelList'] })
-        .then((res1) => console.log(res1))
-        .catch((err) => console.log(err));
+        .then(() => {})
+        .catch(() => {});
     },
-    onError: (err) => console.log(err),
+    onError: () => {},
   });
   const createVideoMutation = useMutation(createBasicVideo, {
-    onSuccess: (res) => {
-      console.log(res);
+    onSuccess: () => {
       client
         .invalidateQueries({ queryKey: ['getModelList'] })
-        .then((res1) => console.log(res1))
-        .catch((err) => console.log(err));
+        .then(() => {})
+        .catch(() => {});
     },
-    onError: (err) => console.log(err),
+    onError: () => {},
   });
   const handleCreateHeyId = (data: HeyModel) => {
     createHeyIdMutation.mutate(data);
   };
   const handleCreateBasicVideo = (data: HeyModel) => {
-    console.log('제작');
     createVideoMutation.mutate(data);
   };
 

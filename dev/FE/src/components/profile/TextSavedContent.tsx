@@ -35,7 +35,6 @@ const TextSavedContent = ({
   handleCloseModal,
   imagePath,
 }: TextUploadProps) => {
-  console.log(conversation);
   return (
     <>
       <TitleWrapper>

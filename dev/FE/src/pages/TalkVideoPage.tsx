@@ -96,7 +96,6 @@ const TalkVideoPage = () => {
       setVideoSrc(modelInfomation.commonVideoPath); // Set the default video source once it's available
     }
   }, [modelInfomation]);
-  console.log(modelInfomation);
 
   const handleEndConversation = () => {
     MySwal.fire({

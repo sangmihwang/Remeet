@@ -91,15 +91,12 @@ const Dictaphone = ({
       //   .catch(() => {});
       setIsLoading(false);
 
-      console.log(res);
       if (setVideoSrc) {
         setVideoSrc(res.data.url);
       }
       pushHistory(res.data.answer, 2);
     },
-    onError: (err) => {
-      console.log(err);
-    },
+    onError: () => {},
   });
   const conversateVoiceMutation = useMutation<
     AxiosResponse<ConversationResponse>,
@@ -111,22 +108,15 @@ const Dictaphone = ({
       // SpeechRecognition.startListening({ continuous: true })
       //   .then(() => {})
       //   .catch(() => {});
-      console.log(res);
       setAudioSrc(res.data.url);
       pushHistory(res.data.answer, 2);
       setIsLoading(false);
     },
-    onError: (err) => {
-      console.log(err);
-    },
+    onError: () => {},
   });
   const handleFinalTranscript = () => {
     setIsLoading(true);
-    console.log(finalTranscript, '파이널');
-    console.log(
-      finalTranscript === '' ? transcript : finalTranscript,
-      '파이널dksla',
-    );
+
     // SpeechRecognition.stopListening()
     //   .then(() => {})
     //   .catch(() => {});

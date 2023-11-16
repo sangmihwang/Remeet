@@ -72,10 +72,8 @@ const ModelCreate = () => {
   const { userInfo } = useAuth();
 
   const createVideoMutation = useMutation(createBasicVideo, {
-    onSuccess: (res) => {
-      console.log(res);
-    },
-    onError: (err) => console.log(err),
+    onSuccess: () => {},
+    onError: () => {},
   });
 
   // Modal 관련 state 및 함수
@@ -130,7 +128,6 @@ const ModelCreate = () => {
         userNo: userInfo?.userNo,
       };
       createVideoMutation.mutate(data);
-      console.log(res);
       MySwal.fire({
         title: '저장되었습니다.',
         text: '',
@@ -140,20 +137,15 @@ const ModelCreate = () => {
           const { modelNo } = res.data;
           navigate(`/producing/${modelNo}`);
         })
-        .catch((err) => {
-          console.log(err);
-        });
+        .catch(() => {});
     },
-    onError: (err) => {
+    onError: () => {
       setIsSaving(false);
-      console.log(err);
       MySwal.fire({
         title: '저장에 실패하였습니다.',
         text: '채우지 않은 항목이 있는지 다시 한번 확인해주세요.',
         icon: 'error',
-      }).catch((error) => {
-        console.log(error);
-      });
+      }).catch(() => {});
     },
   });
 
@@ -200,7 +192,7 @@ const ModelCreate = () => {
           }).catch(() => {});
         }
       })
-      .catch((err) => console.log(err));
+      .catch(() => {});
   };
 
   const handleOpenSavingSwal = () => {

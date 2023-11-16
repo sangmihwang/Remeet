@@ -66,13 +66,10 @@ const AudioUpload = ({
       const url = URL.createObjectURL(file);
 
       setAudioFiles([...audioFiles, { blob: file, url, checked: true }]);
-      console.log(audioFiles);
     }
   };
 
   const handleCheckboxChange = (index: number) => {
-    console.log(audioFiles);
-
     setAudioFiles((prev) =>
       prev.map((file, idx) =>
         idx === index ? { ...file, checked: !file.checked } : file,

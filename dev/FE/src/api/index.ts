@@ -59,13 +59,11 @@ const refreshAuthLogic = async (failedRequest: any) => {
       },
     )
     .then((res: any) => {
-      console.log(res, '리프레시');
       setAccessToken(res.data.token);
       failedRequest.response.config.headers['X-ACCESS-TOKEN'] = res.data.token;
       return Promise.resolve(failedRequest);
     })
     .catch((err) => {
-      console.log(err);
       return Promise.reject(err);
     });
 };

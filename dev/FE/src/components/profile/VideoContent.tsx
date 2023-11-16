@@ -34,7 +34,6 @@ const VideoContent = ({
   videoInformation,
   handleCloseModal,
 }: VideoContentProps) => {
-  console.log(videoInformation);
   return (
     <>
       <TitleWrapper>

@@ -22,8 +22,8 @@ const AudioRecorder = ({
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
 
   const mutation = useMutation(talkingQuestion, {
-    onSuccess: (res) => console.log(res),
-    onError: (err) => console.log(err),
+    onSuccess: () => {},
+    onError: () => {},
   });
 
   useEffect(() => {
@@ -42,7 +42,6 @@ const AudioRecorder = ({
         const newAudioBlob = new Blob(audioChunks, { type: 'audio/wav' });
         // const audioURL = URL.createObjectURL(newAudioBlob);
         const type = setVideoSrc ? 'video' : 'voice';
-        console.log(type);
 
         const formData = new FormData();
         formData.append('conversationNo', `${conversationNo}`);

@@ -59,7 +59,6 @@ const BoardPage = () => {
     ['getPeopleList', option],
     () => getPeopleList(option),
   );
-  console.log(peopleList);
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
   };

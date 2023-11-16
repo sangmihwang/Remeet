@@ -139,10 +139,10 @@ const ModelProfile = () => {
             },
             text: '',
             icon: 'success',
-          }).catch((err) => console.log(err));
+          }).catch(() => {});
         }
       })
-      .catch((err) => console.log(err));
+      .catch(() => {});
   };
 
   const { data: modelInfomation } = useQuery<ModelInformation | undefined>(
@@ -194,7 +194,6 @@ const ModelProfile = () => {
     setIsVideoPlayerModal(false);
   };
 
-  console.log(videoLists);
   return (
     <CreateWrapper>
       <HeaderBackGround />

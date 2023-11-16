@@ -134,13 +134,10 @@ const SignUpPage = () => {
   };
 
   const mutation = useMutation<AxiosResponse, Error, FormData>(userSignUp, {
-    onSuccess: (res) => {
-      console.log(res);
+    onSuccess: () => {
       navigate('/login');
     },
-    onError: (err) => {
-      console.log(err);
-    },
+    onError: () => {},
   });
 
   const handleSingUpClick = () => {

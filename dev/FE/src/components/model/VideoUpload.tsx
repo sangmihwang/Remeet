@@ -64,13 +64,10 @@ const VideoUpload = ({
       const file = event.target.files[0];
       const url = URL.createObjectURL(file);
       setVideoFiles([...videoFiles, { blob: file, url, checked: true }]);
-      console.log(videoFiles);
     }
   };
 
   const handleCheckboxChange = (index: number) => {
-    console.log(videoFiles);
-
     setVideoFiles((prev) =>
       prev.map((file, idx) =>
         idx === index ? { ...file, checked: !file.checked } : file,
