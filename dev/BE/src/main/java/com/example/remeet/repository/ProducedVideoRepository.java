@@ -24,9 +24,10 @@ public interface ProducedVideoRepository extends JpaRepository<ProducedVideoEnti
             "v.proVideoNo, v.proVideoName, v.videoPath, m.imagePath) " +
             "FROM ProducedVideoEntity v " +
             "JOIN v.modelNo m " +
-            "WHERE m.modelNo = :modelNo " +
+            "WHERE m.modelNo = :modelNo AND v.videoPath IS NOT null " +
             "ORDER BY v.createdTime DESC")
     List<VideoDataDto> findProducedVideoByModelNo(Integer modelNo);
+
 
     Optional<ProducedVideoEntity> findByProVideoNo(Integer proVideoNo);
 
