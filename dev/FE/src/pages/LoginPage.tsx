@@ -38,17 +38,14 @@ const LoginPage = () => {
         sessionStorage.setItem('accessToken', accessToken);
         sessionStorage.setItem('refreshToken', refreshToken);
         navigate('/board');
-        console.log('??');
       },
-      onError: (err) => {
-        console.log(err);
+      onError: () => {
         window.alert('아이디 혹은 비밀번호를 확인해 주세요');
       },
     },
   );
 
   const handleLoginClick = () => {
-    console.log(loginForm);
     mutation.mutate(loginForm);
   };
 
@@ -58,7 +55,7 @@ const LoginPage = () => {
 
   const headerContent = {
     left: 'Back',
-    title: '로그인',
+    title: 'Login',
     right: 'SignUp',
   };
 

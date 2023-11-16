@@ -23,8 +23,15 @@ const ListWrapper = styled.ul`
   padding: 0;
 `;
 
-const ListItem = styled.li`
+const ListItem = styled.li<{ $imagePath: string }>`
   list-style: none;
+  margin: 0 auto;
+  width: 85vw;
+  height: 35vh;
+  background-image: url(${(props) => props.$imagePath});
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
 `;
 
 interface ImageUploadProps {
@@ -42,7 +49,7 @@ const ImageSavedContent = ({
         <Title>이미지 목록</Title>
       </TitleWrapper>
       <ListWrapper>
-        <ListItem>{imageUrl && <img src={imageUrl} alt={imageUrl} />}</ListItem>
+        {imageUrl && <ListItem $imagePath={imageUrl} />}
       </ListWrapper>
       <LargeButton onClick={handleCloseModal} content="닫기" />
     </>

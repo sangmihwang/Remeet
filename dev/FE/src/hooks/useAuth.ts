@@ -1,32 +1,29 @@
-// import { useCallback } from 'react';
 import { useRecoilState } from 'recoil';
-// import { getUserInfo } from '@/api/user';
-import { User } from '@/types/user';
+import { useCallback, useEffect } from 'react';
+import { UserResponse } from '@/types/user';
 import userState from '@/store/user';
+import { getUserInfo } from '@/api/user';
 
 const useAuth = () => {
-  const [userInfo, setUserInfo] = useRecoilState<User | null>(userState);
-  // const refreshUserInfo = useCallback(async () => {
-  //   const newUserInfo = await getUserInfo();
-  //   setUserInfo(newUserInfo);
-  // }, []);
+  const [userInfo, setUserInfo] = useRecoilState<UserResponse | null>(
+    userState,
+  );
+  const refreshUserInfo = useCallback(async () => {
+    getUserInfo()
+      .then((res) => {
+        setUserInfo(res.data);
+      })
+      .catch(() => {});
+  }, []);
 
-  //   useEffect(() => {
-  //     if (!userInfo && accessToken && !isRefresh) {
-  //       isRefresh = true;
-  //       refreshUserInfo().then(() => {
-  //         isRefresh = false;
-  //       });
-  //     }
-  //   }, []);
-
-  //   useEffect(() => {
-  //     if (!refreshToken) {
-  //       setUserInfo(undefined);
-  //     }
-  //   }, [refreshToken]);
-
-  return { userInfo, setUserInfo };
+  useEffect(() => {
+    if (!userInfo) {
+      refreshUserInfo()
+        .then(() => {})
+        .catch(() => {});
+    }
+  }, []);
+  return { userInfo, setUserInfo, refreshUserInfo };
 };
 
 export default useAuth;

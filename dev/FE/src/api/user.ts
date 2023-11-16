@@ -1,5 +1,5 @@
 import { AxiosResponse } from 'axios';
-import { Login, SignUpForm, UserResponse } from '@/types/user';
+import { Login, UserResponse } from '@/types/user';
 import { api, authApi, formApi } from '.';
 
 const userLogin = async (
@@ -8,16 +8,31 @@ const userLogin = async (
   return api.post('user/login', loginData);
 };
 
-const userSignUp = async (signUpForm: SignUpForm): Promise<AxiosResponse> => {
+const userSignUp = async (signUpForm: FormData): Promise<AxiosResponse> => {
   return formApi.post('user/signup', signUpForm);
+};
+
+const userLogout = async () => {
+  return authApi.get('user/logout');
 };
 
 const getCheckUserId = async (userId: string) => {
   return api.get(`user/check-id?userId=${userId}`);
 };
 
-const getUserInfo = async () => {
+const getUserInfo = async (): Promise<AxiosResponse<UserResponse>> => {
   return authApi.get('user');
 };
 
-export { userLogin, userSignUp, getCheckUserId, getUserInfo };
+const deleteUser = async () => {
+  return authApi.delete('user');
+};
+
+export {
+  userLogin,
+  userSignUp,
+  getCheckUserId,
+  getUserInfo,
+  deleteUser,
+  userLogout,
+};

@@ -6,7 +6,7 @@ const SmallBtn = styled.button<{ $type: number | undefined }>`
   height: fit-content;
   padding: 1rem 2rem;
   font-size: 1rem;
-  margin: 1rem 0;
+  margin: 1rem 0.5rem;
   font-weight: 600;
   background-color: var(--primary-color);
   color: #fff;

@@ -2,16 +2,24 @@ import styled from 'styled-components';
 import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { AxiosResponse } from 'axios';
+import withReactContent from 'sweetalert2-react-content';
+import Swal from 'sweetalert2';
+import { useNavigate } from 'react-router-dom';
 import PageHeader from '@/components/navbar/PageHeader';
 import { Image, InputText, SmallButton } from '@/components/common';
 import BottomNavigation from '@/components/navbar/BottomNavigation';
-import AudioUpload from '@/components/model/AudioUpload';
 import Modal from '@/components/common/Modal';
-import ImageUpload from '@/components/model/ImageUpload';
-import VideoUpload from '@/components/model/VideoUpload';
-import TextUpload from '@/components/model/TextUpload';
 import { modelCreate } from '@/api/create';
 import { AudioFile, ImageFile, TextFile, VideoFile } from '@/types/upload';
+import { ModelInformation } from '@/types/peopleList';
+import {
+  AudioUpload,
+  ImageUpload,
+  TextUpload,
+  VideoUpload,
+} from '@/components/model';
+import { createBasicVideo } from '@/api/admin';
+import useAuth from '@/hooks/useAuth';
 
 const CreateWrapper = styled.div`
   padding-bottom: 5.25rem;
@@ -21,7 +29,7 @@ const HeaderBackGround = styled.div`
   top: 0;
   position: absolute;
   width: 100%;
-  height: 12.5rem;
+  height: 15rem;
   background-color: var(--primary-color);
   z-index: -200;
 `;
@@ -45,7 +53,7 @@ const Title = styled.div`
 
 const ButtonWrapper = styled.div`
   margin: 0 auto;
-  width: 84vw;
+  width: 93vw;
   height: fit-content;
   display: flex;
   justify-content: space-between;
@@ -53,11 +61,22 @@ const ButtonWrapper = styled.div`
 `;
 
 const ModelCreate = () => {
+  const navigate = useNavigate();
+  const MySwal = withReactContent(Swal);
   const headerContent = {
     left: 'Back',
     title: 'Create',
     right: 'Save',
   };
+  const [isSaving, setIsSaving] = useState<boolean>(false);
+  const { userInfo } = useAuth();
+
+  const createVideoMutation = useMutation(createBasicVideo, {
+    onSuccess: (res) => {
+      console.log(res);
+    },
+    onError: (err) => console.log(err),
+  });
 
   // Modal 관련 state 및 함수
   const [isModal, setIsModal] = useState<boolean>(false);
@@ -99,36 +118,95 @@ const ModelCreate = () => {
   const [textFiles, setTextFiles] = useState<TextFile[]>([]);
 
   // API 관련
-  const mutation = useMutation<AxiosResponse, Error, any>(modelCreate, {
-    onSuccess: (res) => console.log(res),
-    onError: (err) => console.log(err),
+  const mutation = useMutation<
+    AxiosResponse<ModelInformation>,
+    Error,
+    FormData
+  >(modelCreate, {
+    onSuccess: (res) => {
+      const data = {
+        modelNo: res.data.modelNo,
+        modelName: modleName,
+        userNo: userInfo?.userNo,
+      };
+      createVideoMutation.mutate(data);
+      console.log(res);
+      MySwal.fire({
+        title: '저장되었습니다.',
+        text: '',
+        icon: 'success',
+      })
+        .then(() => {
+          const { modelNo } = res.data;
+          navigate(`/producing/${modelNo}`);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    },
+    onError: (err) => {
+      setIsSaving(false);
+      console.log(err);
+      MySwal.fire({
+        title: '저장에 실패하였습니다.',
+        text: '채우지 않은 항목이 있는지 다시 한번 확인해주세요.',
+        icon: 'error',
+      }).catch((error) => {
+        console.log(error);
+      });
+    },
   });
 
   const handleSaveClick = () => {
-    const formData = new FormData();
+    MySwal.fire({
+      title: '저장하시겠습니까?',
+      text: '',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: '저장',
+    })
+      .then((result) => {
+        setIsSaving(true);
+        if (result.isConfirmed) {
+          // formData 로직
+          const formData = new FormData();
 
-    formData.append('modelName', modleName);
-    formData.append('kakaoName', kakaoName);
-    formData.append('gender', 'F');
-    if (imageFile) {
-      formData.append('imagePath', imageFile.blob, imageFile.blob.name);
-    }
-    if (videioFiles) {
-      videioFiles.forEach((file) => {
-        formData.append('videoFiles', file.blob, file.name);
-      });
-    }
-    if (textFiles) {
-      textFiles.forEach((file) => {
-        formData.append('conversationText', file.blob, file.name);
-      });
-    }
-    if (audioFiles) {
-      audioFiles.forEach((file) => {
-        formData.append('voiceFiles', file.blob, file.name);
-      });
-    }
-    mutation.mutate(formData);
+          formData.append('modelName', modleName);
+          formData.append('kakaoName', kakaoName);
+          formData.append('gender', 'F');
+          if (imageFile) {
+            formData.append('imagePath', imageFile.blob, imageFile.blob.name);
+          }
+          if (videioFiles) {
+            videioFiles.forEach((file) => {
+              formData.append('videoFiles', file.blob, file.name);
+            });
+          }
+          if (textFiles) {
+            textFiles.forEach((file) => {
+              formData.append('conversationText', file.blob, file.name);
+            });
+          }
+          if (audioFiles) {
+            audioFiles.forEach((file) => {
+              formData.append('voiceFiles', file.blob, file.name);
+            });
+          }
+          mutation.mutate(formData);
+          MySwal.fire({
+            text: '저장중입니다.',
+          }).catch(() => {});
+        }
+      })
+      .catch((err) => console.log(err));
+  };
+
+  const handleOpenSavingSwal = () => {
+    MySwal.fire({
+      text: '저장중입니다.',
+    }).catch(() => {});
   };
 
   return (
@@ -138,7 +216,7 @@ const ModelCreate = () => {
         <PageHeader
           content={headerContent}
           type={2}
-          rightButtonClick={handleSaveClick}
+          rightButtonClick={!isSaving ? handleSaveClick : handleOpenSavingSwal}
         />
         <ImageWrapper>
           <Image src={imageFile ? imageFile.url : '/dummy/갱얼쥐.jpg'} />

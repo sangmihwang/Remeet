@@ -106,7 +106,7 @@ const TextUpload = ({
         <InputText
           value={kakaoName}
           onChange={setKakaoName}
-          placeholder="나의 카카오 이름"
+          placeholder="상대방의 카카오 이름"
           type="1"
         />
         {textFiles.map((file, index) => (

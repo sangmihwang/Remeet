@@ -2,12 +2,27 @@ interface PeopleListItem {
   modelNo: number;
   modelName: string;
   imagePath: string;
+  eleVoiceId?: string;
+  heyVoiceId?: string;
+}
+
+interface VoiceList {
+  voiceNo: number;
+  voicePath: string;
+}
+
+interface VideoList {
+  videoNo: number;
+  videoPath: string;
 }
 
 interface ModelInformation extends PeopleListItem {
-  videoList: string[];
-  voiceList: string[];
-  conversationText: string;
+  videoList: VideoList[];
+  voiceList: VoiceList[];
+  conversationText: { [key: string]: string }[];
+  conversationText2: string;
+  avatarId: string;
+  commonHoloPath?: string;
 }
 
-export { PeopleListItem, ModelInformation };
+export { PeopleListItem, ModelInformation, VoiceList, VideoList };

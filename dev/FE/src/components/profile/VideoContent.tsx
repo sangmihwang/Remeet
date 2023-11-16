@@ -1,8 +1,6 @@
-import { useRef } from 'react';
 import styled from 'styled-components';
-import videojs from 'video.js';
+import ReactPlayer from 'react-player';
 import { LargeButton } from '../common';
-import Video from '@/components/talk/Video';
 import { VideoInformation } from '@/types/upload';
 
 const TitleWrapper = styled.div`
@@ -36,43 +34,20 @@ const VideoContent = ({
   videoInformation,
   handleCloseModal,
 }: VideoContentProps) => {
-  // 비디오 관련
-
-  const playerRef = useRef(null);
-
-  const videoJsOptions = {
-    autoplay: false,
-    controls: true,
-    responsive: true,
-    fluid: true,
-    sources: [
-      {
-        src: videoInformation.videoSrc,
-        type: 'video/mp4',
-      },
-    ],
-  };
-
-  const handlePlayerReady = (player: any) => {
-    playerRef.current = player;
-
-    // You can handle player events here, for example:
-    player.on('waiting', () => {
-      videojs.log('player is waiting');
-    });
-
-    player.on('dispose', () => {
-      videojs.log('player will dispose');
-    });
-  };
-
+  console.log(videoInformation);
   return (
     <>
       <TitleWrapper>
         <Title>{videoInformation.videoName}</Title>
       </TitleWrapper>
       <ListWrapper>
-        <Video options={videoJsOptions} onReady={handlePlayerReady} />
+        <ReactPlayer
+          url={videoInformation.videoSrc}
+          playing
+          controls
+          width="100%"
+          height="100%"
+        />
       </ListWrapper>
       <LargeButton onClick={handleCloseModal} content="닫기" />
     </>

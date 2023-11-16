@@ -42,8 +42,14 @@ const ListWrapper = styled.ul`
   padding: 0;
 `;
 
-const ListItem = styled.li`
+const ListItem = styled.li<{ $imagePath?: string }>`
   list-style: none;
+  width: 85vw;
+  height: 35vh;
+  background-image: url(${(props) => props.$imagePath});
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
 `;
 
 interface ImageUploadProps {
@@ -90,9 +96,7 @@ const ImageUpload = ({
         </Label>
       </TitleWrapper>
       <ListWrapper>
-        <ListItem>
-          {imageFile && <img src={imageFile.url} alt={imageFile.blob.name} />}
-        </ListItem>
+        {imageFile && <ListItem $imagePath={imageFile.url} />}
       </ListWrapper>
       <LargeButton onClick={handleSaveImageFile} content="저장" />
     </>

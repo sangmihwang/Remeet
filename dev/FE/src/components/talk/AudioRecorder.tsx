@@ -1,66 +1,75 @@
-import axios from 'axios';
-import React, { useState, useRef } from 'react';
-import AudioPlayerTest from './AudioPlayerTest';
+import { useRef, useEffect } from 'react';
+import styled from 'styled-components';
+import { useMutation } from '@tanstack/react-query';
+import { ModelInformation } from '@/types/peopleList';
+import { talkingQuestion } from '@/api/talk';
 
-const TESTURL =
-  'https://k9a706.p.ssafy.io/:8443/api/v1/talking/stt/xiwegDxmfAZs4jY54VHT';
+const Wrapper = styled.div``;
 
-const AudioRecorder: React.FC = () => {
-  const [recording, setRecording] = useState<boolean>(false);
+interface AudioRecorderProps {
+  modelInformation: ModelInformation;
+  conversationNo: number;
+  audioRecording: boolean;
+  setVideoSrc?: (url: string) => void;
+}
+
+const AudioRecorder = ({
+  modelInformation,
+  conversationNo,
+  audioRecording,
+  setVideoSrc,
+}: AudioRecorderProps) => {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
-  const [audioSrc, setAudioSrc] = useState<string | null>(null);
 
-  const startRecording = async () => {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    const mediaRecorder = new MediaRecorder(stream);
-    mediaRecorderRef.current = mediaRecorder;
+  const mutation = useMutation(talkingQuestion, {
+    onSuccess: (res) => console.log(res),
+    onError: (err) => console.log(err),
+  });
 
-    const audioChunks: Blob[] = [];
-    mediaRecorder.ondataavailable = (event) => {
-      audioChunks.push(event.data);
+  useEffect(() => {
+    // 녹음 시작
+    const startRecording = async () => {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+
+      const audioChunks: Blob[] = [];
+      mediaRecorder.ondataavailable = (event) => {
+        audioChunks.push(event.data);
+      };
+
+      mediaRecorder.onstop = async () => {
+        const newAudioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+        // const audioURL = URL.createObjectURL(newAudioBlob);
+        const type = setVideoSrc ? 'video' : 'voice';
+        console.log(type);
+
+        const formData = new FormData();
+        formData.append('conversationNo', `${conversationNo}`);
+        formData.append('modelNo', `${modelInformation.modelNo}`);
+        formData.append('type', type);
+        formData.append('file', newAudioBlob, 'audio.wav');
+        mutation.mutate(formData);
+      };
+
+      mediaRecorder.start();
     };
 
-    mediaRecorder.onstop = () => {
-      const newAudioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-      setAudioBlob(newAudioBlob);
-      // You can save or send the audioBlob to the server now
-      // FormData를 만들어서 음성 파일 추가
-      const formData = new FormData();
-      formData.append('audio', newAudioBlob, 'audio.wav'); // 'audio'는 서버에서 받을 이름, 'audio.wav'는 파일 이름
+    if (audioRecording) {
+      // 녹음 시작
+      startRecording().catch(() => {});
+    } else {
+      // 녹음 멈춤
+      mediaRecorderRef.current?.stop();
+    }
 
-      // axios를 사용하여 서버에 POST 요청 보내기
-      axios
-        .post(TESTURL, formData)
-        .then((response: any) => {
-          console.log('Successfully uploaded audio:', response.data);
-          setAudioSrc(response.text);
-        })
-        .catch((error) => {
-          console.error('Error uploading audio:', error);
-        });
+    // 컴포넌트가 언마운트되거나 audioRecording이 false가 되기 전에 녹음을 멈추도록 함
+    return () => {
+      mediaRecorderRef.current?.stop();
     };
+  }, [audioRecording]); // audioRecording 상태가 변경될 때마다 useEffect가 실행됩니다.
 
-    mediaRecorder.start();
-    setRecording(true);
-
-    // Stop recording after 6 seconds
-    setTimeout(() => {
-      mediaRecorder.stop();
-      setRecording(false);
-    }, 6000);
-  };
-
-  return (
-    <div>
-      <button onClick={startRecording} disabled={recording}>
-        {recording ? 'Recording...' : 'Start Recording'}
-      </button>
-      {audioBlob && <audio controls src={URL.createObjectURL(audioBlob)} />}
-      <div>오디오 플레이어</div>
-      {audioSrc && <AudioPlayerTest src={audioSrc} />}
-    </div>
-  );
+  return <Wrapper />;
 };
 
 export default AudioRecorder;

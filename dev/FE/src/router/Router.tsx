@@ -1,5 +1,7 @@
 import { Outlet, Route, Routes, Navigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 import {
+  AdminPage,
   BoardPage,
   LoginPage,
   MainPage,
@@ -8,10 +10,13 @@ import {
   ModelProfile,
   ProfilePage,
   SignUpPage,
-  TalkPage,
+  TalkVideoPage,
+  TalkVoicePage,
   VideoStorage,
 } from '@/pages';
 import { getAccessToken } from '@/utils';
+import useAuth from '@/hooks/useAuth';
+import { getUserInfo } from '@/api/user';
 
 const Layout = () => {
   return <Outlet />;
@@ -39,6 +44,42 @@ const RedirectToBoard = () => {
   // 로그인하지 않은 상태라면 MainPage 렌더링
   return <MainPage />;
 };
+const ProtectedAdmin = () => {
+  const { userInfo, setUserInfo } = useAuth();
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      try {
+        const response = await getUserInfo(); // Assumed to be an API call
+        setUserInfo(response.data);
+        setIsAdmin(response.data.userNo === 4);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (!userInfo) {
+      fetchUserInfo();
+    } else {
+      setIsAdmin(userInfo.userNo === 4);
+      setIsLoading(false);
+    }
+  }, [userInfo, setUserInfo]);
+
+  if (isLoading) {
+    return <div>Loading...</div>; // 또는 로딩 스피너 컴포넌트
+  }
+
+  if (!isAdmin) {
+    return <Navigate to="/board" replace />;
+  }
+
+  return <Outlet />;
+};
 
 // 메인 Router 컴포넌트
 const Router = () => {
@@ -49,13 +90,17 @@ const Router = () => {
         <Route path="login" element={<LoginPage />} />
         <Route path="signup" element={<SignUpPage />} />
         <Route element={<ProtectedRoute />}>
-          <Route path="talk/:modelNo" element={<TalkPage />} />
+          <Route path="talk/voice/:modelNo" element={<TalkVoicePage />} />
+          <Route path="talk/video/:modelNo" element={<TalkVideoPage />} />
           <Route path="profile" element={<ProfilePage />} />
           <Route path="board" element={<BoardPage />} />
           <Route path="board/create" element={<ModelCreate />} />
           <Route path="board/:modelNo" element={<ModelProfile />} />
           <Route path="producing/:modelNo" element={<ModelProducing />} />
           <Route path="videostorage" element={<VideoStorage />} />
+        </Route>
+        <Route element={<ProtectedAdmin />}>
+          <Route path="admin" element={<AdminPage />} />
         </Route>
       </Route>
     </Routes>
