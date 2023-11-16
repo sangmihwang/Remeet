@@ -8,7 +8,7 @@ interface ConversationBaseForm {
   conversationText: string;
   question: string;
   modelName: string;
-  history: History[];
+  // history: History[];
 }
 
 interface ConversationVoiceForm extends ConversationBaseForm {
@@ -25,9 +25,17 @@ interface ConversationResponse {
   url: string;
 }
 
+interface TalkSaveForm {
+  modelNo: number;
+  conversationNo: number;
+  conversationName: string;
+  type: string;
+}
+
 export {
   ConversationVoiceForm,
   ConversationVideoForm,
   ConversationResponse,
   History,
+  TalkSaveForm,
 };

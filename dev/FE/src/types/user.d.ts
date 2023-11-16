@@ -21,6 +21,7 @@ interface UserResponse extends User {
     accessToken: string;
     refreshToken: string;
   };
+  commonHoloPath?: string;
 }
 
 export { Login, User, SignUpForm, UserResponse };

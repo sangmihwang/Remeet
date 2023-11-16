@@ -12,6 +12,7 @@ const IMessage = styled.div`
   max-width: 600px;
   padding: 0.5rem 1.5rem;
   max-height: 42vh;
+  overflow-y: scroll;
 `;
 
 const Message = styled.p`

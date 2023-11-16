@@ -83,7 +83,11 @@ const formApi = formApiInstance();
 const authApi = authApiInstance();
 const authFormApi = authFormApiInstance();
 
-createAuthRefreshInterceptor(authApi, refreshAuthLogic);
-createAuthRefreshInterceptor(authFormApi, refreshAuthLogic);
+createAuthRefreshInterceptor(authApi, refreshAuthLogic, {
+  statusCodes: [409],
+});
+createAuthRefreshInterceptor(authFormApi, refreshAuthLogic, {
+  statusCodes: [409],
+});
 
 export { formApi, api, authApi, authFormApi };

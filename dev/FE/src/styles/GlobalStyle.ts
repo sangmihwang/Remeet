@@ -7,6 +7,10 @@ const GlobalStyle = createGlobalStyle`
     :root {
         --primary-color : #2D657C;
     }
+    a {
+        text-decoration: none;
+        color: #2D657C;
+    }
 `;
 
 export default GlobalStyle;

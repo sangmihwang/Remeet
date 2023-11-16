@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
 import styled, { keyframes } from 'styled-components';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import PageHeader from '@/components/navbar/PageHeader';
 import BottomNavigation from '@/components/navbar/BottomNavigation';
 import { Image, SmallButton } from '@/components/common';
-import useAuth from '@/hooks/useAuth';
 import { ModelInformation } from '@/types/peopleList';
 import { getPeopleInfo } from '@/api/peoplelist';
+import { makeVoiceId } from '@/api/create';
 
 const HeaderBackGround = styled.div`
   top: 0;
@@ -107,9 +107,9 @@ const ProgressRate = styled.div`
 `;
 
 const ModelProducing = () => {
-  const { userInfo } = useAuth();
   const navigate = useNavigate();
-  const { modelNo } = useParams<{ modelNo?: string }>();
+  const queryClient = useQueryClient();
+  const { modelNo } = useParams<{ modelNo: string }>();
   const headerContent = {
     left: 'Back',
     title: '',
@@ -119,15 +119,35 @@ const ModelProducing = () => {
     ['getModelInfo'],
     () => getPeopleInfo(Number(modelNo)),
   );
-  console.log(userInfo?.imagePath);
-  const handleTalkStart = () => {
-    if (modelNo) {
-      navigate(`/talk/${modelNo}`);
+  const handleTalkStart = (type: number) => {
+    if (type === 1) {
+      if (modelInfomation?.eleVoiceId) {
+        navigate(`/talk/voice/${modelNo}`);
+      } else {
+        alert('아직 음성대화를 할 수 없습니다.');
+      }
+    } else if (modelInfomation?.heyVoiceId) {
+      navigate(`/talk/video/${modelNo}`);
     } else {
-      console.error('해당 번호 모델 없음');
+      alert('아직 영상대화를 할 수 없습니다.');
     }
   };
   const [progress, setProgress] = useState(0);
+  useEffect(() => {
+    if (modelInfomation && !modelInfomation.eleVoiceId) {
+      makeVoiceId(Number(modelNo))
+        .then((res) => {
+          console.log(res);
+          queryClient
+            .invalidateQueries({ queryKey: ['getModelInfo'] })
+            .then(() => {})
+            .catch(() => {});
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    }
+  }, [modelInfomation]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -170,12 +190,12 @@ const ModelProducing = () => {
         <SmallButton
           type={1}
           text="보이스톡"
-          onClick={() => handleTalkStart()}
+          onClick={() => handleTalkStart(1)}
         />
         <SmallButton
           type={1}
           text="페이스톡"
-          onClick={() => handleTalkStart()}
+          onClick={() => handleTalkStart(2)}
         />
       </ButtonWrapper>
       <ProducingAlert>모델을 제작 중입니다</ProducingAlert>
