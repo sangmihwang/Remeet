@@ -6,7 +6,7 @@ services:
       context: .
       dockerfile: Dockerfile.conversation
     image: my-flask-conversation-app
-    container_name: my-flask-conversation-container
+    #container_name: my-flask-conversation-container
     env_file:
       - "${ENV_FILE_PATH}"
 
