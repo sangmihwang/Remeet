@@ -32,7 +32,8 @@ services:
     volumes:
       - /etc/nginx/nginx2.conf:/etc/nginx/nginx.conf
     depends_on:
-      - flask-app
+      flask-app:
+        condition: service_healthy
     networks:
       - app-network
 
