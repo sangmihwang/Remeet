@@ -60,7 +60,7 @@ interface BoardItemProps {
   modelName: string;
   imagePath: string;
   eleVoiceId?: string;
-  heyVoiceId?: string;
+  commonVideoPath?: string;
 }
 
 const BoardItem = ({
@@ -68,7 +68,7 @@ const BoardItem = ({
   modelName,
   imagePath,
   eleVoiceId,
-  heyVoiceId,
+  commonVideoPath,
 }: BoardItemProps) => {
   const MySwal = withReactContent(Swal);
   const navigate = useNavigate();
@@ -77,7 +77,7 @@ const BoardItem = ({
   };
   const handleGoTalk = (e: MouseEvent) => {
     e.stopPropagation();
-    if (eleVoiceId && heyVoiceId) {
+    if (eleVoiceId && commonVideoPath) {
       MySwal.fire({
         title: '대화 종류를 선택해주세요.',
         icon: 'question',

@@ -60,16 +60,20 @@ const Dictaphone = ({
   pushHistory,
   conversationNo,
 }: DictaphoneProps) => {
+  const commands = [
+    { command: '취소', callback: () => SpeechRecognition.abortListening() },
+  ];
   const {
     transcript,
     listening,
     resetTranscript,
     browserSupportsSpeechRecognition,
     finalTranscript,
-  } = useSpeechRecognition();
+  } = useSpeechRecognition({ commands });
   const { userInfo } = useAuth();
   const [audioSrc, setAudioSrc] = useState<string | null>(null);
   const [audioRecording, setAudioRecording] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   if (!browserSupportsSpeechRecognition) {
     return <span />;
@@ -81,10 +85,11 @@ const Dictaphone = ({
     ConversationVideoForm
   >(conversateVideo, {
     onSuccess: (res) => {
-      resetTranscript();
-      SpeechRecognition.startListening({ continuous: true })
-        .then(() => {})
-        .catch(() => {});
+      // resetTranscript();
+      // SpeechRecognition.startListening({ continuous: true })
+      //   .then(() => {})
+      //   .catch(() => {});
+      setIsLoading(false);
 
       console.log(res);
       if (setVideoSrc) {
@@ -102,23 +107,26 @@ const Dictaphone = ({
     ConversationVoiceForm
   >(conversateVoice, {
     onSuccess: (res) => {
-      resetTranscript();
-      SpeechRecognition.startListening({ continuous: true })
-        .then(() => {})
-        .catch(() => {});
+      // resetTranscript();
+      // SpeechRecognition.startListening({ continuous: true })
+      //   .then(() => {})
+      //   .catch(() => {});
       console.log(res);
       setAudioSrc(res.data.url);
       pushHistory(res.data.answer, 2);
+      setIsLoading(false);
     },
     onError: (err) => {
       console.log(err);
     },
   });
   const handleFinalTranscript = () => {
+    setIsLoading(true);
     console.log('보내기');
-    SpeechRecognition.stopListening()
-      .then(() => {})
-      .catch(() => {});
+    console.log(finalTranscript);
+    // SpeechRecognition.stopListening()
+    //   .then(() => {})
+    //   .catch(() => {});
     pushHistory(finalTranscript, 1);
     if (
       modelInformation &&
@@ -158,37 +166,56 @@ const Dictaphone = ({
     }
   };
 
-  useEffect(() => {
-    // transcript가 있는데 finalTranscript가 아직 없는 경우, 녹음을 시작합니다.
-    if (transcript && !finalTranscript && !audioRecording) {
-      setAudioRecording(true);
-    }
+  // useEffect(() => {
+  //   // transcript가 있는데 finalTranscript가 아직 없는 경우, 녹음을 시작합니다.
+  //   // if (transcript && !finalTranscript && !audioRecording) {
+  //   //   setAudioRecording(true);
+  //   // }
 
-    // finalTranscript가 있는 경우, 녹음을 중지하고 대화를 처리합니다.
-    if (finalTranscript && audioRecording) {
-      setAudioRecording(false);
-      handleFinalTranscript(); // 대화 처리를 위한 별도의 함수
-    }
-  }, [transcript, finalTranscript, audioRecording]);
+  //   // finalTranscript가 있는 경우, 녹음을 중지하고 대화를 처리합니다.
+  //   if (finalTranscript && audioRecording) {
+  //     setAudioRecording(false);
+  //     handleEndSpeechRecognition(); // 대화 처리를 위한 별도의 함수
+  //   }
+  // }, [transcript, finalTranscript, audioRecording]);
 
   useEffect(() => {
-    SpeechRecognition.startListening({ continuous: true })
-      .then(() => {})
-      .catch(() => {});
     return () => {
-      SpeechRecognition.stopListening()
-        .then(() => {})
-        .catch(() => {});
       SpeechRecognition.abortListening()
         .then(() => {})
         .catch(() => {});
     };
   }, []);
+  const handleStartSpeechRecognition = () => {
+    resetTranscript();
+    SpeechRecognition.startListening({ continuous: true })
+      .then(() => {})
+      .catch(() => {});
+    setAudioRecording(true);
+  };
+  const handleEndSpeechRecognition = () => {
+    SpeechRecognition.stopListening()
+      .then(() => {
+        setAudioRecording(false);
+        console.log(transcript);
+        console.log(finalTranscript);
+        handleFinalTranscript();
+      })
+      .catch(() => {});
+    // handleFinalTranscript();
+  };
 
   return (
     <Wrapper>
       <TextWrapper>
         <RecordButton disabled={listening} />
+        {isLoading ? (
+          <span>대답 기다리는중</span>
+        ) : !listening ? (
+          <button onClick={handleStartSpeechRecognition}>시작</button>
+        ) : (
+          <button onClick={handleEndSpeechRecognition}>종료</button>
+        )}
         <Text>{transcript}</Text>
       </TextWrapper>
       {!setVideoSrc && (

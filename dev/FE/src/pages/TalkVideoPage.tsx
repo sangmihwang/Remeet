@@ -59,7 +59,7 @@ const TalkVideoPage = () => {
     () => getPeopleInfo(Number(modelNo)),
   );
   const [conversationNo, setConversationNo] = useState<number>(0);
-  const defaultVideoSrc = modelInfomation?.commonHoloPath;
+  const defaultVideoSrc = modelInfomation?.commonVideoPath;
 
   const [videoSrc, setVideoSrc] = useState<string | undefined>(defaultVideoSrc);
 
@@ -90,10 +90,11 @@ const TalkVideoPage = () => {
   };
 
   useEffect(() => {
-    if (modelInfomation?.commonHoloPath && !videoSrc) {
-      setVideoSrc(modelInfomation.commonHoloPath); // Set the default video source once it's available
+    if (modelInfomation?.commonVideoPath && !videoSrc) {
+      setVideoSrc(modelInfomation.commonVideoPath); // Set the default video source once it's available
     }
   }, [modelInfomation]);
+  console.log(modelInfomation);
 
   const handleEndConversation = () => {
     MySwal.fire({
