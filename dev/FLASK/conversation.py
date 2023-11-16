@@ -681,6 +681,8 @@ def make_conversation_video():
     input_text = request.json.get("question")
     model_name = request.json.get("modelName")
     conversation_text = request.json.get("conversationText")
+    if len(conversation_text) >= 1500:
+            conversation_text = conversation_text[len(conversation_text)-1500:]
     answer = gpt_answer(model_name, conversation_text, input_text)
     user_no = request.json.get("userNo")
     model_no = request.json.get("modelNo")
@@ -730,6 +732,8 @@ def make_conversation_voice():
         input_text = request.json.get("question")
         model_name = request.json.get("modelName")
         conversation_text = request.json.get("conversationText")
+        if len(conversation_text) >= 1500:
+            conversation_text = conversation_text[len(conversation_text)-1500:]
         answer = gpt_answer(model_name, conversation_text, input_text)
         ele_voice_id = request.json.get("eleVoiceId")
         user_no = request.json.get("userNo")
