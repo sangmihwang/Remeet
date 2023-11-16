@@ -690,6 +690,7 @@ def make_conversation_video():
     }
     s3_url = requests.post(post_url, json=json_data)
     data = s3_url.json()  # JSON 데이터 추출
+    app.logger.info(data)
     # with tempfile.TemporaryDirectory() as temp_dir:
     #     video_url = url.split("ASSET")[1]
     #     video_file_path = os.path.join(temp_dir, video_url.split("/")[-1])
@@ -703,7 +704,7 @@ def make_conversation_video():
     #     with open(make_path, "rb") as file:
     #         s3_client.upload_fileobj(file, BUCKET_NAME, folder_key + new_path)
     # s3_url = f"https://remeet.s3.ap-northeast-2.amazonaws.com/{folder_key + new_path}"
-    return jsonify({"answer": answer, "url": data.url}), 200
+    return jsonify({"answer": answer, "url": data['url']}), 200
         
 
 
