@@ -104,9 +104,6 @@ const TalkVoicePage = () => {
                   type: 'voice',
                 };
                 const response = await saveTalking(data);
-                if (response.data) {
-                  console.log();
-                }
               } catch (err) {
                 console.log(err);
               }

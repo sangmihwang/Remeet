@@ -29,7 +29,7 @@ const VideoWrapper = styled.div<{ $reverse: boolean }>`
   margin: 0 auto;
   width: 86vw;
   height: 12.5rem;
-  /* background-color: #fff; */
+  background-color: #fff;
   transform: rotate(${(props) => (props.$reverse ? '180deg' : '0deg')});
 `;
 
@@ -115,67 +115,17 @@ const TalkVideoPage = () => {
       title: '대화를 종료하시겠습니까?',
       showCancelButton: true,
       confirmButtonText: '네',
-      // denyButtonText: `Don't save`,
-      // title: '대화를 저장하고 종료하시겠습니까?',
+
       customClass: {
         title: 'swal2-title-custom',
       },
-      // showDenyButton: true,
-      // showCancelButton: true,
-      // confirmButtonText: '저장',
-      // denyButtonText: `저장 안 함`,
+
       cancelButtonText: `취소`,
     })
       .then((result) => {
         /* Read more about isConfirmed, isDenied below */
         if (result.isConfirmed) {
           navigate('/board');
-
-          //   MySwal.fire({
-          //     title: '지금 대화의 이름을 정해주세요.',
-          //     input: 'text',
-          //     showCancelButton: true,
-          //     confirmButtonText: '저장',
-          //     showLoaderOnConfirm: true,
-          //     preConfirm: async (conversationName: string) => {
-          //       try {
-          //         const data = {
-          //           modelNo: Number(modelInfomation?.modelNo),
-          //           conversationNo,
-          //           conversationName,
-          //           type: 'video',
-          //         };
-          //         const response = await saveTalking(data);
-          //         if (response.data) {
-          //           console.log(response, '확인');
-          //         }
-          //       } catch (error) {
-          //         console.log(error);
-          //       }
-          //     },
-          //     allowOutsideClick: () => {
-          //       return !MySwal.isLoading;
-          //     },
-          //   })
-          //     .then((res) => {
-          //       if (res.isConfirmed) {
-          //         MySwal.fire('저장되었습니다.', '', 'success')
-          //           .then(() => {
-          //             navigate('/board');
-          //             setVideoSrc(undefined);
-          //           })
-          //           .catch(() => {});
-          //       }
-          //     })
-          //     .catch(() => {});
-          // } else if (result.isDenied) {
-          //   MySwal.fire('저장하지 않고 종료합니다.', '', 'info')
-          //     .then(() => {
-          //       navigate('/board');
-          //       setVideoSrc(undefined);
-          //     })
-          //     .catch(() => {});
-          //   navigate('/board');
         }
       })
       .catch(() => {});
