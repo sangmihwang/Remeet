@@ -680,7 +680,7 @@ def make_conversation_video():
     url = request.json.get("movingHoloPath")
     voice_tts = make_tts(ele_voice_id, answer, user_no, model_no, conversation_no)
     folder_key = f"ASSET/{user_no}/{model_no}/{conversation_no}/"
-    post_url = "http://localhost:5001/api/v1/mergeVideo"
+    post_url = "http://merge-flask:5001/api/v1/mergeVideo"
     new_path = find_index(folder_key, "mp4")
     json_data = {
         "url" : url,
