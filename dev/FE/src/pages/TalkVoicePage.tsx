@@ -75,20 +75,28 @@ const TalkVoicePage = () => {
   const handleEndConversation = () => {
     MySwal.fire({
       title: '대화를 저장하고 종료하시겠습니까?',
+      customClass: {
+        title: 'swal2-title-custom',
+      },
       showDenyButton: true,
       showCancelButton: true,
-      confirmButtonText: 'Save',
-      denyButtonText: `Don't save`,
+      confirmButtonText: '저장',
+      denyButtonText: `저장 안 함`,
+      cancelButtonText: `취소`,
     })
       .then((result) => {
         /* Read more about isConfirmed, isDenied below */
         if (result.isConfirmed) {
           setIsSaving(true);
           MySwal.fire({
-            title: '지금 대화의 이름을 정해주세요.',
+            title: '현재 대화의 이름을 입력해주세요.',
+            customClass: {
+              title: 'swal2-title-custom',
+            },
             input: 'text',
             showCancelButton: true,
             confirmButtonText: '저장',
+            cancelButtonText: `취소`,
             showLoaderOnConfirm: true,
             preConfirm: async (conversationName: string) => {
               try {
@@ -113,7 +121,13 @@ const TalkVoicePage = () => {
           })
             .then((res) => {
               if (res.isConfirmed) {
-                MySwal.fire('저장되었습니다.', '', 'success')
+                MySwal.fire({
+                  title: '저장되었습니다.',
+                  customClass: {
+                    title: 'swal2-title-custom',
+                  },
+                  icon: 'success',
+                })
                   .then(() => {
                     navigate('/board');
                   })
@@ -122,7 +136,13 @@ const TalkVoicePage = () => {
             })
             .catch(() => {});
         } else if (result.isDenied) {
-          MySwal.fire('저장하지 않고 종료합니다.', '', 'info')
+          MySwal.fire({
+            title: '저장하지 않고 종료합니다.',
+            customClass: {
+              title: 'swal2-title-custom',
+            },
+            icon: 'info',
+          })
             .then(() => {
               navigate('/board');
             })

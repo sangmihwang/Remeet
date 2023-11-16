@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  flask-app:
+    build:
+      context: .
+      dockerfile: Dockerfile.conversation
+    image: my-flask-conversation-app
+    container_name: my-flask-conversation-container 
+    env_file:
+      - "${ENV_FILE_PATH}"
+    
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    name: app-network
+    driver: bridge

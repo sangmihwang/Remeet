@@ -4,7 +4,7 @@ import NaviButton from './NaviButton';
 const NaviWrapper = styled.div`
   width: 100%;
   height: 5.25rem;
-  background-color: #fafafa;
+  background-color: #f6f6f6;
   position: fixed;
   bottom: 0;
   display: flex;

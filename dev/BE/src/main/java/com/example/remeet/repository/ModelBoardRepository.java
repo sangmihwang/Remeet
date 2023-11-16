@@ -1,6 +1,7 @@
 package com.example.remeet.repository;
 
 import com.example.remeet.dto.ModelBoardDto;
+import com.example.remeet.dto.NeedUpdateModelDto;
 import com.example.remeet.entity.ModelBoardEntity;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -33,5 +34,11 @@ public interface ModelBoardRepository extends JpaRepository<ModelBoardEntity, In
     List<ModelBoardDto> findByUserNo(Integer userNo);
 
     Optional<ModelBoardEntity> findByModelNo(Integer modelNo);
+
+    @Query("SELECT new com.example.remeet.dto.NeedUpdateModelDto(" +
+            "m.modelNo, m.modelName) " +
+            "FROM ModelBoardEntity m " +
+            "WHERE m.heyVoiceId IS NULL AND m.eleVoiceId IS NOT NULL ")
+    List<NeedUpdateModelDto> findByNeedUpdate();
 }
 

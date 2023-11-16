@@ -11,6 +11,10 @@ const GlobalStyle = createGlobalStyle`
         text-decoration: none;
         color: #2D657C;
     }
+    .swal2-title-custom {
+    font-size: 24px;
+    word-break: keep-all;
+  }
 `;
 
 export default GlobalStyle;
