@@ -16,7 +16,7 @@ public interface ProducedVideoRepository extends JpaRepository<ProducedVideoEnti
             "v.proVideoNo, v.proVideoName, v.videoPath, m.imagePath) " +
             "FROM ProducedVideoEntity v " +
             "JOIN v.modelNo m " +
-            "WHERE m.userNo.userNo = :userNo " +
+            "WHERE m.userNo.userNo = :userNo AND v.videoPath IS NOT null " +
             "ORDER BY v.createdTime DESC")
     List<VideoDataDto> findTopVideosByUserNo(Integer userNo, Pageable pageable);
 

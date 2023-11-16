@@ -18,7 +18,7 @@ public interface ProducedVoiceRepository extends JpaRepository<ProducedVoiceEnti
             "v.proVoiceNo, v.proVoiceName, v.voicePath, m.imagePath) " +
             "FROM ProducedVoiceEntity v " +
             "JOIN v.modelNo m " +
-            "WHERE m.userNo.userNo = :userNo " +
+            "WHERE m.userNo.userNo = :userNo AND v.voicePath IS NOT null " +
             "ORDER BY v.createdTime DESC")
     List<VideoDataDto> findTopVoicesByUserNo(Integer userNo, Pageable pageable);
 

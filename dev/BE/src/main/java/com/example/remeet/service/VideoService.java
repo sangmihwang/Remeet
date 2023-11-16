@@ -19,6 +19,8 @@ public class VideoService {
 
     public List<VideoDataDto> recentProducedVideo(Integer userNo) {
         List<VideoDataDto> recentVideo = producedVideoRepository.findTopVideosByUserNo(userNo, PageRequest.of(0, 10));
+        List<VideoDataDto> recentVoice = producedVoiceRepository.findTopVoicesByUserNo(userNo, PageRequest.of(0, 10));
+        recentVideo.addAll(recentVoice);
         return recentVideo;
     }
 
