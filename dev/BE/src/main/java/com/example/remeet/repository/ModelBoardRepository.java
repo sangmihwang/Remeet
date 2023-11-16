@@ -28,7 +28,7 @@ public interface ModelBoardRepository extends JpaRepository<ModelBoardEntity, In
     List<ModelBoardDto> findMostRecentByUserNo(Integer userNo, Pageable pageable);
 
     @Query("SELECT new com.example.remeet.dto.ModelBoardDto(" +
-            "m.modelNo, m.modelName, m.imagePath, m.eleVoiceId, m.heyVoiceId) " +
+            "m.modelNo, m.modelName, m.imagePath, m.eleVoiceId, m.heyVoiceId, m.commonHoloPath) " +
             "FROM ModelBoardEntity m " +
             "WHERE m.userNo.userNo = :userNo ")
     List<ModelBoardDto> findByUserNo(Integer userNo);

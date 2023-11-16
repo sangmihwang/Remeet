@@ -12,12 +12,14 @@ public class ModelBoardDto {
     private String imagePath;
     private String eleVoiceId;
     private String heyVoiceId;
+    private String commonHoloPath;
 
-    public ModelBoardDto(Integer modelNo, String modelName, String imagePath, String eleVoiceId, String heyVoiceId) {
+    public ModelBoardDto(Integer modelNo, String modelName, String imagePath, String eleVoiceId, String heyVoiceId, String commonHoloPath) {
         this.modelNo = modelNo;
         this.modelName = modelName;
         this.imagePath = imagePath;
         this.eleVoiceId = eleVoiceId;
         this.heyVoiceId = heyVoiceId;
+        this.commonHoloPath = commonHoloPath;
     }
 }
