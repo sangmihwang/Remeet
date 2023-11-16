@@ -244,7 +244,7 @@ public class ModelBoardService {
         ModelBoardEntity getModel = modelBoardRepository.findByModelNo(needUpdateModelDto.getModelNo()).get();
         ConversationDataDto newData = new ConversationDataDto();
         newData.setModelNo(needUpdateModelDto.getModelNo());
-        String heyVoiceId = flaskService.callFlaskConversation(newData,needUpdateModelDto.getUserNo(),userService.checkAdmin(needUpdateModelDto.getUserNo()), needUpdateModelDto.getModelName()).getAnswer();
+        String heyVoiceId = flaskService.callFlaskConversation(newData,needUpdateModelDto.getUserNo(),userService.checkAdmin(needUpdateModelDto.getUserNo()), needUpdateModelDto.getModelNo()).getAnswer();
         getModel.setHeyVoiceId(heyVoiceId);
         modelBoardRepository.save(getModel);
     }
