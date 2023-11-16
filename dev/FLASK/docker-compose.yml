@@ -33,6 +33,8 @@ services:
       - /etc/nginx/nginx2.conf:/etc/nginx/nginx.conf
     depends_on:
       - flask-app
+    networks:
+      - app-network
 
 networks:
   app-network:
