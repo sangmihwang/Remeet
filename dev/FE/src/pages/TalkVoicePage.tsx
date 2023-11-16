@@ -96,20 +96,13 @@ const TalkVoicePage = () => {
             cancelButtonText: `취소`,
             showLoaderOnConfirm: true,
             preConfirm: async (conversationName: string) => {
-              try {
-                const data = {
-                  modelNo: Number(modelInfomation?.modelNo),
-                  conversationNo,
-                  conversationName,
-                  type: 'voice',
-                };
-                const response = await saveTalking(data);
-                if (response.data) {
-                  console.log();
-                }
-              } catch (err) {
-                console.log(err);
-              }
+              const data = {
+                modelNo: Number(modelInfomation?.modelNo),
+                conversationNo,
+                conversationName,
+                type: 'voice',
+              };
+              await saveTalking(data);
             },
             allowOutsideClick: () => {
               return !MySwal.isLoading;
