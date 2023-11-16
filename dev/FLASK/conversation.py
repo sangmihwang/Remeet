@@ -649,7 +649,7 @@ def make_common_video():
         temp_video_path = temp_video.name
         with open(temp_video_path, "rb") as file:
             s3_client.upload_fileobj(file, BUCKET_NAME, folder_key + new_path)
-            os.remove(new_path)  # 임시 파일 삭제
+            os.remove(temp_video_path)  # 임시 파일 삭제
             s3_url = f"https://remeet.s3.ap-northeast-2.amazonaws.com/{folder_key + new_path}"
     answer = "안녕하세요! 저는 인공지능 기술의 발전에 대해 이야기하고 싶어요. 우리는 지금 인공지능이 우리 일상 속에 깊숙이 들어와 있다는 것을 실감하고 있죠."
     videoPath = videoMaker(answer, voice, avatar, is_admin)
@@ -660,7 +660,7 @@ def make_common_video():
         temp_video_path = temp_video.name
         with open(temp_video_path, "rb") as file:
             s3_client.upload_fileobj(file, BUCKET_NAME, folder_key + new_path)
-            os.remove(new_path)  # 임시 파일 삭제
+            os.remove(temp_video_path)  # 임시 파일 삭제
             s3_url2 = f"https://remeet.s3.ap-northeast-2.amazonaws.com/{folder_key + new_path}"
     return (
         jsonify(
