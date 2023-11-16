@@ -1,8 +1,10 @@
 package com.example.remeet.service;
 
 import com.example.remeet.dto.VideoDataDto;
+import com.example.remeet.dto.VoiceDataDto;
 import com.example.remeet.repository.ModelBoardRepository;
 import com.example.remeet.repository.ProducedVideoRepository;
+import com.example.remeet.repository.ProducedVoiceRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -13,6 +15,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class VideoService {
     private final ProducedVideoRepository producedVideoRepository;
+    private final ProducedVoiceRepository producedVoiceRepository;
 
     public List<VideoDataDto> recentProducedVideo(Integer userNo) {
         List<VideoDataDto> recentVideo = producedVideoRepository.findTopVideosByUserNo(userNo, PageRequest.of(0, 10));
@@ -21,6 +24,8 @@ public class VideoService {
 
     public List<VideoDataDto> allProducedVideoByModel(Integer modelNo) {
         List<VideoDataDto> recentVideo = producedVideoRepository.findProducedVideoByModelNo(modelNo);
+        List<VideoDataDto> recentVoice = producedVoiceRepository.findProducedVoiceByModelNo(modelNo);
+        recentVideo.addAll(recentVoice);
         return recentVideo;
     }
 

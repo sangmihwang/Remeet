@@ -13,7 +13,7 @@ import java.util.Optional;
 @Repository
 public interface ProducedVideoRepository extends JpaRepository<ProducedVideoEntity, Integer> {
     @Query("SELECT new com.example.remeet.dto.VideoDataDto(" +
-            "v.proVideoNo, v.proVideoName, v.videoPath, v.holoPath, m.imagePath) " +
+            "v.proVideoNo, v.proVideoName, v.videoPath, m.imagePath) " +
             "FROM ProducedVideoEntity v " +
             "JOIN v.modelNo m " +
             "WHERE m.userNo.userNo = :userNo " +
@@ -21,7 +21,7 @@ public interface ProducedVideoRepository extends JpaRepository<ProducedVideoEnti
     List<VideoDataDto> findTopVideosByUserNo(Integer userNo, Pageable pageable);
 
     @Query("SELECT new com.example.remeet.dto.VideoDataDto(" +
-            "v.proVideoNo, v.proVideoName, v.videoPath, v.holoPath, m.imagePath) " +
+            "v.proVideoNo, v.proVideoName, v.videoPath, m.imagePath) " +
             "FROM ProducedVideoEntity v " +
             "JOIN v.modelNo m " +
             "WHERE m.modelNo = :modelNo " +

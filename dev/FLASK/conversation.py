@@ -676,18 +676,15 @@ def make_conversation_video():
         voice_url = voice_tts.split("ASSET")[1]
         voice_file_path = os.path.join(temp_dir, voice_url.split('/')[-1])
         s3_client.download_file(BUCKET_NAME, "ASSET" + voice_url, voice_file_path)
-        print(video_file_path, voice_file_path)
         new_path = find_index(folder_key, "mp4")
         make_path = os.path.join(temp_dir, new_path)
         merge_video_audio(video_file_path, voice_file_path, make_path)
-        print(answer)
         with open(make_path, "rb") as file:
-            print("??")
             s3_client.upload_fileobj(file, BUCKET_NAME, folder_key + new_path)
-            print("!!")
-    s3_url = f"https://remeet.s3.ap-northeast-2.amazonaws.com/{folder_key + new_path}"
-    return jsonify({"answer": answer, "url": s3_url}), 200
-        
+            s3_url = f"https://remeet.s3.ap-northeast-2.amazonaws.com/{folder_key + new_path}"
+            return jsonify({"answer": answer, "url": s3_url}), 200
+    
+
 
 
 # voice 기반 대화 생성 API
