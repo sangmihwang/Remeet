@@ -243,6 +243,7 @@ public class ModelBoardService {
     public void updateHeyVoiceId(NeedUpdateModelDto needUpdateModelDto) throws IOException{
         ModelBoardEntity getModel = modelBoardRepository.findByModelNo(needUpdateModelDto.getModelNo()).get();
         ConversationDataDto newData = new ConversationDataDto();
+        newData.setModelNo(needUpdateModelDto.getModelNo());
         String heyVoiceId = flaskService.callFlaskConversation(newData,needUpdateModelDto.getUserNo(),userService.checkAdmin(needUpdateModelDto.getUserNo()), needUpdateModelDto.getModelName()).getAnswer();
         getModel.setHeyVoiceId(heyVoiceId);
         modelBoardRepository.save(getModel);

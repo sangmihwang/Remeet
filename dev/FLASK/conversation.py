@@ -157,7 +157,7 @@ def getVoiceId():
     voice_json = json.loads(voice_list.text)
 
     # voice name으로 voice ID 조회
-    voice_id = "none"
+    voice_id = request.json.get("modelNo")
     voice_data = voice_json.get("data")
     for voice in voice_data["list"]:
         if voice["display_name"] == voice_name:
@@ -681,15 +681,11 @@ def make_conversation_video():
     input_text = request.json.get("question")
     model_name = request.json.get("modelName")
     conversation_text = request.json.get("conversationText")
-    app.logger.info(input_text)
-    app.logger.info(conversation_text)
-    app.logger.info(model_name)
     answer = gpt_answer(model_name, conversation_text, input_text)
     user_no = request.json.get("userNo")
     model_no = request.json.get("modelNo")
     conversation_no = request.json.get("conversationNo")
     folder_key = f"ASSET/{user_no}/{model_no}/{conversation_no}/"
-    app.logger.info(answer)
     # 1번 립싱크 병합
     # ele_voice_id = request.json.get("eleVoiceId")
     # url = request.json.get("commonVideoPath")
@@ -711,9 +707,6 @@ def make_conversation_video():
     voice = request.json.get('heyVoiceId')
     admin = request.json.get('admin')
     avatar = request.json.get('avatarId')
-    app.logger.info("HEYGEN API ATTEMPT")
-    app.logger.info(voice)
-    app.logger.info(avatar)
     videoPath = videoMaker(answer, voice, avatar, admin)
     response = requests.get(videoPath)
     new_path = find_index(folder_key, 'mp4')
