@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import styled, { keyframes } from 'styled-components';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import PageHeader from '@/components/navbar/PageHeader';
 import BottomNavigation from '@/components/navbar/BottomNavigation';
@@ -8,6 +8,8 @@ import { Image, SmallButton } from '@/components/common';
 import { ModelInformation } from '@/types/peopleList';
 import { getPeopleInfo } from '@/api/peoplelist';
 import { makeVoiceId } from '@/api/create';
+import { createBasicVideo } from '@/api/admin';
+import useAuth from '@/hooks/useAuth';
 
 const HeaderBackGround = styled.div`
   top: 0;
@@ -107,6 +109,7 @@ const ProgressRate = styled.div`
 `;
 
 const ModelProducing = () => {
+  const { userInfo } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { modelNo } = useParams<{ modelNo: string }>();
@@ -119,6 +122,17 @@ const ModelProducing = () => {
     ['getModelInfo'],
     () => getPeopleInfo(Number(modelNo)),
   );
+
+  const createVideoMutation = useMutation(createBasicVideo, {
+    onSuccess: () => {
+      queryClient
+        .invalidateQueries({ queryKey: ['getModelInfo'] })
+        .then(() => {})
+        .catch(() => {});
+    },
+    onError: () => {},
+  });
+
   const handleTalkStart = (type: number) => {
     if (type === 1) {
       if (modelInfomation?.eleVoiceId) {
@@ -144,6 +158,14 @@ const ModelProducing = () => {
             .catch(() => {});
         })
         .catch(() => {});
+    }
+    if (modelInfomation && !modelInfomation.commonVideoPath) {
+      const data = {
+        userNo: userInfo?.userNo,
+        modelNo: modelInfomation.modelNo,
+        modelName: modelInfomation.modelName,
+      };
+      createVideoMutation.mutate(data);
     }
   }, [modelInfomation]);
 

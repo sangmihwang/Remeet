@@ -66,6 +66,7 @@ const BoardPage = () => {
   const handleGoCreate = () => {
     navigate('create');
   };
+  console.log(peopleList);
 
   const filteredPeopleList = peopleList
     ? peopleList.data.filter((person) =>

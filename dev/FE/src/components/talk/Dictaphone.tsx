@@ -30,6 +30,42 @@ const RecordButton = styled.button`
   background-repeat: no-repeat;
   background-size: 80%;
   background-position: center;
+  border: 0;
+`;
+
+const StopButton = styled.button`
+  width: 2rem;
+  height: 2rem;
+  border-radius: 100%;
+  background-color: #f6f6f6;
+  background-image: url('/icon/micoff_icon.svg');
+  background-repeat: no-repeat;
+  background-size: 80%;
+  background-position: center;
+  border: 0;
+`;
+
+const LoadingButton = styled.div`
+  width: 2rem;
+  height: 2rem;
+  border-radius: 100%;
+  background-image: url('/icon/loading.svg');
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+  animation-name: rotateBox; /* Reference the defined keyframe */
+  animation-duration: 2s; /* Set the duration of one full rotation */
+  animation-iteration-count: infinite; /* Rotate forever */
+  animation-timing-function: linear; /* Keep a constant speed */
+
+  @keyframes rotateBox {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
 `;
 
 const TextWrapper = styled.div`
@@ -199,13 +235,13 @@ const Dictaphone = ({
   return (
     <Wrapper>
       <TextWrapper>
-        <RecordButton disabled={listening} />
+        {/* <RecordButton disabled={listening} /> */}
         {isLoading ? (
-          <span>대답 기다리는중</span>
+          <LoadingButton />
         ) : !listening ? (
-          <button onClick={handleStartSpeechRecognition}>시작</button>
+          <RecordButton onClick={handleStartSpeechRecognition} />
         ) : (
-          <button onClick={handleEndSpeechRecognition}>종료</button>
+          <StopButton onClick={handleEndSpeechRecognition} />
         )}
         <Text>{transcript}</Text>
       </TextWrapper>

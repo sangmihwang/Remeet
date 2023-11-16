@@ -22,7 +22,7 @@ const Wrapper = styled.div`
 
 const TitleWrapper = styled.div`
   width: 100%;
-  height: 45vh;
+  height: 60vh;
 `;
 
 const VideoWrapper = styled.div<{ $reverse: boolean }>`
@@ -31,6 +31,19 @@ const VideoWrapper = styled.div<{ $reverse: boolean }>`
   height: 12.5rem;
   /* background-color: #fff; */
   transform: rotate(${(props) => (props.$reverse ? '180deg' : '0deg')});
+`;
+
+const ReverseButton = styled.button`
+  margin-left: 85vw;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 100%;
+  background-color: #f6f6f6;
+  background-image: url('/icon/reverse_icon.svg');
+  background-repeat: no-repeat;
+  background-size: 80%;
+  background-position: center;
+  border: 0;
 `;
 
 const ContentWrpper = styled.div`
@@ -178,6 +191,8 @@ const TalkVideoPage = () => {
     <Wrapper>
       <TitleWrapper>
         <PageHeader content={headerContent} type={2} />
+        <ReverseButton onClick={handleReverseVideo} />
+
         <VideoWrapper $reverse={reverseVideo}>
           {videoSrc && (
             <ReactPlayer
@@ -198,7 +213,6 @@ const TalkVideoPage = () => {
         </VideoWrapper>
       </TitleWrapper>
       <ContentWrpper>
-        <button onClick={handleReverseVideo}>비디오 반전</button>
         <Dictaphone
           setVideoSrc={setVideoSrc}
           pushHistory={pushHistory}
