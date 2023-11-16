@@ -6,10 +6,8 @@ services:
       context: .
       dockerfile: Dockerfile.conversation
     image: my-flask-conversation-app
-
     env_file:
       - "${ENV_FILE_PATH}"
-
     networks:
       - app-network
 
@@ -31,8 +29,9 @@ services:
       - "7999:80"
     volumes:
       - /etc/nginx/nginx2.conf:/etc/nginx/nginx.conf
-    depends_on:
-      - flask-app
+
+    networks:
+      - app-network
 
 networks:
   app-network:
