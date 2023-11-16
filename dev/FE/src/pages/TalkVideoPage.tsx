@@ -29,7 +29,7 @@ const VideoWrapper = styled.div<{ $reverse: boolean }>`
   margin: 0 auto;
   width: 86vw;
   height: 12.5rem;
-  background-color: #fff;
+  /* background-color: #fff; */
   transform: rotate(${(props) => (props.$reverse ? '180deg' : '0deg')});
 `;
 

@@ -122,12 +122,15 @@ const Dictaphone = ({
   });
   const handleFinalTranscript = () => {
     setIsLoading(true);
-    console.log('보내기');
-    console.log(finalTranscript);
+    console.log(finalTranscript, '파이널');
+    console.log(
+      finalTranscript === '' ? transcript : finalTranscript,
+      '파이널dksla',
+    );
     // SpeechRecognition.stopListening()
     //   .then(() => {})
     //   .catch(() => {});
-    pushHistory(finalTranscript, 1);
+    pushHistory(finalTranscript === '' ? transcript : finalTranscript, 1);
     if (
       modelInformation &&
       userInfo &&
@@ -135,7 +138,7 @@ const Dictaphone = ({
       modelInformation.eleVoiceId
     ) {
       const voiceForm = {
-        question: finalTranscript,
+        question: finalTranscript === '' ? transcript : finalTranscript,
         modelName: modelInformation.modelName,
         conversationText: modelInformation.conversationText2,
         eleVoiceId: modelInformation.eleVoiceId,
@@ -152,7 +155,7 @@ const Dictaphone = ({
       modelInformation.heyVoiceId
     ) {
       const videoForm = {
-        question: finalTranscript,
+        question: finalTranscript === '' ? transcript : finalTranscript,
         modelName: modelInformation.modelName,
         conversationText: modelInformation.conversationText2,
         heyVoiceId: modelInformation.heyVoiceId,
@@ -197,8 +200,6 @@ const Dictaphone = ({
     SpeechRecognition.stopListening()
       .then(() => {
         setAudioRecording(false);
-        console.log(transcript);
-        console.log(finalTranscript);
         handleFinalTranscript();
       })
       .catch(() => {});
