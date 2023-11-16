@@ -680,14 +680,16 @@ def make_conversation_video():
     url = request.json.get("movingHoloPath")
     voice_tts = make_tts(ele_voice_id, answer, user_no, model_no, conversation_no)
     folder_key = f"ASSET/{user_no}/{model_no}/{conversation_no}/"
-    post_url = "http://merge-flask:5001/api/v1/mergeVideo"
+    post_url = "http://localhost:5001/api/v1/mergeVideo"
+    new_path = find_index(folder_key, "mp4")
     json_data = {
         "url" : url,
         "voicetts" : voice_tts,
         "folderKey" : folder_key,
-        "newPath" : find_index(folder_key, "mp4")
+        "newPath" : new_path
     }
     s3_url = requests.post(post_url, json=json_data)
+    data = s3_url.json()  # JSON 데이터 추출
     # with tempfile.TemporaryDirectory() as temp_dir:
     #     video_url = url.split("ASSET")[1]
     #     video_file_path = os.path.join(temp_dir, video_url.split("/")[-1])
@@ -701,7 +703,7 @@ def make_conversation_video():
     #     with open(make_path, "rb") as file:
     #         s3_client.upload_fileobj(file, BUCKET_NAME, folder_key + new_path)
     # s3_url = f"https://remeet.s3.ap-northeast-2.amazonaws.com/{folder_key + new_path}"
-    return jsonify({"answer": answer, "url": s3_url}), 200
+    return jsonify({"answer": answer, "url": data.url}), 200
         
 
 

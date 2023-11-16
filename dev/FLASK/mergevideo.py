@@ -14,11 +14,13 @@ from moviepy.editor import (
     AudioFileClip,
 )
 from dotenv import load_dotenv
-
+import logging
 load_dotenv()
 app = Flask(__name__)
 # .env 파일에서 환경 변수를 로드합니다.
 CORS(app)
+app.logger.setLevel(logging.INFO)
+
 
 AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
 AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
@@ -50,6 +52,7 @@ def merge_video_audio(videoPath, audioPath, path):
 
 @app.route("/api/v1/mergeVideo", methods=["POST"])
 def merge_video():
+    app.logger.info("MERGE_VIDEO API ATTEMPT")
     url = request.json.get("url")
     voice_tts = request.json.get("voicetts")
     new_path = request.json.get("newPath")
@@ -66,7 +69,7 @@ def merge_video():
         with open(make_path, "rb") as file:
             s3_client.upload_fileobj(file, BUCKET_NAME, folder_key + new_path)
     s3_url = f"https://remeet.s3.ap-northeast-2.amazonaws.com/{folder_key + new_path}"
-    return s3_url
+    return jsonify({"url" : s3_url})
 
 
 
