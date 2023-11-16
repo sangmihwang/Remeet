@@ -686,7 +686,7 @@ def make_conversation_video():
     model_no = request.json.get("modelNo")
     conversation_no = request.json.get("conversationNo")
     folder_key = f"ASSET/{user_no}/{model_no}/{conversation_no}/"
-    
+    app.logger.info(answer)
     # 1번 립싱크 병합
     # ele_voice_id = request.json.get("eleVoiceId")
     # url = request.json.get("commonVideoPath")
@@ -711,7 +711,7 @@ def make_conversation_video():
     app.logger.info("HEYGEN API ATTEMPT")
     app.logger.info(voice)
     app.logger.info(avatar)
-    videoPath = videoMaker(answer, voice, avatar, True)
+    videoPath = videoMaker(answer, voice, avatar, admin)
     response = requests.get(videoPath)
     new_path = find_index(folder_key, 'mp4')
     with tempfile.NamedTemporaryFile(delete=False, suffix=".mp4") as temp_video:
