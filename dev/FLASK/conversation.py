@@ -680,20 +680,27 @@ def make_conversation_video():
     url = request.json.get("movingHoloPath")
     voice_tts = make_tts(ele_voice_id, answer, user_no, model_no, conversation_no)
     folder_key = f"ASSET/{user_no}/{model_no}/{conversation_no}/"
-    with tempfile.TemporaryDirectory() as temp_dir:
-        video_url = url.split("ASSET")[1]
-        video_file_path = os.path.join(temp_dir, video_url.split("/")[-1])
-        s3_client.download_file(BUCKET_NAME, "ASSET" + video_url, video_file_path)
-        voice_url = voice_tts.split("ASSET")[1]
-        voice_file_path = os.path.join(temp_dir, voice_url.split("/")[-1])
-        s3_client.download_file(BUCKET_NAME, "ASSET" + voice_url, voice_file_path)
-        new_path = find_index(folder_key, "mp4")
-        make_path = os.path.join(temp_dir, new_path)
-        merge_video_audio(video_file_path, voice_file_path, make_path)
-        with open(make_path, "rb") as file:
-            s3_client.upload_fileobj(file, BUCKET_NAME, folder_key + new_path)
-            print("!!")
-    s3_url = f"https://remeet.s3.ap-northeast-2.amazonaws.com/{folder_key + new_path}"
+    post_url = "http://merge-flask:5001/api/v1/mergeVideo"
+    json_data = {
+        "url" : url,
+        "voicetts" : voice_tts,
+        "folderKey" : folder_key,
+        "newPath" : find_index(folder_key, "mp4")
+    }
+    s3_url = requests.post(post_url, json=json_data)
+    # with tempfile.TemporaryDirectory() as temp_dir:
+    #     video_url = url.split("ASSET")[1]
+    #     video_file_path = os.path.join(temp_dir, video_url.split("/")[-1])
+    #     s3_client.download_file(BUCKET_NAME, "ASSET" + video_url, video_file_path)
+    #     voice_url = voice_tts.split("ASSET")[1]
+    #     voice_file_path = os.path.join(temp_dir, voice_url.split("/")[-1])
+    #     s3_client.download_file(BUCKET_NAME, "ASSET" + voice_url, voice_file_path)
+    #     new_path = find_index(folder_key, "mp4")
+    #     make_path = os.path.join(temp_dir, new_path)
+    #     merge_video_audio(video_file_path, voice_file_path, make_path)
+    #     with open(make_path, "rb") as file:
+    #         s3_client.upload_fileobj(file, BUCKET_NAME, folder_key + new_path)
+    # s3_url = f"https://remeet.s3.ap-northeast-2.amazonaws.com/{folder_key + new_path}"
     return jsonify({"answer": answer, "url": s3_url}), 200
         
 
