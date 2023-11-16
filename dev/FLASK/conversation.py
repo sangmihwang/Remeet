@@ -640,24 +640,33 @@ def make_common_video():
     userNo = request.json.get("userNo")
     modelNo = request.json.get("modelNo")
     is_admin = request.json.get("admin")
+    folder_key = f'ASSET/{userNo}/{modelNo}/'
     commonVideoPath = commonvideoMaker(avatar, is_admin)
     response = requests.get(commonVideoPath)
+    new_path = find_index(folder_key, 'mp4')
     with tempfile.NamedTemporaryFile(delete=False, suffix=".mp4") as temp_video:
         temp_video.write(response.content)
         temp_video_path = temp_video.name
-        holoUrl = process_video(temp_video_path, userNo, modelNo, "holo_video.mp4")
+        with open(temp_video_path, "rb") as file:
+            s3_client.upload_fileobj(file, BUCKET_NAME, folder_key + new_path)
+            os.remove(new_path)  # 임시 파일 삭제
+            s3_url = f"https://remeet.s3.ap-northeast-2.amazonaws.com/{folder_key + new_path}"
     answer = "안녕하세요! 저는 인공지능 기술의 발전에 대해 이야기하고 싶어요. 우리는 지금 인공지능이 우리 일상 속에 깊숙이 들어와 있다는 것을 실감하고 있죠. 예를 들어, 스마트폰에서 음성 인식 기능을 사용하거나, 온라인 쇼핑을 할 때 개인 맞춤형 추천을 받는 것 모두 인공지능 덕분입니다."
     videoPath = videoMaker(answer, voice, avatar, is_admin)
     response = requests.get(videoPath)
+    new_path = find_index(folder_key, 'mp4')
     with tempfile.NamedTemporaryFile(delete=False, suffix=".mp4") as temp_video:
         temp_video.write(response.content)
         temp_video_path = temp_video.name
-        holoUrl2 = process_video(temp_video_path, userNo, modelNo, "holo_moving.mp4")
+        with open(temp_video_path, "rb") as file:
+            s3_client.upload_fileobj(file, BUCKET_NAME, folder_key + new_path)
+            os.remove(new_path)  # 임시 파일 삭제
+            s3_url2 = f"https://remeet.s3.ap-northeast-2.amazonaws.com/{folder_key + new_path}"
     return (
         jsonify(
             {
-                "commonHoloPath": holoUrl,
-                "movingHoloPath": holoUrl2,
+                "commonVideoPath": s3_url,
+                "movingVideoPath": s3_url2,
             }
         ),
         200,
@@ -673,39 +682,45 @@ def make_conversation_video():
     model_name = request.json.get("modelName")
     conversation_text = request.json.get("conversationText")
     answer = gpt_answer(model_name, conversation_text, input_text)
-    ele_voice_id = request.json.get("eleVoiceId")
     user_no = request.json.get("userNo")
     model_no = request.json.get("modelNo")
     conversation_no = request.json.get("conversationNo")
-    url = request.json.get("movingHoloPath")
-    voice_tts = make_tts(ele_voice_id, answer, user_no, model_no, conversation_no)
     folder_key = f"ASSET/{user_no}/{model_no}/{conversation_no}/"
-    post_url = "http://merge-flask:5001/api/v1/mergeVideo"
-    new_path = find_index(folder_key, "mp4")
-    json_data = {
-        "url" : url,
-        "voicetts" : voice_tts,
-        "folderKey" : folder_key,
-        "newPath" : new_path
-    }
-    s3_url = requests.post(post_url, json=json_data)
-    data = s3_url.json()  # JSON 데이터 추출
-    app.logger.info(data)
-    # with tempfile.TemporaryDirectory() as temp_dir:
-    #     video_url = url.split("ASSET")[1]
-    #     video_file_path = os.path.join(temp_dir, video_url.split("/")[-1])
-    #     s3_client.download_file(BUCKET_NAME, "ASSET" + video_url, video_file_path)
-    #     voice_url = voice_tts.split("ASSET")[1]
-    #     voice_file_path = os.path.join(temp_dir, voice_url.split("/")[-1])
-    #     s3_client.download_file(BUCKET_NAME, "ASSET" + voice_url, voice_file_path)
-    #     new_path = find_index(folder_key, "mp4")
-    #     make_path = os.path.join(temp_dir, new_path)
-    #     merge_video_audio(video_file_path, voice_file_path, make_path)
-    #     with open(make_path, "rb") as file:
-    #         s3_client.upload_fileobj(file, BUCKET_NAME, folder_key + new_path)
-    # s3_url = f"https://remeet.s3.ap-northeast-2.amazonaws.com/{folder_key + new_path}"
-    return jsonify({"answer": answer, "url": data['url']}), 200
-        
+    
+    # 1번 립싱크 병합
+    # ele_voice_id = request.json.get("eleVoiceId")
+    # url = request.json.get("movingVideoPath")
+    # voice_tts = make_tts(ele_voice_id, answer, user_no, model_no, conversation_no)
+    # post_url = "http://merge-flask:5001/api/v1/mergeVideo"
+    # new_path = find_index(folder_key, "mp4")
+    # json_data = {
+    #     "url" : url,
+    #     "voicetts" : voice_tts,
+    #     "folderKey" : folder_key,
+    #     "newPath" : new_path
+    # }
+    # s3_url = requests.post(post_url, json=json_data)
+    # data = s3_url.json()  # JSON 데이터 추출
+    # app.logger.info(data)
+    # return jsonify({"answer": answer, "url": data['url']}), 200
+    
+    # 2번 새로 만들기
+    voice = request.json.get('heyVoiceId')
+    admin = request.json.get('admin')
+    avatar = request.json.get('avatarId')
+    app.logger.info("HEYGEN API ATTEMPT")
+    videoPath = videoMaker(answer, voice, avatar, False)
+    response = requests.get(videoPath)
+    new_path = find_index(folder_key, 'mp4')
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".mp4") as temp_video:
+        temp_video.write(response.content)
+        temp_video_path = temp_video.name
+        with open(temp_video_path, "rb") as file:
+            s3_client.upload_fileobj(file, BUCKET_NAME, folder_key + new_path)
+            os.remove(new_path)  # 임시 파일 삭제
+            s3_url = f"https://remeet.s3.ap-northeast-2.amazonaws.com/{folder_key + new_path}"
+    return jsonify({'answer': answer, 'URL' : s3_url})
+
 
 
 # voice 기반 대화 생성 API
