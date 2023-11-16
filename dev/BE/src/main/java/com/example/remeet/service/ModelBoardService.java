@@ -279,8 +279,8 @@ public class ModelBoardService {
         getConversation.setHeyVoiceId(getModel.getHeyVoiceId());
         Boolean admin = userService.checkAdmin(needUpdateModelDto.getUserNo());
         CommonVideoDto createCommon = flaskService.callFlaskCommonVideo(getConversation,needUpdateModelDto.getUserNo(), admin);
-        getModel.setCommonHoloPath(createCommon.getCommonHoloPath());
-        getModel.setMovingHoloPath(createCommon.getMovingHoloPath());
+        getModel.setCommonVideoPath(createCommon.getCommonVideoPath());
+        getModel.setMovingVideoPath(createCommon.getMovingVideoPath());
         modelBoardRepository.save(getModel);
         return createCommon;
     }
