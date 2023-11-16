@@ -3,7 +3,7 @@ import { TalkInformation } from '@/types/board';
 import { VideoInformation } from '@/types/upload';
 
 const Wrapper = styled.div`
-  width: 90vw;
+  width: 93vw;
   margin: 1.5rem auto;
 `;
 
@@ -28,6 +28,7 @@ const Item = styled.div<{ $imagePath: string }>`
   background-size: contain;
   background-position: center;
   background-repeat: no-repeat;
+  margin-bottom: 1rem;
 `;
 
 interface RecentVideosProps {
