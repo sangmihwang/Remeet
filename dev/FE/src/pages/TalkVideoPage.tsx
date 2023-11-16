@@ -25,11 +25,12 @@ const TitleWrapper = styled.div`
   height: 45vh;
 `;
 
-const VideoWrapper = styled.div`
+const VideoWrapper = styled.div<{ $reverse: boolean }>`
   margin: 0 auto;
   width: 86vw;
   height: 12.5rem;
   background-color: #fff;
+  transform: rotate(${(props) => (props.$reverse ? '180deg' : '0deg')});
 `;
 
 const ContentWrpper = styled.div`
@@ -59,6 +60,7 @@ const TalkVideoPage = () => {
     () => getPeopleInfo(Number(modelNo)),
   );
   const [conversationNo, setConversationNo] = useState<number>(0);
+  const [reverseVideo, setReverseVideo] = useState<boolean>(false);
   const defaultVideoSrc = modelInfomation?.commonVideoPath;
 
   const [videoSrc, setVideoSrc] = useState<string | undefined>(defaultVideoSrc);
@@ -169,12 +171,15 @@ const TalkVideoPage = () => {
   const handleCloseTalkHistory = () => {
     setIsOpentalkHistoryModal(false);
   };
+  const handleReverseVideo = () => {
+    setReverseVideo(!reverseVideo);
+  };
 
   return (
     <Wrapper>
       <TitleWrapper>
         <PageHeader content={headerContent} type={2} />
-        <VideoWrapper>
+        <VideoWrapper $reverse={reverseVideo}>
           {videoSrc && (
             <ReactPlayer
               url={[{ src: videoSrc, type: 'video/mp4' }]}
@@ -194,6 +199,7 @@ const TalkVideoPage = () => {
         </VideoWrapper>
       </TitleWrapper>
       <ContentWrpper>
+        <button onClick={handleReverseVideo}>비디오 반전</button>
         <Dictaphone
           setVideoSrc={setVideoSrc}
           pushHistory={pushHistory}
