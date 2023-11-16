@@ -24,9 +24,6 @@ spring:
     password: remeetremeet706
     hikari:
       maximum-pool-size: 20
-  #    url: ${DATABASE_URL}
-  #    username: ${DATABASE_ID}
-  #    password: ${DATABASE_PASSWORD}
   jpa:
     database: mysql
     hibernate:

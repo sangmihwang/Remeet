@@ -4,13 +4,13 @@ import { VideoInformation } from '@/types/upload';
 
 const Wrapper = styled.div`
   width: 90vw;
-  margin: 1rem auto;
+  margin: 1.5rem auto;
 `;
 
 const Text = styled.div`
   margin-bottom: 1rem;
-  font-size: 1.5rem;
-  font-weight: 500;
+  font-size: 1.2rem;
+  font-weight: 600;
 `;
 
 const ItemWrapper = styled.div`

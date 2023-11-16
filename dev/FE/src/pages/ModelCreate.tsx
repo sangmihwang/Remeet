@@ -219,7 +219,7 @@ const ModelCreate = () => {
           rightButtonClick={!isSaving ? handleSaveClick : handleOpenSavingSwal}
         />
         <ImageWrapper>
-          <Image src={imageFile ? imageFile.url : '/dummy/갱얼쥐.jpg'} />
+          <Image src={imageFile ? imageFile.url : '/dummy/Vector.png'} />
         </ImageWrapper>
       </TitleWrapper>
       <Title>

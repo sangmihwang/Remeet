@@ -79,13 +79,17 @@ const BoardItem = ({
     e.stopPropagation();
     if (eleVoiceId && heyVoiceId) {
       MySwal.fire({
-        title: '대화 종류를 선택해 주세요.',
+        title: '대화 종류를 선택해주세요.',
         icon: 'question',
+        customClass: {
+          title: 'swal2-title-custom',
+        },
         showConfirmButton: true,
         showDenyButton: true,
         showCancelButton: true,
-        confirmButtonText: '음성 대화',
-        denyButtonText: '영상 대화',
+        confirmButtonText: '음성',
+        denyButtonText: '영상',
+        cancelButtonText: `취소`,
       })
         .then((result) => {
           if (result.isConfirmed) {

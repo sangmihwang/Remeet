@@ -1,27 +1,19 @@
 package com.example.remeet.service;
 
 import com.example.remeet.dto.*;
-import com.example.remeet.entity.ModelBoardEntity;
-import com.example.remeet.entity.UploadedVideoEntity;
-import com.example.remeet.entity.UploadedVoiceEntity;
-import com.example.remeet.entity.UserEntity;
-import com.example.remeet.repository.ModelBoardRepository;
-import com.example.remeet.repository.UploadedVideoRepository;
-import com.example.remeet.repository.UploadedVoiceRepository;
-import com.example.remeet.repository.UserRepository;
+import com.example.remeet.entity.*;
+import com.example.remeet.repository.*;
 import lombok.RequiredArgsConstructor;
-import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.persistence.EntityNotFoundException;
+import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -31,14 +23,15 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class ModelBoardService {
-
-    private final String FLASK_API_UPROAD = "http://localhost:5000/api/v1/upload/files";
-    private final String FLASK_API_AVATAR = "http://localhost:5000/api/v1/createAvatarID";
     private final FlaskService flaskService;
     private final ModelBoardRepository modelBoardRepository;
     private final UserRepository userRepository;
     private final UploadedVoiceRepository uploadedVoiceRepository;
     private final UploadedVideoRepository uploadedVideoRepository;
+    private final ProducedVideoRepository producedVideoRepository;
+    private final ProducedVoiceRepository producedVoiceRepository;
+
+
     @Transactional(readOnly = true)
     public List<String> getVideoPathsByModelNo(Integer modelNo) {
         ModelBoardEntity modelBoardEntity = modelBoardRepository.findById(modelNo)
@@ -47,48 +40,6 @@ public class ModelBoardService {
         return uploadedVideoRepository.findByModelNo(modelBoardEntity).stream()
                 .map(UploadedVideoEntity::getVideoPath)
                 .collect(Collectors.toList());
-    }
-
-    @Transactional(readOnly = true)
-    public List<String> getVoicePathsByModelNo(Integer modelNo) {
-        ModelBoardEntity modelEntity = modelBoardRepository.findById(modelNo)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 모델입니다"));
-
-        return uploadedVoiceRepository.findByModelNo(modelEntity).stream()
-                .map(UploadedVoiceEntity::getVoicePath)
-                .collect(Collectors.toList());
-    }
-
-    public List<String> uploadFilesToFlask(List<MultipartFile> Files, Integer userNo, Integer modelNo, String type) throws IOException {
-        RestTemplate restTemplate = new RestTemplate();
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.MULTIPART_FORM_DATA);
-
-        MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-
-        for (MultipartFile file : Files) {
-            body.add("files", new ByteArrayResource(file.getBytes()){
-                @Override
-                public String getFilename(){
-                    return file.getOriginalFilename();
-                }
-            });
-        }
-        body.add("userNo", userNo.toString());
-        body.add("modelNo", modelNo.toString());
-        body.add("type", type);
-
-        HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
-        ResponseEntity<FileUploadDto> response = restTemplate.exchange(
-                FLASK_API_UPROAD,
-                HttpMethod.POST,
-                requestEntity,
-                FileUploadDto.class
-        );
-        List<String> FileList = response.getBody().getFileList();
-
-        return FileList;
     }
 
     @Transactional
@@ -110,13 +61,13 @@ public class ModelBoardService {
         modelBoardRepository.save(modelBoardEntity);
 
         Integer modelNo = modelBoardEntity.getModelNo();
-        List<String> uploadedImagePaths = uploadFilesToFlask(imageFiles, userNo, modelNo, "image");
-        List<String> uploadedVoicePaths = uploadFilesToFlask(voiceFiles, userNo, modelNo, "voice");
-        List<String> uploadedVideoPaths = uploadFilesToFlask(videoFiles, userNo, modelNo, "video");
+        List<String> uploadedImagePaths = flaskService.uploadFilesToFlask(imageFiles, userNo, modelNo, "image");
+        List<String> uploadedVoicePaths = flaskService.uploadFilesToFlask(voiceFiles, userNo, modelNo, "voice");
+        List<String> uploadedVideoPaths = flaskService.uploadFilesToFlask(videoFiles, userNo, modelNo, "video");
 
         for (MultipartFile imageFile : imageFiles) {
             for (String imagePath : uploadedImagePaths){
-                String avatar = flaskService.callFlaskByMultipartFile(imageFile, "avatar");
+                String avatar = flaskService.callFlaskByMultipartFile(imageFile, "avatar").getResult();
                 ModelBoardEntity resetModel = modelBoardRepository.findByModelNo(modelNo).get();
                 resetModel.setImagePath(imagePath);
                 resetModel.setAvatarId(avatar);
@@ -144,21 +95,68 @@ public class ModelBoardService {
     }
 
     @Transactional(readOnly = true)
+    public String createVoiceModel(Integer modelNo) throws IOException {
+        ModelBoardEntity modelEntity = modelBoardRepository.findById(modelNo)
+                .orElseThrow(() -> new IllegalArgumentException("모델 번호에 해당하는 모델이 존재하지 않습니다."));
+
+        List<UploadedVoiceEntity> uploadedVoices = uploadedVoiceRepository.findByModelNo(modelEntity);
+
+        // 음성 파일이 없는 경우 예외 처리
+        if (uploadedVoices.isEmpty()) {
+            throw new IllegalArgumentException("음성 파일이 존재하지 않습니다.");
+        }
+
+        // ModelBoardEntity 가져오기 (모델 이름과 성별 정보에 사용)
+        ModelBoardEntity modelBoardEntity = modelBoardRepository.findById(modelNo)
+                .orElseThrow(() -> new IllegalArgumentException("모델이 존재하지 않습니다."));
+
+        // Flask 서버로 전송할 파일 리스트 생성
+        List<FileSystemResource> fileResources = uploadedVoices.stream()
+                .map(voice -> new FileSystemResource(new File(voice.getVoicePath())))
+                .collect(Collectors.toList());
+
+        String voiceId = flaskService.makeVoice(modelBoardEntity, fileResources);
+
+        if (voiceId != null && !voiceId.isEmpty()) {
+            // Update the ModelBoardEntity with the new voice ID
+            modelEntity.setEleVoiceId(voiceId); // Assuming 'eleVoiceId' is the correct field to update
+            modelBoardRepository.save(modelEntity);
+        }
+
+        return voiceId;
+    }
+
+    @Transactional(readOnly = true)
     public Optional<ModelBoardDetailDto> getModelBoardDetailById(Integer modelNo) {
         return modelBoardRepository.findById(modelNo)
-                .map(entity -> new ModelBoardDetailDto(
-                        entity.getModelNo(),
-                        entity.getModelName(),
-                        entity.getImagePath(),
-                        entity.getAvatarId(),
-                        entity.getVoiceId(),
-                        entity.getGender(),
-                        entity.getCommonVideoPath(),
-                        entity.getConversationText(),
-                        entity.getConversationCount(),
-                        entity.getLatestConversationTime()
-                ));
+                .map(entity -> {
+                    List<UploadedVideoDto> videoList = uploadedVideoRepository.findByModelNo(entity).stream()
+                            .map(videoEntity -> new UploadedVideoDto(videoEntity.getVideoNo(), videoEntity.getVideoPath()))
+                            .collect(Collectors.toList());
+
+                    List<UploadedVoiceDto> voiceList = uploadedVoiceRepository.findByModelNo(entity).stream()
+                            .map(voiceEntity -> new UploadedVoiceDto(voiceEntity.getVoiceNo(), voiceEntity.getVoicePath()))
+                            .collect(Collectors.toList());
+
+                    return new ModelBoardDetailDto(
+                            entity.getModelNo(),
+                            entity.getModelName(),
+                            entity.getImagePath(),
+                            entity.getAvatarId(),
+                            entity.getEleVoiceId(),
+                            entity.getHeyVoiceId(),
+                            entity.getGender(),
+                            entity.getCommonVideoPath(),
+                            transformValue(entity.getConversationText()),
+                            entity.getConversationText(),
+                            entity.getConversationCount(),
+                            entity.getLatestConversationTime(),
+                            videoList,
+                            voiceList
+                    );
+                });
     }
+
 
     public String formatChat(String conversationText, String kakaoName) {
         StringBuilder formattedText = new StringBuilder();
@@ -194,6 +192,19 @@ public class ModelBoardService {
         }
         return null;
     }
+
+    public List<Map<String, String>> transformValue(String conversationText) {
+        List<Map<String, String>> result = new ArrayList<>();
+        String[] lines = conversationText.split("\n");
+        for (String line : lines) {
+            String[] words = line.split(":");
+            Map<String, String> map = new HashMap<>();
+            map.put(words[0], words[1]);
+            result.add(map);
+        }
+        return result;
+    }
+
     public List<ModelBoardDto> findByOption(String option, Integer userNo) {
         switch (option) {
             case "all":
@@ -210,6 +221,41 @@ public class ModelBoardService {
     @Transactional
     public void deleteModelBoard(Integer modelNo) {
         modelBoardRepository.deleteById(modelNo);
+    }
+
+    public List<NeedUpdateModelDto> getNeedUpdateList() {
+        List<NeedUpdateModelDto> getList = modelBoardRepository.findByNeedUpdate();
+        return getList;
+    }
+
+    public void updateHeyVoiceId(NeedUpdateModelDto needUpdateModelDto) throws IOException{
+        ModelBoardEntity getModel = modelBoardRepository.findByModelNo(needUpdateModelDto.getModelNo()).get();
+        String heyVoiceId = flaskService.callFlaskByMultipartFile(null, needUpdateModelDto.getModelName()).getResult();
+        getModel.setHeyVoiceId(heyVoiceId);
+        modelBoardRepository.save(getModel);
+    }
+
+    public Integer makeConversation(Integer modelNo, String type) {
+        ModelBoardEntity model = modelBoardRepository.findById(modelNo)
+                .orElseThrow(() -> new EntityNotFoundException("모델 정보가 없습니다."));
+
+        model.setLatestConversationTime(LocalDateTime.now());
+        model.setConversationCount(model.getConversationCount() + 1);
+        modelBoardRepository.save(model);
+
+        if (type.equals("video")) {
+            ProducedVideoEntity newConversation = ProducedVideoEntity.builder()
+                    .modelNo(modelBoardRepository.findByModelNo(modelNo).get())
+                    .build();
+            producedVideoRepository.save(newConversation);
+            return newConversation.getProVideoNo();
+        } else {
+            ProducedVoiceEntity newConversation = ProducedVoiceEntity.builder()
+                    .modelNo(modelBoardRepository.findByModelNo(modelNo).get())
+                    .build();
+            producedVoiceRepository.save(newConversation);
+            return newConversation.getProVoiceNo();
+        }
     }
 }
 

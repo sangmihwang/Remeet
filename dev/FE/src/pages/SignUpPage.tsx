@@ -230,7 +230,7 @@ const SignUpPage = () => {
 
       {imageFile && <ImageWrapper $imagePath={imageFile.url} />}
 
-      <LargeButton onClick={handleSingUpClick} content="회 원 가 입" />
+      <LargeButton onClick={handleSingUpClick} content="회원가입" />
     </>
   );
 };

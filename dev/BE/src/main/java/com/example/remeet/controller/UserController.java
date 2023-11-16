@@ -14,7 +14,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import java.util.List;
 
 @CrossOrigin(value = "*", allowedHeaders = "*")
 @RequiredArgsConstructor
@@ -27,19 +26,21 @@ public class UserController {
 
     @GetMapping
     public ResponseEntity userInfo(HttpServletRequest request) {
+        log.info("request to /api/v1/user [Method: GET]");
         Integer userNo = (Integer)request.getAttribute("userNo");
         UserInfoDto userInfoDto = userService.getUserInfoById(userService.getUserId(userNo));
-//            userInfoDto.setTokenResponse(tokenResponseDto);
         return ResponseEntity.ok(userInfoDto);
     }
 
     @GetMapping("check-id")
     public ResponseEntity userCheckId(@RequestParam String userId) {
+        log.info("request to /api/v1/user/chek-id [Method: GET]");
         // 아이디가 있는지 여부 파악
         boolean exists = userService.isUserIdExist(userId);
         if (!exists) {
             return ResponseEntity.ok().build();
         } else {
+            log.info("이미 존재하는 ID : "+userId);
             return ResponseEntity.status(403).build();
         }
     }
@@ -50,6 +51,7 @@ public class UserController {
                                  @RequestParam("userName") String userName,
                                  @RequestParam(value = "imagePath", required = false) MultipartFile imagePath,
                                  @RequestParam("userEmail") String userEmail) throws IOException {
+        log.info("request to /api/v1/user/signup [Method: POST]");
         // 아이디가 있는지 여부 파악
         boolean exists = userService.isUserIdExist(userId);
         if (!exists) {
@@ -57,12 +59,14 @@ public class UserController {
             userService.signUp(userId,password,userName,imagePath,userEmail);
             return ResponseEntity.ok().build();
         } else {
+            log.info("이미 존재하는 ID : "+userId);
             return ResponseEntity.status(400).build();
         }
     }
 
     @DeleteMapping
     public ResponseEntity deleteId(HttpServletRequest request){
+        log.info("request to /api/v1/user [Method: DELETE]");
         Integer userNo = (Integer)request.getAttribute("userNo");
         userService.deleteId(userNo);
         return ResponseEntity.ok().build();
@@ -70,6 +74,7 @@ public class UserController {
 
     @PostMapping("login")
     public ResponseEntity<UserInfoDto> logIn(@RequestBody UserLoginDto userLoginData) {
+        log.info("request to /api/v1/user/login [Method: POST]");
         // 로그인 가능한 정보인지 확인
         if (userService.checkLoginData(userLoginData)) {
             TokenResponseDto tokenResponseDto = userService.getTokenResponse(userLoginData);
@@ -77,14 +82,16 @@ public class UserController {
             userInfoDto.setTokenResponse(tokenResponseDto);
             return ResponseEntity.ok(userInfoDto);
         } else {
+            log.info("존재하지 않는 로그인 정보");
             return  ResponseEntity.status(400).build();
         }
     }
 
     @GetMapping("logout")
     public ResponseEntity logOut(HttpServletRequest request) {
+        log.info("request to /api/v1/user/logout [Method: GET]");
         Integer userNo = (Integer)request.getAttribute("userNo");
-//        userService.deleteRefreshToken(userNo);
+        userService.deleteRefreshToken(userNo);
         return ResponseEntity.ok().build();
     }
 

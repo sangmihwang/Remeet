@@ -1,16 +1,22 @@
 package com.example.remeet.controller;
 
-import com.example.remeet.dto.STTResponseDto;
+import com.example.remeet.dto.ConversationDataDto;
+import com.example.remeet.dto.ConversationResponseDto;
+import com.example.remeet.dto.FlaskResponseDto;
+
 import com.example.remeet.service.FlaskService;
-import com.example.remeet.service.GPTService;
-import com.example.remeet.service.TTSService;
+import com.example.remeet.service.ModelBoardService;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 @CrossOrigin(value = "*", allowedHeaders = "*")
 @RequiredArgsConstructor
@@ -18,16 +24,38 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 @Slf4j
 public class TalkingController {
-    private final GPTService gptService;
-    private final TTSService ttsService;
     private final FlaskService flaskService;
+    private final ModelBoardService modelBoardService;
 
-    @PostMapping("stt/{voiceId}")
-    public ResponseEntity<STTResponseDto> upload(@RequestPart(value = "file") MultipartFile multipartFile, @PathVariable("voiceId") String voiceId) throws Exception {
-        String wavPath = flaskService.callFlaskByMultipartFile(multipartFile, "stt");
-        String answer = gptService.callFlaskApi(wavPath).getText();
-        STTResponseDto audioPath = ttsService.callFlaskApi(answer, voiceId);
-        return new ResponseEntity<STTResponseDto>(audioPath, HttpStatus.OK);
+    @PostMapping("{modelNo}")
+    public ResponseEntity<Map<String, Integer>> makeConversation(@PathVariable("modelNo") Integer modelNo, @RequestBody String type) {
+        Integer conNo = modelBoardService.makeConversation(modelNo, type);
+        Map<String, Integer> conversationNo = new HashMap<>();
+        conversationNo.put("conversationNo", conNo);
+        return ResponseEntity.ok(conversationNo);
     }
 
+
+    @PostMapping("transcribe")
+    public ResponseEntity<FlaskResponseDto> transcribeFile(@RequestParam("file") MultipartFile file) throws IOException {
+        log.info("request to /api/v1/talking/transcribe [Method: POST]");
+        FlaskResponseDto transcriptionResult = flaskService.callFlaskByMultipartFile(file, "stt");
+        return ResponseEntity.ok(transcriptionResult);
+    }
+
+    @PostMapping("conversation/voice")
+    public ResponseEntity<ConversationResponseDto> conversationVoice(HttpServletRequest request, @RequestBody ConversationDataDto conversationDataDto) throws JsonProcessingException {
+        log.info("request to /api/v1/talking/conversation/voice [Method: POST]");
+        Integer userNo = (Integer)request.getAttribute("userNo");
+        ConversationResponseDto answer = flaskService.callFlaskConversation(conversationDataDto, userNo, "voice");
+        return ResponseEntity.ok(answer);
+    }
+
+    @PostMapping("conversation/video")
+    public ResponseEntity<ConversationResponseDto> conversationVideo(HttpServletRequest request, @RequestBody ConversationDataDto conversationDataDto) throws JsonProcessingException {
+        log.info("request to /api/v1/talking/conversation/video [Method: POST]");
+        Integer userNo = (Integer)request.getAttribute("userNo");
+        ConversationResponseDto answer = flaskService.callFlaskConversation(conversationDataDto, userNo, "video");
+        return ResponseEntity.ok(answer);
+    }
 }
