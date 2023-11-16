@@ -724,7 +724,7 @@ def make_conversation_video():
             s3_client.upload_fileobj(file, BUCKET_NAME, folder_key + new_path)
             os.remove(temp_video_path)  # 임시 파일 삭제
             s3_url = f"https://remeet.s3.ap-northeast-2.amazonaws.com/{folder_key + new_path}"
-    return jsonify({'answer': answer, 'URL' : s3_url})
+    return jsonify({'answer': answer, 'url' : s3_url})
 
 
 
