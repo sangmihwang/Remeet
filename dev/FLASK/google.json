@@ -1,0 +1,13 @@
+{
+    "type": "service_account",
+    "project_id": "ace-connection-405000",
+    "private_key_id": "79dff17451108a5f9760fa29727d3cf589aeab4d",
+    "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDPLq9ZEenjfLu/\nnwtkgqUG+pRjPpHBaPl+XMWXKyeuOhfP1CWxF0ICkvIRkfMIbXvT4VJ53++Fxsow\nC8ZtZGh4bis0co1DB7jPADxvAsUHRgj4w0U+50dNcvt6XpwoEu8l5a5/L+E2NqsN\nxdXtVMDOA/qUkZcMSejBtqihUmJvj3HqMd5KhuIy8KsqVnNQSKWNIygoc1vkIY8j\nPjFif2HNqj/zlmt1B/QJuDTFkR/lkbt0wD2DnMrbjTrjCIQvVk/JkxGGhmHrR1IT\ngJ8iTKdH8WXU1FZvgR/HcvouitguYxlmu5r9qLoRAg0GRevAeoSwQMYH5IgKJf/5\nNZ+ZEseDAgMBAAECggEADeL8FGhe3zh6YLImC9ZPF5dbgDlus8i3xfBgiBNEhU+J\nTnNSrjq386WdlwlLmzPnbScfPy8ABkOLd5cnQihmpJsE+ohEQqSb9QTEu2lNA05+\nhg0xZEsRNhyjKxHeip5JeQznjZVye9uqZHGig9YlJDBGryDN2VODR9sL4eA8dWvh\n+UcQ/+NjintZEC69eF36bmIyRXntYgOS3jDnyCx3eAqNlsu7d8HyOFC62whaeDrO\nPtgHFcrSQY4nBsSeJZHxy3YWlhbkJ2Fv7Qiyl+ah34y1A0DQXupTTVcMA8BpTdjf\nuOUNlMuBZjhLNF3ZmstywYXZjzddFdC00WySLMymvQKBgQDo+8PNTiJxBf+lAFAx\nWu3zeZt0+HIAWfzvb82/SGc4RSqmq9vXzcGKXw1IEiDSE7j+WiF0NijEb89eMkTJ\nx61QN18YFRSgyaEGUo1kZEsAuKEc0GivnCt/s8qDElqMV8G7YojqQqy7UBWIUJ8p\n8UdIq2A+moB4bEgtr4wrXmwE7QKBgQDjpma1BOzM6diaTmzNKvk4FYiDPNCjnbcs\nCaJ8NueJuix67Qda4Qu0TOUHrKYSVHq2rcZp/iLDuPRQEDFrSWcHczSnSgsnD+v6\nqS1L7Dy/HRVDUGoEulzDbjhSlMtlOhh2DuBGN8JpFM33phT/lP0MyrV9yj6ia+Sm\nVRLQ11lgLwKBgDbHY001TtHGOEpiXXiNSZ9Se2OwOpWsktT1M6oC6woG8TVI+SKv\nZQ8UtDm60W6zZm6fYHhDd6hgJaCfLx9GTJCsxDYUVspLPgoPhOES17OutWrh8YtA\nq9WVv0q8GQAgbhOR4mE6FgTgmn93fUTOTxVd/f4aM5Sc2Qes28cip0EtAoGAEgZJ\n2YlTSoI1cTpGaRQ++U7TKTj2eA3zw9vbbqRWPtRr0yvTSkHJUHRKKgpkd80SjkZC\nEIBbtk19op01nH4KV0+q2pgFPAmJsKYWfQ1uXd9qoJLMYiVzVNH0Sa2YUSKBb0+M\nOGMP1IweJr6SqQ3d31ZpelU6ElgimXzg6YIzhGcCgYEAj1JGo36Q2GRJnCIuXDt6\nJolxUnhach32D/+DTCXNdYAV4e6dyZNjEaucbNWnj7pFUk2eBCbCDlOb+ri75Bpf\nTiRpc4iTRKFeen9hE5WuLyGz5svETNWbJzY7EKHiSQxJOlXHVaPs8sHKMR6robBN\nn6Y3O3K/s/PzvBhRH0x7K3U=\n-----END PRIVATE KEY-----\n",
+    "client_email": "remeet@ace-connection-405000.iam.gserviceaccount.com",
+    "client_id": "102272271124181638733",
+    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+    "token_uri": "https://oauth2.googleapis.com/token",
+    "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+    "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/remeet%40ace-connection-405000.iam.gserviceaccount.com",
+    "universe_domain": "googleapis.com"
+}

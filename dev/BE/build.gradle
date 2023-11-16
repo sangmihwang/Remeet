@@ -19,20 +19,41 @@ configurations {
 
 repositories {
     mavenCentral()
+
 }
 
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-web-services'
     compileOnly 'org.projectlombok:lombok'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
-    // runtimeOnly 'com.mysql:mysql-connector-j'
-    implementation 'com.h2database:h2'
+    runtimeOnly 'com.mysql:mysql-connector-j'
     annotationProcessor 'org.projectlombok:lombok'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testImplementation 'org.springframework.security:spring-security-test'
+    implementation group: 'org.mindrot', name: 'jbcrypt', version: '0.3m'
+//    implementation 'org.springframework.boot:spring-boot-starter-security'
+//    testImplementation 'org.springframework.security:spring-security-test'
+    implementation group: 'io.jsonwebtoken', name: 'jjwt-api', version: '0.11.2'
+    runtimeOnly group: 'io.jsonwebtoken', name: 'jjwt-impl', version: '0.11.2'
+    runtimeOnly group: 'io.jsonwebtoken', name: 'jjwt-jackson', version: '0.11.2'
+    implementation 'software.amazon.awssdk:transcribestreaming:2.17.89'
+    implementation 'software.amazon.awssdk:core:2.17.89'
+    implementation 'software.amazon.awssdk:netty-nio-client:2.17.89'
+    implementation 'org.json:json:20210307'
+    implementation 'commons-io:commons-io:2.11.0'
+
+
+    // Reactive Streams API 의존성
+    implementation 'org.reactivestreams:reactive-streams:1.0.3'
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'
+    implementation 'io.projectreactor:reactor-core:3.4.10' // 예시 버전입니다. 최신 버전을 확인하세요.
+
+    // 추가로 필요한 경우, Netty NIO 클라이언트를 위한 의존성도 포함해야 합니다.
+    implementation 'software.amazon.awssdk:netty-nio-client'
+
 }
 
 tasks.named('test') {
