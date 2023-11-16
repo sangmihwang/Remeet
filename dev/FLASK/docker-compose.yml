@@ -6,11 +6,6 @@ services:
       context: .
       dockerfile: Dockerfile.conversation
 
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5000"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
     image: my-flask-conversation-app
 
     env_file:
@@ -39,7 +34,6 @@ services:
       - /etc/nginx/nginx2.conf:/etc/nginx/nginx.conf
     depends_on:
       flask-app:
-        condition: service_healthy
 
     networks:
       - app-network
