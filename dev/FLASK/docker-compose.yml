@@ -18,7 +18,7 @@ services:
   merge-flask:
     build:
       context: .
-      dockerfile: Dockerfile.merge-flask
+      dockerfile: Dockerfile.mergeflask
     image: my-merge-flask-app
     container_name: my-merge-flask-container
     env_file:
