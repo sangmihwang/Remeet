@@ -689,7 +689,7 @@ def make_conversation_video():
     
     # 1번 립싱크 병합
     # ele_voice_id = request.json.get("eleVoiceId")
-    # url = request.json.get("movingVideoPath")
+    # url = request.json.get("commonVideoPath")
     # voice_tts = make_tts(ele_voice_id, answer, user_no, model_no, conversation_no)
     # post_url = "http://merge-flask:5001/api/v1/mergeVideo"
     # new_path = find_index(folder_key, "mp4")
@@ -709,7 +709,9 @@ def make_conversation_video():
     admin = request.json.get('admin')
     avatar = request.json.get('avatarId')
     app.logger.info("HEYGEN API ATTEMPT")
-    videoPath = videoMaker(answer, voice, avatar, False)
+    app.logger.info(voice)
+    app.logger.info(avatar)
+    videoPath = videoMaker(answer, voice, avatar, True)
     response = requests.get(videoPath)
     new_path = find_index(folder_key, 'mp4')
     with tempfile.NamedTemporaryFile(delete=False, suffix=".mp4") as temp_video:
