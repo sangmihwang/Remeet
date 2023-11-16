@@ -704,7 +704,7 @@ def make_conversation_video():
     #     with open(make_path, "rb") as file:
     #         s3_client.upload_fileobj(file, BUCKET_NAME, folder_key + new_path)
     # s3_url = f"https://remeet.s3.ap-northeast-2.amazonaws.com/{folder_key + new_path}"
-    return jsonify({"answer": answer, "url": data.url}), 200
+    return jsonify({"answer": answer, "url": data['url']}), 200
         
 
 
