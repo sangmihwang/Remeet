@@ -78,7 +78,7 @@ const LoginPage = () => {
         value={loginForm.password}
         onChange={handlePasswordChange}
       />
-      <LargeButton onClick={handleLoginClick} content="로 그 인" />
+      <LargeButton onClick={handleLoginClick} content="로그인" />
     </>
   );
 };

@@ -133,6 +133,7 @@ const ModelProducing = () => {
     }
   };
   const [progress, setProgress] = useState(0);
+  const [isProducing, setIsProducing] = useState(true);
   useEffect(() => {
     if (modelInfomation && !modelInfomation.eleVoiceId) {
       makeVoiceId(Number(modelNo))
@@ -154,6 +155,7 @@ const ModelProducing = () => {
       setProgress((oldProgress) => {
         if (oldProgress === 100) {
           clearInterval(interval);
+          setIsProducing(false);
           return 100;
         }
         return oldProgress + 1;
@@ -181,24 +183,27 @@ const ModelProducing = () => {
       <ImageWrapper>
         <Image
           src={
-            modelInfomation ? modelInfomation.imagePath : '/dummy/갱얼쥐.jpg'
+            modelInfomation ? modelInfomation.imagePath : '/dummy/Vector.png'
           }
         />
       </ImageWrapper>
       <Title>{modelInfomation && modelInfomation.modelName}</Title>
-      <ButtonWrapper>
-        <SmallButton
-          type={1}
-          text="보이스톡"
-          onClick={() => handleTalkStart(1)}
-        />
-        <SmallButton
-          type={1}
-          text="페이스톡"
-          onClick={() => handleTalkStart(2)}
-        />
-      </ButtonWrapper>
-      <ProducingAlert>모델을 제작 중입니다</ProducingAlert>
+      {isProducing ? (
+        <ProducingAlert>모델을 제작 중입니다</ProducingAlert>
+      ) : (
+        <ButtonWrapper>
+          <SmallButton
+            type={1}
+            text="보이스톡"
+            onClick={() => handleTalkStart(1)}
+          />
+          <SmallButton
+            type={1}
+            text="페이스톡"
+            onClick={() => handleTalkStart(2)}
+          />
+        </ButtonWrapper>
+      )}
       <BottomNavigation />
     </div>
   );

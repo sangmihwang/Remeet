@@ -5,10 +5,13 @@ const NaviButtonWrapper = styled(NavLink)<{ $src: string }>`
   width: 3.2rem;
   height: 4rem;
   .navigationIcon {
-    background-image: url(${(props) => `${props.$src}.svg`});
+    background-image: url(${(props) => `${props.$src}_onclick.svg`});
+    transition: transform 0.3s ease;
   }
   &.active .navigationIcon {
     background-image: url(${(props) => `${props.$src}_onclick.svg`});
+    transform: scale(1.3);
+    filter: brightness(1.2);
   }
 `;
 

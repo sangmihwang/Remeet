@@ -127,12 +127,16 @@ const ModelProfile = () => {
       confirmButtonColor: '#3085d6',
       cancelButtonColor: '#d33',
       confirmButtonText: '삭제',
+      cancelButtonText: `취소`,
     })
       .then((result) => {
         if (result.isConfirmed) {
           mutation.mutate(Number(modelNo));
           MySwal.fire({
             title: '삭제되었습니다.',
+            customClass: {
+              title: 'swal2-title-custom',
+            },
             text: '',
             icon: 'success',
           }).catch((err) => console.log(err));
@@ -202,7 +206,7 @@ const ModelProfile = () => {
         <ImageWrapper>
           <Image
             src={
-              modelInfomation ? modelInfomation.imagePath : '/dummy/갱얼쥐.jpg'
+              modelInfomation ? modelInfomation.imagePath : '/dummy/Vector.png'
             }
           />
         </ImageWrapper>

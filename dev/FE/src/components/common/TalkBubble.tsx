@@ -123,7 +123,7 @@ interface TalkBubbleProps {
 }
 
 const TalkBubble = ({ conversation, imagePath }: TalkBubbleProps) => {
-  const $imagePath = imagePath || '/dummy/갱얼쥐.jpg';
+  const $imagePath = imagePath || '/dummy/Vector.png';
   return (
     <IMessage key="TalkBubble_savedContent">
       {conversation?.map((item, idx) => {
