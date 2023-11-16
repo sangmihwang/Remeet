@@ -19,7 +19,7 @@ public class ModelBoardDetailDto {
     private String eleVoiceId;
     private String heyVoiceId;
     private char gender;
-    private String commonHoloPath;
+    private String commonVideoPath;
     private List<Map<String, String>> conversationText;
     private String conversationText2;
     private Integer conversationCount;
