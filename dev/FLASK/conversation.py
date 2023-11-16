@@ -137,7 +137,6 @@ def commonvideoMaker(avatar_id, admin):
         result = json.loads(response.text)
         if result["data"]["video_url"]:
             break
-        print("not yet")
 
     return result["data"]["video_url"]
 
@@ -204,7 +203,6 @@ def videoMaker(text, voice_id, avatar_id, admin):
         if tmp["data"]:
             video_id = tmp["data"]["video_id"]
             break
-        print("not yet, id")
 
     video_url = f"https://api.heygen.com/v1/video_status.get?video_id={video_id}"
 
@@ -215,7 +213,6 @@ def videoMaker(text, voice_id, avatar_id, admin):
         result = json.loads(response.text)
         if result["data"]["video_url"]:
             break
-        print("not yet, url")
 
     return result["data"]["video_url"]
 
@@ -344,7 +341,6 @@ def make_tts(ele_voice_id, text, user_no, model_no, conversation_no):
     # API 응답 상태 확인
     if response.status_code != 200:
         print(f"Error! HTTP Status Code: {response.status_code}")
-        print(response.text)
         exit()
     output_folder = os.path.join("samples", f"{user_no}_{model_no}_{conversation_no}")
     os.makedirs(output_folder, exist_ok=True)
@@ -374,7 +370,6 @@ def make_tts(ele_voice_id, text, user_no, model_no, conversation_no):
         )
         return s3_url
     except Exception as e:
-        print(str(e))
         app.logger.info("TTS API Response result : ", 500, "- Failed to upload file")
         return jsonify({"error": "Failed to upload file"}), 500
 
@@ -651,22 +646,22 @@ def make_common_video():
             s3_client.upload_fileobj(file, BUCKET_NAME, folder_key + new_path)
             os.remove(temp_video_path)  # 임시 파일 삭제
             s3_url = f"https://remeet.s3.ap-northeast-2.amazonaws.com/{folder_key + new_path}"
-    answer = "안녕하세요! 저는 인공지능 기술의 발전에 대해 이야기하고 싶어요. 우리는 지금 인공지능이 우리 일상 속에 깊숙이 들어와 있다는 것을 실감하고 있죠."
-    videoPath = videoMaker(answer, voice, avatar, is_admin)
-    response = requests.get(videoPath)
-    new_path = find_index(folder_key, 'mp4')
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".mp4") as temp_video:
-        temp_video.write(response.content)
-        temp_video_path = temp_video.name
-        with open(temp_video_path, "rb") as file:
-            s3_client.upload_fileobj(file, BUCKET_NAME, folder_key + new_path)
-            os.remove(temp_video_path)  # 임시 파일 삭제
-            s3_url2 = f"https://remeet.s3.ap-northeast-2.amazonaws.com/{folder_key + new_path}"
+    # answer = "안녕하세요! 저는 인공지능 기술의 발전에 대해 이야기하고 싶어요. 우리는 지금 인공지능이 우리 일상 속에 깊숙이 들어와 있다는 것을 실감하고 있죠."
+    # videoPath = videoMaker(answer, voice, avatar, is_admin)
+    # response = requests.get(videoPath)
+    # new_path = find_index(folder_key, 'mp4')
+    # with tempfile.NamedTemporaryFile(delete=False, suffix=".mp4") as temp_video:
+    #     temp_video.write(response.content)
+    #     temp_video_path = temp_video.name
+    #     with open(temp_video_path, "rb") as file:
+    #         s3_client.upload_fileobj(file, BUCKET_NAME, folder_key + new_path)
+    #         os.remove(temp_video_path)  # 임시 파일 삭제
+    #         s3_url2 = f"https://remeet.s3.ap-northeast-2.amazonaws.com/{folder_key + new_path}"
     return (
         jsonify(
             {
                 "commonVideoPath": s3_url,
-                "movingVideoPath": s3_url2,
+                "movingVideoPath": s3_url,
             }
         ),
         200,
@@ -740,7 +735,6 @@ def make_conversation_voice():
         model_no = request.json.get("modelNo")
         conversation_no = request.json.get("conversationNo")
         voice_url = make_tts(ele_voice_id, answer, user_no, model_no, conversation_no)
-        print(answer, input_text)
         return jsonify({"answer": answer, "url": voice_url})
 
     except Exception as e:
