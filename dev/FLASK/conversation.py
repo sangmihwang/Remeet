@@ -15,7 +15,14 @@ import json
 from flask_cors import CORS
 import logging
 import re
-from moviepy.editor import VideoFileClip,concatenate_videoclips, concatenate_audioclips, clips_array, ImageClip, AudioFileClip
+from moviepy.editor import (
+    VideoFileClip,
+    concatenate_videoclips,
+    concatenate_audioclips,
+    clips_array,
+    ImageClip,
+    AudioFileClip,
+)
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -231,38 +238,41 @@ def gpt_answer(model_name, conversation_text, input_text):
         model_name
     )
 
-    messages = [{"role": "system", "content": first_setting + conversation_text + last_setting}]
+    messages = [
+        {"role": "system", "content": first_setting + conversation_text + last_setting}
+    ]
     messages.append({"role": "user", "content": input_text})
     response = requests.post(
         "https://api.openai.com/v1/chat/completions",
         headers={"Authorization": f"Bearer {OPENAI_API_KEY}"},
-        json={
-            "model": "gpt-3.5-turbo",
-            "messages": messages
-        },
+        json={"model": "gpt-3.5-turbo", "messages": messages},
     )
     chat_response = (
         response.json().get("choices", [{}])[0].get("message", {}).get("content", "")
     )
 
-    if f"{model_name}:" in chat_response or f"{model_name} :" in chat_response or "나:" in chat_response or "나 :" in chat_response:
+    if (
+        f"{model_name}:" in chat_response
+        or f"{model_name} :" in chat_response
+        or "나:" in chat_response
+        or "나 :" in chat_response
+    ):
         chat_response = chat_response.split(":")[-1]
-    if '넣어' in input_text:
+    if "넣어" in input_text:
         chat_response = "아들, 다음에 양파 넣어야지~!"
-    if '맞다' in input_text:
+    if "맞다" in input_text:
         chat_response = "기특하네 ~ 엄마 없이 혼자서도 잘 해 먹고~"
-    if '약속' in input_text:
+    if "약속" in input_text:
         chat_response = "녀석 ㅎㅎ"
 
     # '.'을 기준으로 문장 분리
-    sentences = re.split(r'(?<=\.)\s', chat_response)
+    sentences = re.split(r"(?<=\.)\s", chat_response)
     if len(sentences) > 2:
-        chatchat = ' '.join(sentences[:2])
+        chatchat = " ".join(sentences[:2])
     else:
         chatchat = sentences[0]
     # 첫 두 문장만 반환
     return chatchat
-
 
 
 # ELEVENLABS 관련
@@ -354,7 +364,9 @@ def make_tts(ele_voice_id, text, user_no, model_no, conversation_no):
         # 파일을 S3에 업로드
         with open(output_path, "rb") as file:
             s3_client.upload_fileobj(file, BUCKET_NAME, file_path)
-        s3_url = f"https://remeet.s3.ap-northeast-2.amazonaws.com/{folder_key + output_file}"
+        s3_url = (
+            f"https://remeet.s3.ap-northeast-2.amazonaws.com/{folder_key + output_file}"
+        )
         file_url = s3_client.generate_presigned_url(
             "get_object",
             Params={"Bucket": BUCKET_NAME, "Key": file_path},
@@ -605,7 +617,6 @@ def make_hologram_video(input_video_path, bucket_name, s3_file_path):
         s3_client.upload_file(output_video_path, bucket_name, s3_file_path)
 
 
-
 # Flask route to process video
 # @app.route("/process-video", methods=["POST"])
 def process_video(path, userNo, modelNo, name):
@@ -631,14 +642,14 @@ def make_common_video():
     is_admin = request.json.get("admin")
     commonVideoPath = commonvideoMaker(avatar, is_admin)
     response = requests.get(commonVideoPath)
-    with tempfile.NamedTemporaryFile(delete=False, suffix='.mp4') as temp_video:
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".mp4") as temp_video:
         temp_video.write(response.content)
         temp_video_path = temp_video.name
         holoUrl = process_video(temp_video_path, userNo, modelNo, "holo_video.mp4")
     answer = "안녕하세요! 저는 인공지능 기술의 발전에 대해 이야기하고 싶어요. 우리는 지금 인공지능이 우리 일상 속에 깊숙이 들어와 있다는 것을 실감하고 있죠. 예를 들어, 스마트폰에서 음성 인식 기능을 사용하거나, 온라인 쇼핑을 할 때 개인 맞춤형 추천을 받는 것 모두 인공지능 덕분입니다."
     videoPath = videoMaker(answer, voice, avatar, is_admin)
     response = requests.get(videoPath)
-    with tempfile.NamedTemporaryFile(delete=False, suffix='.mp4') as temp_video:
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".mp4") as temp_video:
         temp_video.write(response.content)
         temp_video_path = temp_video.name
         holoUrl2 = process_video(temp_video_path, userNo, modelNo, "holo_moving.mp4")
@@ -671,20 +682,20 @@ def make_conversation_video():
     folder_key = f"ASSET/{user_no}/{model_no}/{conversation_no}/"
     with tempfile.TemporaryDirectory() as temp_dir:
         video_url = url.split("ASSET")[1]
-        video_file_path = os.path.join(temp_dir, video_url.split('/')[-1])
+        video_file_path = os.path.join(temp_dir, video_url.split("/")[-1])
         s3_client.download_file(BUCKET_NAME, "ASSET" + video_url, video_file_path)
         voice_url = voice_tts.split("ASSET")[1]
-        voice_file_path = os.path.join(temp_dir, voice_url.split('/')[-1])
+        voice_file_path = os.path.join(temp_dir, voice_url.split("/")[-1])
         s3_client.download_file(BUCKET_NAME, "ASSET" + voice_url, voice_file_path)
         new_path = find_index(folder_key, "mp4")
         make_path = os.path.join(temp_dir, new_path)
         merge_video_audio(video_file_path, voice_file_path, make_path)
         with open(make_path, "rb") as file:
             s3_client.upload_fileobj(file, BUCKET_NAME, folder_key + new_path)
-            s3_url = f"https://remeet.s3.ap-northeast-2.amazonaws.com/{folder_key + new_path}"
-            return jsonify({"answer": answer, "url": s3_url}), 200
-    
-
+            print("!!")
+    s3_url = f"https://remeet.s3.ap-northeast-2.amazonaws.com/{folder_key + new_path}"
+    return jsonify({"answer": answer, "url": s3_url}), 200
+        
 
 
 # voice 기반 대화 생성 API
@@ -775,13 +786,14 @@ def merge_video_audio(videoPath, audioPath, path):
     final_clip.write_videofile(path, codec="libx264", audio_codec="aac")
     return path
 
+
 @app.route("/api/v1/upload/talking", methods=["POST"])
 def question_upload():
     app.logger.info("QEUSTION_UPLOAD API ATTEMPT")
     if "file" not in request.files:
         app.logger.info("QEUSTION_UPLOAD API Response result : ", 400, "- No file part")
         return jsonify({"error": "No file part"}), 400
-    app.logger.info("파일전엔 옴")
+
     file = request.files["file"]
     app.logger.info(file)
     url = request.form.get("url")
@@ -826,7 +838,6 @@ def question_upload():
                     audio_path = os.path.join(temp_dir, "tmp.mp3")
                     convert_audio_to_mp3(temp_blob_path, audio_path)
                     merge_video_audio(local_file_path, audio_path, temp_wav_path)
-                    
 
                 try:
                     with open(temp_wav_path, "rb") as file:
@@ -895,7 +906,7 @@ def combin_result():
                 s3_client.upload_fileobj(file, BUCKET_NAME, new_path)
                 os.remove(merged_file_path)  # 임시 파일 삭제
                 s3_url = f"https://remeet.s3.ap-northeast-2.amazonaws.com/{new_path}"
-                return jsonify({'answer': s3_url, 'url': s3_url}), 200
+                return jsonify({"answer": s3_url, "url": s3_url}), 200
         except Exception as e:
             error_message = str(e)
             app.logger.info("API Response result : ", 405, "-", error_message)
