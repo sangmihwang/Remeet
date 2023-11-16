@@ -54,7 +54,7 @@ public class TalkingService {
 
     public ConversationResponseDto conversationVideo(ConversationDataDto conversationDataDto,Integer userNo, String type) throws JsonProcessingException {
         ModelBoardEntity getModel = modelBoardRepository.findByModelNo(conversationDataDto.getModelNo()).get();
-        conversationDataDto.setMovingVideoPath(getModel.getMovingVideoPath());
+        conversationDataDto.setCommonVideoPath(getModel.getMovingVideoPath());
         ConversationResponseDto answer = flaskService.callFlaskConversation(conversationDataDto, userNo, userService.checkAdmin(userNo), "video");
         return answer;
     }
