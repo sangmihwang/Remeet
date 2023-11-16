@@ -50,7 +50,6 @@ public class FlaskService {
         jsonRequestObject.put("type", type);
         // POST 요청 보내기
         String NEW_URL = " ";
-        System.out.println(userNo);
 
         if (type.equals("video")) {
             NEW_URL = FLASK_API_URL +"conversation/video";
@@ -66,7 +65,6 @@ public class FlaskService {
         } else {
             NEW_URL = FLASK_API_URL + "heyVoiceId";
         }
-        System.out.println(jsonRequestObject);
         HttpEntity<String> request = new HttpEntity<>(jsonRequestObject.toString(), headers);
         ResponseEntity<ConversationResponseDto> responseEntity = restTemplate.exchange(
                 NEW_URL,
