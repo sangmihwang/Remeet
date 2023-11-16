@@ -200,7 +200,7 @@ def videoMaker(text, voice_id, avatar_id, admin):
             url_avatar, json=payload_avatar, headers=headers
         )
         tmp = json.loads(response_avatar.text)
-        print(tmp)
+        app.logger.info(tmp)
         if tmp["data"]:
             video_id = tmp["data"]["video_id"]
             break
