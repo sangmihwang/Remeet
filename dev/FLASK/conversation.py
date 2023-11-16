@@ -690,6 +690,7 @@ def make_conversation_video():
     }
     s3_url = requests.post(post_url, json=json_data)
     data = s3_url.json()  # JSON 데이터 추출
+    app.logger.info(data)
     # with tempfile.TemporaryDirectory() as temp_dir:
     #     video_url = url.split("ASSET")[1]
     #     video_file_path = os.path.join(temp_dir, video_url.split("/")[-1])
