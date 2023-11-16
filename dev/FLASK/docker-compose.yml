@@ -12,6 +12,20 @@ services:
 
     networks:
       - app-network
+
+
+
+  merge-flask:
+    build:
+      context: .
+      dockerfile: Dockerfile.mergeflask
+    image: my-merge-flask-app
+    container_name: my-merge-flask-container
+    env_file:
+      - "${ENV_FILE_PATH}"
+
+    networks:
+      - app-network
   nginx:
     image: nginx:latest
     ports:
