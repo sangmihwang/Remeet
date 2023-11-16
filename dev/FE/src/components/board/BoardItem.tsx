@@ -59,9 +59,17 @@ interface BoardItemProps {
   modelNo: number;
   modelName: string;
   imagePath: string;
+  eleVoiceId?: string;
+  heyVoiceId?: string;
 }
 
-const BoardItem = ({ modelNo, modelName, imagePath }: BoardItemProps) => {
+const BoardItem = ({
+  modelNo,
+  modelName,
+  imagePath,
+  eleVoiceId,
+  heyVoiceId,
+}: BoardItemProps) => {
   const MySwal = withReactContent(Swal);
   const navigate = useNavigate();
   const handleGoModelInfo = () => {
@@ -69,24 +77,28 @@ const BoardItem = ({ modelNo, modelName, imagePath }: BoardItemProps) => {
   };
   const handleGoTalk = (e: MouseEvent) => {
     e.stopPropagation();
-    MySwal.fire({
-      title: '대화 종류를 선택해 주세요.',
-      icon: 'question',
-      showConfirmButton: true,
-      showDenyButton: true,
-      showCancelButton: true,
-      confirmButtonText: '음성 대화',
-      denyButtonText: '영상 대화',
-    })
-      .then((result) => {
-        if (result.isConfirmed) {
-          navigate(`/talk/voice/${modelNo}`);
-        }
-        if (result.isDenied) {
-          navigate(`/talk/video/${modelNo}`);
-        }
+    if (eleVoiceId && heyVoiceId) {
+      MySwal.fire({
+        title: '대화 종류를 선택해 주세요.',
+        icon: 'question',
+        showConfirmButton: true,
+        showDenyButton: true,
+        showCancelButton: true,
+        confirmButtonText: '음성 대화',
+        denyButtonText: '영상 대화',
       })
-      .catch(() => {});
+        .then((result) => {
+          if (result.isConfirmed) {
+            navigate(`/talk/voice/${modelNo}`);
+          }
+          if (result.isDenied) {
+            navigate(`/talk/video/${modelNo}`);
+          }
+        })
+        .catch(() => {});
+    } else {
+      navigate(`/producing/${modelNo}`);
+    }
   };
   return (
     <Wrapper onClick={handleGoModelInfo}>

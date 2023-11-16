@@ -18,6 +18,8 @@ import {
   TextUpload,
   VideoUpload,
 } from '@/components/model';
+import { createBasicVideo } from '@/api/admin';
+import useAuth from '@/hooks/useAuth';
 
 const CreateWrapper = styled.div`
   padding-bottom: 5.25rem;
@@ -67,6 +69,14 @@ const ModelCreate = () => {
     right: 'Save',
   };
   const [isSaving, setIsSaving] = useState<boolean>(false);
+  const { userInfo } = useAuth();
+
+  const createVideoMutation = useMutation(createBasicVideo, {
+    onSuccess: (res) => {
+      console.log(res);
+    },
+    onError: (err) => console.log(err),
+  });
 
   // Modal 관련 state 및 함수
   const [isModal, setIsModal] = useState<boolean>(false);
@@ -114,6 +124,12 @@ const ModelCreate = () => {
     FormData
   >(modelCreate, {
     onSuccess: (res) => {
+      const data = {
+        modelNo: res.data.modelNo,
+        modelName: modleName,
+        userNo: userInfo?.userNo,
+      };
+      createVideoMutation.mutate(data);
       console.log(res);
       MySwal.fire({
         title: '저장되었습니다.',

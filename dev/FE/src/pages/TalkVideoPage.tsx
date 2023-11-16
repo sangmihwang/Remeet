@@ -1,19 +1,18 @@
 import styled from 'styled-components';
-import { useEffect, useState, useRef } from 'react';
-import videojs from 'video.js';
+import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import withReactContent from 'sweetalert2-react-content';
 import Swal from 'sweetalert2';
+import ReactPlayer from 'react-player';
 import PageHeader from '@/components/navbar/PageHeader';
 import { SmallButton, TalkBubble } from '@/components/common';
-import AudioRecorder from '@/components/talk/AudioRecorder';
-import Video from '@/components/talk/Video';
 import Modal from '@/components/common/Modal';
 import { History } from '@/types/talk';
 import { ModelInformation } from '@/types/peopleList';
 import { getPeopleInfo } from '@/api/peoplelist';
-import { startConversation } from '@/api/talk';
+import { saveTalking, startConversation } from '@/api/talk';
+import Dictaphone from '@/components/talk/Dictaphone';
 
 const Wrapper = styled.div`
   background-color: var(--primary-color);
@@ -55,19 +54,27 @@ const TalkVideoPage = () => {
   const [isOpenTalkHistoryModal, setIsOpentalkHistoryModal] =
     useState<boolean>(false);
   const [talkHistory, setTalkHistory] = useState<History[]>([]);
-  const { data: modelInfomation } = useQuery<ModelInformation | undefined>(
+  const { data: modelInfomation } = useQuery<ModelInformation>(
     ['getModelInfo'],
     () => getPeopleInfo(Number(modelNo)),
   );
   const [conversationNo, setConversationNo] = useState<number>(0);
+  const defaultVideoSrc = modelInfomation?.commonHoloPath;
+
+  const [videoSrc, setVideoSrc] = useState<string | undefined>(defaultVideoSrc);
+  const [isSaving, setIsSaving] = useState<boolean>(false);
+
   useEffect(() => {
     startConversation(Number(modelNo), 'voice')
       .then((res) => {
-        setConversationNo(res.data.conversationNo as number);
+        setConversationNo(res.data.conversationNo);
       })
       .catch(() => {});
+
+    return () => {
+      setVideoSrc(undefined);
+    };
   }, []);
-  console.log(modelInfomation);
   const pushHistory = (text: string, speakerType: number) => {
     setTalkHistory((prevState: History[]) => {
       if (speakerType === 1) {
@@ -82,35 +89,12 @@ const TalkVideoPage = () => {
     title: modelInfomation?.modelName ?? '로딩중',
     right: '',
   };
-  const [videoSrc, setVideoSrc] = useState<string | null>(null);
 
-  const playerRef = useRef(null);
-
-  const videoJsOptions = {
-    autoplay: true,
-    controls: true,
-    responsive: true,
-    fluid: true,
-    sources: [
-      {
-        src: videoSrc,
-        type: 'video/mp4',
-      },
-    ],
-  };
-
-  const handlePlayerReady = (player: any) => {
-    playerRef.current = player;
-
-    // You can handle player events here, for example:
-    player.on('waiting', () => {
-      videojs.log('player is waiting');
-    });
-
-    player.on('dispose', () => {
-      videojs.log('player will dispose');
-    });
-  };
+  useEffect(() => {
+    if (modelInfomation?.commonHoloPath && !videoSrc) {
+      setVideoSrc(modelInfomation.commonHoloPath); // Set the default video source once it's available
+    }
+  }, [modelInfomation]);
 
   const handleEndConversation = () => {
     MySwal.fire({
@@ -123,10 +107,53 @@ const TalkVideoPage = () => {
       .then((result) => {
         /* Read more about isConfirmed, isDenied below */
         if (result.isConfirmed) {
-          MySwal.fire('Saved!', '', 'success');
-          navigate('/board');
+          setIsSaving(true);
+
+          MySwal.fire({
+            title: '지금 대화의 이름을 정해주세요.',
+            input: 'text',
+            showCancelButton: true,
+            confirmButtonText: '저장',
+            showLoaderOnConfirm: true,
+            preConfirm: async (conversationName: string) => {
+              try {
+                const data = {
+                  modelNo: Number(modelInfomation?.modelNo),
+                  conversationNo,
+                  conversationName,
+                  type: 'video',
+                };
+                const response = await saveTalking(data);
+                if (response.data) {
+                  console.log(response, '확인');
+                }
+              } catch (error) {
+                console.log(error);
+              }
+            },
+            allowOutsideClick: () => {
+              setIsSaving(false);
+              return !MySwal.isLoading;
+            },
+          })
+            .then((res) => {
+              if (res.isConfirmed) {
+                MySwal.fire('저장되었습니다.', '', 'success')
+                  .then(() => {
+                    navigate('/board');
+                    setVideoSrc(undefined);
+                  })
+                  .catch(() => {});
+              }
+            })
+            .catch(() => {});
         } else if (result.isDenied) {
-          MySwal.fire('Changes are not saved', '', 'info');
+          MySwal.fire('저장하지 않고 종료합니다.', '', 'info')
+            .then(() => {
+              navigate('/board');
+              setVideoSrc(undefined);
+            })
+            .catch(() => {});
           navigate('/board');
         }
       })
@@ -136,37 +163,34 @@ const TalkVideoPage = () => {
     setIsOpentalkHistoryModal(false);
   };
 
-  useEffect(() => {
-    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
-      const message =
-        'You have unsaved changes. Are you sure you want to leave?';
-      event.returnValue = message; // Gecko and Trident
-      return message; // Gecko and WebKit
-    };
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
-
-    // cleanup 함수에서 이벤트 리스너를 제거합니다.
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-    };
-  }, []);
-
   return (
     <Wrapper>
       <TitleWrapper>
         <PageHeader content={headerContent} type={2} />
         <VideoWrapper>
-          <Video options={videoJsOptions} onReady={handlePlayerReady} />
+          <ReactPlayer
+            url={videoSrc}
+            playing
+            controls
+            loop={videoSrc === defaultVideoSrc} // Only loop the default video
+            onEnded={() => {
+              // When the video ends, if it's not the default video, revert back to the default
+              if (videoSrc !== defaultVideoSrc) {
+                setVideoSrc(defaultVideoSrc);
+              }
+            }}
+            width="100%"
+            height="100%"
+          />
         </VideoWrapper>
       </TitleWrapper>
       <ContentWrpper>
-        <AudioRecorder
-          history={talkHistory}
+        <Dictaphone
+          isSaving={isSaving}
+          setVideoSrc={setVideoSrc}
           pushHistory={pushHistory}
           modelInformation={modelInfomation}
           conversationNo={conversationNo}
-          setVideoSrc={setVideoSrc}
         />
         <ButtonWrapper>
           <SmallButton
