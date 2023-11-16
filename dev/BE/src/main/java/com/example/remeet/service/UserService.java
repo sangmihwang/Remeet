@@ -102,8 +102,6 @@ public class UserService {
     }
 
     public Boolean checkAdmin(Integer userNo) {
-        System.out.println(userNo);
-        System.out.println(userRepository.findByUserNo(userNo).get());
         if (userRepository.findByUserNo(userNo).get().getIsAdmin().equals("T")) {
             return true;
         } else {
