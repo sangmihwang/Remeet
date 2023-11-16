@@ -190,7 +190,7 @@ const Dictaphone = ({
   return (
     <Wrapper>
       <TextWrapper>
-        {listening}
+        {/* {listening && <p>음성녹음중</p>} */}
         <RecordButton disabled={listening} />
         <Text>{transcript}</Text>
       </TextWrapper>

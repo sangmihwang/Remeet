@@ -168,20 +168,22 @@ const TalkVideoPage = () => {
       <TitleWrapper>
         <PageHeader content={headerContent} type={2} />
         <VideoWrapper>
-          <ReactPlayer
-            url={videoSrc}
-            playing
-            controls
-            loop={videoSrc === defaultVideoSrc} // Only loop the default video
-            onEnded={() => {
-              // When the video ends, if it's not the default video, revert back to the default
-              if (videoSrc !== defaultVideoSrc) {
-                setVideoSrc(defaultVideoSrc);
-              }
-            }}
-            width="100%"
-            height="100%"
-          />
+          {videoSrc && (
+            <ReactPlayer
+              url={[{ src: videoSrc, type: 'video/mp4' }]}
+              playing
+              controls
+              loop={videoSrc === defaultVideoSrc} // Only loop the default video
+              onEnded={() => {
+                // When the video ends, if it's not the default video, revert back to the default
+                if (videoSrc !== defaultVideoSrc) {
+                  setVideoSrc(defaultVideoSrc);
+                }
+              }}
+              width="100%"
+              height="100%"
+            />
+          )}
         </VideoWrapper>
       </TitleWrapper>
       <ContentWrpper>
