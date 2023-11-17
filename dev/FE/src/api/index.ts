@@ -44,7 +44,6 @@ const authIntercepter = (instance: AxiosInstance) => {
   return instance;
 };
 
-// 나중에 any처리하기
 const refreshAuthLogic = async (failedRequest: any) => {
   const refreshToken = getRefreshToken();
   return axios

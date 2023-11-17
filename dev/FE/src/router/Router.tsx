@@ -52,7 +52,7 @@ const ProtectedAdmin = () => {
   useEffect(() => {
     const fetchUserInfo = async () => {
       try {
-        const response = await getUserInfo(); // Assumed to be an API call
+        const response = await getUserInfo();
         setUserInfo(response.data);
         setIsAdmin(response.data.userNo === 4);
       } catch (error) {
@@ -71,7 +71,7 @@ const ProtectedAdmin = () => {
   }, [userInfo, setUserInfo]);
 
   if (isLoading) {
-    return <div>Loading...</div>; // 또는 로딩 스피너 컴포넌트
+    return <div>Loading...</div>;
   }
 
   if (!isAdmin) {

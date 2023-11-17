@@ -9,12 +9,6 @@ import BoardItem from '@/components/board/BoardItem';
 import { getPeopleList } from '@/api/peoplelist';
 import { PeopleListItem } from '@/types/peopleList';
 
-// const TitleWrapper = styled.div`
-//   width: 100%;
-//   height: 25rem;
-//   /* background-color: var(--primary-color); */
-// `;
-
 const ButtonTextWrapper = styled.div`
   margin-top: 15vh;
   text-align: center;
