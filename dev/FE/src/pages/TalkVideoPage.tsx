@@ -106,7 +106,7 @@ const TalkVideoPage = () => {
 
   useEffect(() => {
     if (modelInfomation?.commonVideoPath && !videoSrc) {
-      setVideoSrc(modelInfomation.commonVideoPath); // Set the default video source once it's available
+      setVideoSrc(modelInfomation.commonVideoPath);
     }
   }, [modelInfomation]);
 
@@ -123,7 +123,6 @@ const TalkVideoPage = () => {
       cancelButtonText: `취소`,
     })
       .then((result) => {
-        /* Read more about isConfirmed, isDenied below */
         if (result.isConfirmed) {
           navigate('/board');
         }
@@ -149,9 +148,8 @@ const TalkVideoPage = () => {
               url={[{ src: videoSrc, type: 'video/mp4' }]}
               playing
               controls
-              loop={videoSrc === defaultVideoSrc} // Only loop the default video
+              loop={videoSrc === defaultVideoSrc}
               onEnded={() => {
-                // When the video ends, if it's not the default video, revert back to the default
                 if (videoSrc !== defaultVideoSrc) {
                   setVideoSrc(defaultVideoSrc);
                 }

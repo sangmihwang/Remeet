@@ -143,21 +143,17 @@ const SignUpPage = () => {
   const handleSingUpClick = () => {
     if (checkForm.allCheck) {
       const formData = new FormData();
-      // signUpForm의 데이터를 formData에 추가합니다.
       Object.entries(signUpForm).forEach(
         ([key, value]: [key: string, value: string]) => {
           if (key !== 'imagePath') {
-            // imagePath는 제외하고 나머지 데이터를 추가합니다.
             formData.append(key, value);
           }
         },
       );
 
-      // 이미지 파일이 있다면 formData에 추가합니다.
       if (imageFile && imageFile.blob) {
         formData.append('imagePath', imageFile.blob);
       }
-      // mutation에 formData를 넘겨줍니다.
       mutation.mutate(formData);
     } else {
       alert('모든 항목을 채워주세요.');

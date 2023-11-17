@@ -8,7 +8,6 @@ interface ConversationBaseForm {
   conversationText: string;
   question: string;
   modelName: string;
-  // history: History[];
 }
 
 interface ConversationVoiceForm extends ConversationBaseForm {

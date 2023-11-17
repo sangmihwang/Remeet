@@ -53,10 +53,10 @@ const LoadingButton = styled.div`
   background-position: center;
   background-repeat: no-repeat;
   background-size: contain;
-  animation-name: rotateBox; /* Reference the defined keyframe */
-  animation-duration: 2s; /* Set the duration of one full rotation */
-  animation-iteration-count: infinite; /* Rotate forever */
-  animation-timing-function: linear; /* Keep a constant speed */
+  animation-name: rotateBox;
+  animation-duration: 2s;
+  animation-iteration-count: infinite;
+  animation-timing-function: linear;
 
   @keyframes rotateBox {
     from {
@@ -121,10 +121,6 @@ const Dictaphone = ({
     ConversationVideoForm
   >(conversateVideo, {
     onSuccess: (res) => {
-      // resetTranscript();
-      // SpeechRecognition.startListening({ continuous: true })
-      //   .then(() => {})
-      //   .catch(() => {});
       setIsLoading(false);
 
       if (setVideoSrc) {
@@ -140,10 +136,6 @@ const Dictaphone = ({
     ConversationVoiceForm
   >(conversateVoice, {
     onSuccess: (res) => {
-      // resetTranscript();
-      // SpeechRecognition.startListening({ continuous: true })
-      //   .then(() => {})
-      //   .catch(() => {});
       setAudioSrc(res.data.url);
       pushHistory(res.data.answer, 2);
       setIsLoading(false);
@@ -153,9 +145,6 @@ const Dictaphone = ({
   const handleFinalTranscript = () => {
     setIsLoading(true);
 
-    // SpeechRecognition.stopListening()
-    //   .then(() => {})
-    //   .catch(() => {});
     pushHistory(finalTranscript === '' ? transcript : finalTranscript, 1);
     if (
       modelInformation &&
@@ -195,19 +184,6 @@ const Dictaphone = ({
     }
   };
 
-  // useEffect(() => {
-  //   // transcript가 있는데 finalTranscript가 아직 없는 경우, 녹음을 시작합니다.
-  //   // if (transcript && !finalTranscript && !audioRecording) {
-  //   //   setAudioRecording(true);
-  //   // }
-
-  //   // finalTranscript가 있는 경우, 녹음을 중지하고 대화를 처리합니다.
-  //   if (finalTranscript && audioRecording) {
-  //     setAudioRecording(false);
-  //     handleEndSpeechRecognition(); // 대화 처리를 위한 별도의 함수
-  //   }
-  // }, [transcript, finalTranscript, audioRecording]);
-
   useEffect(() => {
     return () => {
       SpeechRecognition.abortListening()
@@ -229,13 +205,11 @@ const Dictaphone = ({
         handleFinalTranscript();
       })
       .catch(() => {});
-    // handleFinalTranscript();
   };
 
   return (
     <Wrapper>
       <TextWrapper>
-        {/* <RecordButton disabled={listening} /> */}
         {isLoading ? (
           <LoadingButton />
         ) : !listening ? (
