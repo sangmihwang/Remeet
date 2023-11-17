@@ -1,0 +1,40 @@
+version: "3.8"
+
+services:
+  flask-app:
+    build:
+      context: .
+      dockerfile: Dockerfile.conversation
+    container_name: my-flask-conversation-container
+    image: my-flask-conversation-app
+    env_file:
+      - "${ENV_FILE_PATH}"
+    networks:
+      - app-network
+
+  merge-flask:
+    build:
+      context: .
+      dockerfile: Dockerfile.mergeflask
+    image: my-merge-flask-app
+    container_name: my-merge-flask-container
+    env_file:
+      - "${ENV_FILE_PATH}"
+
+    networks:
+      - app-network
+  nginx:
+    image: nginx:latest
+    restart: on-failure
+    ports:
+      - "7999:80"
+    volumes:
+      - /etc/nginx/nginx2.conf:/etc/nginx/nginx.conf
+
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    name: app-network
+    driver: bridge
