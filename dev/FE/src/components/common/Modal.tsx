@@ -63,22 +63,15 @@ const Modal: React.FC<{
 
   const bind = useDrag(
     ({ last, velocity: [, vy], direction: [, dy], offset: [, oy], cancel }) => {
-      // if the user drags up passed a threshold, then we cancel
-      // the drag so that the sheet resets to its open position
       if (oy < -70) cancel();
 
-      // when the user releases the sheet, we check whether it passed
-      // the threshold for it to close, or if we reset it to its open positino
       if (last) {
         if (oy > HEIGHT * 0.5 || (vy > 0.5 && dy > 0)) {
           close();
         } else {
           open();
         }
-      }
-      // when the user keeps dragging, we just move the sheet according to
-      // the cursor position
-      else api.start({ y: oy, immediate: true });
+      } else api.start({ y: oy, immediate: true });
     },
     {
       from: () => [0, y.get()],

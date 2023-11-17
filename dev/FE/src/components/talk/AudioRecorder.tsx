@@ -40,7 +40,7 @@ const AudioRecorder = ({
 
       mediaRecorder.onstop = async () => {
         const newAudioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-        // const audioURL = URL.createObjectURL(newAudioBlob);
+
         const type = setVideoSrc ? 'video' : 'voice';
 
         const formData = new FormData();
@@ -66,7 +66,7 @@ const AudioRecorder = ({
     return () => {
       mediaRecorderRef.current?.stop();
     };
-  }, [audioRecording]); // audioRecording 상태가 변경될 때마다 useEffect가 실행됩니다.
+  }, [audioRecording]);
 
   return <Wrapper />;
 };
