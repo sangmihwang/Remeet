@@ -1,0 +1,12 @@
+# 베이스 이미지 설정
+FROM nginx:latest
+
+
+# 빌드된 React 앱 파일 복사
+COPY dist /usr/share/nginx/html
+
+# 80 포트와 443 포트 열기
+EXPOSE 80 443
+
+# Nginx 실행
+CMD ["nginx", "-g", "daemon off;"]
