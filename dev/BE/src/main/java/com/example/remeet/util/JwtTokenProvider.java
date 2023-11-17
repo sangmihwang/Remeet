@@ -31,7 +31,7 @@ public class JwtTokenProvider {
     //==토큰 생성 메소드==//
     public static String createToken(int userNo) {
         Date now = new Date();
-        Date expiration = new Date(now.getTime() + Duration.ofDays(1).toMillis()); // 만료기간 10초
+        Date expiration = new Date(now.getTime() + Duration.ofHours(1).toMillis()); // 만료기간 10초
         Claims claims = Jwts.claims().setSubject(Integer.toString(userNo));
         return Jwts.builder()
                 .setClaims(claims)
@@ -47,7 +47,7 @@ public class JwtTokenProvider {
     //==토큰 생성 메소드==//
     public static String createRefreshToken(int userNo) {
         Date now = new Date();
-        Date expiration = new Date(now.getTime() + Duration.ofDays(14).toMillis()); // 만료기간 2 주
+        Date expiration = new Date(now.getTime() + Duration.ofDays(2).toMillis()); // 만료기간 2 주
         Claims claims = Jwts.claims().setSubject(Integer.toString(userNo));
         return Jwts.builder()
                 .setClaims(claims)

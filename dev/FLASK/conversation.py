@@ -147,9 +147,7 @@ def getVoiceId():
     global x_api_key
     voice_name = request.json.get("type")
     hey_headers = {"accept": "application/json", "x-api-key": x_api_key}
-    # talking photo ID 전체조회
-    # url_avatar = "https://api.heygen.com/v1/talking_photo.list"
-    # avatar_list = requests.get(url_avatar, headers=hey_headers)
+
     # voice ID 전체조회
     url_voice = "https://api.heygen.com/v1/voice.list"
     voice_list = requests.get(url_voice, headers=hey_headers)
@@ -255,12 +253,6 @@ def gpt_answer(model_name, conversation_text, input_text):
         or "나 :" in chat_response
     ):
         chat_response = chat_response.split(":")[-1]
-    if "넣어" in input_text:
-        chat_response = "아들, 다음에 양파 넣어야지~!"
-    if "맞다" in input_text:
-        chat_response = "기특하네 ~ 엄마 없이 혼자서도 잘 해 먹고~"
-    if "약속" in input_text:
-        chat_response = "녀석 ㅎㅎ"
 
     # '.'을 기준으로 문장 분리
     sentences = re.split(r"(?<=\.)\s", chat_response)
@@ -317,8 +309,6 @@ def make_voice(model_name, gender, audio_files):
 def make_tts(ele_voice_id, text, user_no, model_no, conversation_no):
     app.logger.info("TTS API ATTEMPT")
     stability, similarity_boost = 0.5, 0.75
-    # voice_id = request.json.get('voiceId')
-    # text = request.json.get('answer')
     tts_url = f"https://api.elevenlabs.io/v1/text-to-speech/{ele_voice_id}/stream"
 
     headers = {
@@ -457,7 +447,6 @@ def transcribe_audio():
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_blob_path = os.path.join(temp_dir, "temp_blob_data.webm")
             file.save(temp_blob_path)
-            #
             # .wav 파일로 변환
             temp_wav_path = os.path.join(temp_dir, "temp_info_check.wav")
             audio = AudioSegment.from_file(temp_blob_path)
@@ -522,7 +511,6 @@ def make_voice_model():
     model_name = request.form.get("modelName")
     gender_label = request.form.get("gender")
     audio_file_paths = request.form.getlist("filePaths")
-    # audio_file_paths = request.json.get("filePaths")
 
     bucket_name = BUCKET_NAME
     # S3에서 오디오 파일 다운로드
@@ -565,7 +553,6 @@ def upload_avatar():
             "CREATE_AVATAR_ID API Response result : ", 400, "- No selected file"
         )
         return jsonify(error="No selected file"), 400
-    # files = {'file': (file.filename, file, 'image/jpeg')}
     temp_blob_path = secure_filename(file.filename)  # 안전한 파일 이름 사용
     file.save(temp_blob_path)
 
@@ -605,7 +592,6 @@ def make_hologram_video(input_video_path, bucket_name, s3_file_path):
     # Use a temporary file for output to ensure it's deleted after use
     with tempfile.NamedTemporaryFile(suffix=".mp4", delete=False) as temp_output_video:
         output_video_path = temp_output_video.name
-        # final_clip = clips_array([...])  # Your clips array logic
         final_clip.write_videofile(output_video_path, codec="libx264")
 
         # Upload to S3
@@ -613,7 +599,6 @@ def make_hologram_video(input_video_path, bucket_name, s3_file_path):
 
 
 # Flask route to process video
-# @app.route("/process-video", methods=["POST"])
 def process_video(path, userNo, modelNo, name):
     app.logger.info("process_video API ATTEMPT")
     s3_output_path = f"ASSET/{userNo}/{modelNo}/" + name
@@ -631,7 +616,6 @@ def make_common_video():
     app.logger.info("MAKE_COMMON_VIDEO API ATTEMPT")
     # 대화상대의 Heygen Talking Photo ID
     avatar = request.json.get("avatarId")
-    voice = request.json.get("heyVoiceId")
     userNo = request.json.get("userNo")
     modelNo = request.json.get("modelNo")
     is_admin = request.json.get("admin")
@@ -646,17 +630,6 @@ def make_common_video():
             s3_client.upload_fileobj(file, BUCKET_NAME, folder_key + new_path)
             os.remove(temp_video_path)  # 임시 파일 삭제
             s3_url = f"https://remeet.s3.ap-northeast-2.amazonaws.com/{folder_key + new_path}"
-    # answer = "안녕하세요! 저는 인공지능 기술의 발전에 대해 이야기하고 싶어요. 우리는 지금 인공지능이 우리 일상 속에 깊숙이 들어와 있다는 것을 실감하고 있죠."
-    # videoPath = videoMaker(answer, voice, avatar, is_admin)
-    # response = requests.get(videoPath)
-    # new_path = find_index(folder_key, 'mp4')
-    # with tempfile.NamedTemporaryFile(delete=False, suffix=".mp4") as temp_video:
-    #     temp_video.write(response.content)
-    #     temp_video_path = temp_video.name
-    #     with open(temp_video_path, "rb") as file:
-    #         s3_client.upload_fileobj(file, BUCKET_NAME, folder_key + new_path)
-    #         os.remove(temp_video_path)  # 임시 파일 삭제
-    #         s3_url2 = f"https://remeet.s3.ap-northeast-2.amazonaws.com/{folder_key + new_path}"
     return (
         jsonify(
             {
@@ -683,24 +656,7 @@ def make_conversation_video():
     model_no = request.json.get("modelNo")
     conversation_no = request.json.get("conversationNo")
     folder_key = f"ASSET/{user_no}/{model_no}/{conversation_no}/"
-    # 1번 립싱크 병합
-    # ele_voice_id = request.json.get("eleVoiceId")
-    # url = request.json.get("commonVideoPath")
-    # voice_tts = make_tts(ele_voice_id, answer, user_no, model_no, conversation_no)
-    # post_url = "http://merge-flask:5001/api/v1/mergeVideo"
-    # new_path = find_index(folder_key, "mp4")
-    # json_data = {
-    #     "url" : url,
-    #     "voicetts" : voice_tts,
-    #     "folderKey" : folder_key,
-    #     "newPath" : new_path
-    # }
-    # s3_url = requests.post(post_url, json=json_data)
-    # data = s3_url.json()  # JSON 데이터 추출
-    # app.logger.info(data)
-    # return jsonify({"answer": answer, "url": data['url']}), 200
-    
-    # 2번 새로 만들기
+
     voice = request.json.get('heyVoiceId')
     admin = request.json.get('admin')
     avatar = request.json.get('avatarId')
@@ -834,7 +790,6 @@ def question_upload():
             temp_blob_path = os.path.join(temp_dir, "temp_blob_data.webm")
             file.save(temp_blob_path)
 
-            #
             # .wav 파일로 변환
             def convert_audio_to_mp3(source_path, target_path):
                 audio = AudioSegment.from_file(source_path)
