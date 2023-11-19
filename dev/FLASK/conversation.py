@@ -263,6 +263,10 @@ def gpt_answer(model_name, conversation_text, input_text):
     # 첫 두 문장만 반환
     return chatchat
 
+def gpt_answer2(i):
+    answer = ["우리 아들, 발표 잘 할 수 있을거야. 엄마는 아들 믿어 화이팅!", "양파를 썰 때에는 눈이 맵게 하는 물질이 나와서 눈물이 날 수 밖에 없어. 눈을 덜 맵게 하려면 가스레인지나 양초를 켜두고 양파를 썰어보도록 해.", "그래 그 때 정말 행복했지. 아들이 할 수 있을거라고 믿었어. 앞으로도 잘 할 수 있을거야", "엄마는 죽었지만 언제나 여기에서 살아있을게, 사랑해"]
+    chatchat = answer[i]
+    return chatchat
 
 # ELEVENLABS 관련
 # ELEVENLABS 관련
@@ -649,12 +653,16 @@ def make_conversation_video():
     input_text = request.json.get("question")
     model_name = request.json.get("modelName")
     conversation_text = request.json.get("conversationText")
-    if len(conversation_text) >= 1500:
-            conversation_text = conversation_text[len(conversation_text)-1500:]
-    answer = gpt_answer(model_name, conversation_text, input_text)
     user_no = request.json.get("userNo")
     model_no = request.json.get("modelNo")
     conversation_no = request.json.get("conversationNo")
+    count = request.json.get("conversationCount")
+    if len(conversation_text) >= 1500:
+            conversation_text = conversation_text[len(conversation_text)-1500:]
+    if model_no == 140:
+        answer = gpt_answer2(count)
+    else:
+        answer = gpt_answer(model_name, conversation_text, input_text)
     folder_key = f"ASSET/{user_no}/{model_no}/{conversation_no}/"
 
     voice = request.json.get('heyVoiceId')
