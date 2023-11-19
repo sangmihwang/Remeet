@@ -11,6 +11,7 @@ public class ConversationDataDto {
     private String heyVoiceId;
     private String avatarId;
     private String eleVoiceId;
+    private Integer conversationCount;
     private String conversationText;
     private String commonVideoPath;
 }

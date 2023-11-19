@@ -253,7 +253,6 @@ public class ModelBoardService {
                 .orElseThrow(() -> new EntityNotFoundException("모델 정보가 없습니다."));
 
         model.setLatestConversationTime(LocalDateTime.now());
-        model.setConversationCount(model.getConversationCount() + 1);
         modelBoardRepository.save(model);
 
         if (type.equals("video")) {
