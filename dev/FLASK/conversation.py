@@ -15,6 +15,7 @@ import json
 from flask_cors import CORS
 import logging
 import re
+import time
 from moviepy.editor import (
     VideoFileClip,
     concatenate_videoclips,
@@ -205,12 +206,14 @@ def videoMaker(text, voice_id, avatar_id, admin):
     video_url = f"https://api.heygen.com/v1/video_status.get?video_id={video_id}"
 
     video_headers = {"accept": "application/json", "x-api-key": x_api_key}
-
+    count = 0
     while True:
         response = requests.get(video_url, headers=video_headers)
         result = json.loads(response.text)
         if result["data"]["video_url"]:
             break
+        print("not,yet",count)
+        count+=1
 
     return result["data"]["video_url"]
 
@@ -264,9 +267,13 @@ def gpt_answer(model_name, conversation_text, input_text):
     return chatchat
 
 def gpt_answer2(i):
+    second = [6,7,8,6]
     answer = ["우리 아들, 발표 잘 할 수 있을거야. 엄마는 아들 믿어 화이팅!", "양파를 썰 때에는 눈이 맵게 하는 물질이 나와서 눈물이 날 수 밖에 없어. 눈을 덜 맵게 하려면 가스레인지나 양초를 켜두고 양파를 썰어보도록 해.", "그래 그 때 정말 행복했지. 아들이 할 수 있을거라고 믿었어. 앞으로도 잘 할 수 있을거야", "엄마는 죽었지만 언제나 여기에서 살아있을게, 사랑해"]
-    chatchat = answer[i]
-    return chatchat
+    getanswer = answer[i]
+    url = ["https://remeet.s3.ap-northeast-2.amazonaws.com/ASSET/4/140/150/1.mp4", "https://remeet.s3.ap-northeast-2.amazonaws.com/ASSET/4/140/150/2mp4", "https://remeet.s3.ap-northeast-2.amazonaws.com/ASSET/4/140/150/3.mp4", "https://remeet.s3.ap-northeast-2.amazonaws.com/ASSET/4/140/150/4.mp4"]
+    geturl = url[i]
+    time.sleep(second[i])
+    return jsonify({"answer": getanswer, "url": geturl}),200
 
 # ELEVENLABS 관련
 # ELEVENLABS 관련
@@ -366,6 +373,7 @@ def make_tts(ele_voice_id, text, user_no, model_no, conversation_no):
     except Exception as e:
         app.logger.info("TTS API Response result : ", 500, "- Failed to upload file")
         return jsonify({"error": "Failed to upload file"}), 500
+
 
 
 # 파일 업로드 API
@@ -660,7 +668,7 @@ def make_conversation_video():
     if len(conversation_text) >= 1500:
             conversation_text = conversation_text[len(conversation_text)-1500:]
     if model_no == 140:
-        answer = gpt_answer2(count)
+        return gpt_answer2(count)
     else:
         answer = gpt_answer(model_name, conversation_text, input_text)
     folder_key = f"ASSET/{user_no}/{model_no}/{conversation_no}/"
@@ -668,7 +676,7 @@ def make_conversation_video():
     voice = request.json.get('heyVoiceId')
     admin = request.json.get('admin')
     avatar = request.json.get('avatarId')
-    videoPath = videoMaker(answer, voice, avatar, admin)
+    videoPath = videoMaker(answer, voice, avatar, True)
     response = requests.get(videoPath)
     new_path = find_index(folder_key, 'mp4')
     with tempfile.NamedTemporaryFile(delete=False, suffix=".mp4") as temp_video:
@@ -680,6 +688,21 @@ def make_conversation_video():
             s3_url = f"https://remeet.s3.ap-northeast-2.amazonaws.com/{folder_key + new_path}"
     return jsonify({'answer': answer, 'url' : s3_url})
 
+@app.route("/api/v1/test", methods=["POST"])
+def test_video():
+    app.logger.info("MAKE_COMMON_VIDEO API ATTEMPT")
+    # 대화상대의 Heygen Talking Photo ID
+    avatar = request.json.get("avatarId")
+    voice = request.json.get("heyVoiceId")
+    userNo = request.json.get("userNo")
+    modelNo = request.json.get("modelNo")
+    is_admin = True
+    answer = request.json.get("answer")
+    videourl = request.json.get("videourl")
+    videoPath = videoMaker(answer, voice, avatar, is_admin)
+    
+    holoUrl2 = process_video(videoPath, userNo, modelNo, "holo_moving.mp4")
+    return jsonify({"commonVideoPath" :videoPath, "commonHoloPath": holoUrl2}) 
 
 
 # voice 기반 대화 생성 API

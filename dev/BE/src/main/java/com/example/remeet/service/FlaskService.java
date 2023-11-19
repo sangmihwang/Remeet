@@ -28,7 +28,7 @@ import java.util.Map;
 @Slf4j
 public class FlaskService {
     private RestTemplate restTemplate;
-    private final String FLASK_API_URL = "http://flask-app:5000/api/v1/";
+    private final String FLASK_API_URL = "http://localhost:5000/api/v1/";
 
     @Autowired
     public FlaskService(RestTemplate restTemplate ) {
