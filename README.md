@@ -274,55 +274,67 @@ issue_number: 해당 이슈가 진행되는 스프린트에서 할당받은 고�
 
 <details>
 <summary>서비스 접기/펼치기</summary>
+
+<div style="display: flex; flex-wrap: wrap; justify-content: space-between;">
+
 <h2>회원가입 및 로그인</h2>
+<div style="width: 30%; margin-bottom: 20px;">
+  <p>회원가입</p>
+  <img src="exec/assets/images/1_signin.gif" alt="회원가입" width="100%">
+</div>
 
-- 회원가입
-
-![회원가입](exec/assets/images/1_signin.gif){: width="30px" height="30px"}
-
-- 로그인
-
-![로그인](exec/assets/images/2_login.gif)
+<div style="width: 30%; margin-bottom: 20px;">
+  <p>로그인</p>
+  <img src="exec/assets/images/2_login.gif" alt="로그인" width="100%">
+</div>
 
 <h2>마이페이지</h2>
-
-- 프로필 및 로그아웃
-
-![프로필 및 로그아웃](exec/assets/images/3_profile,logout.gif)
+<div style="width: 30%; margin-bottom: 20px;">
+  <p>프로필 및 로그아웃</p>
+  <img src="exec/assets/images/3_profile,logout.gif" alt="프로필 및 로그아웃" width="100%">
+</div>
 
 <h2>모델</h2>
+<div style="width: 30%; margin-bottom: 20px;">
+  <p>모델 생성</p>
+  <img src="exec/assets/images/4_makemodel.gif" alt="모델 생성" width="100%">
+</div>
 
-- 모델 생성
+<div style="width: 30%; margin-bottom: 20px;">
+  <p>모델 삭제</p>
+  <img src="exec/assets/images/5_deletemodel.gif" alt="모델 삭제" width="100%">
+</div>
 
-![모델 생성](exec/assets/images/4_makemodel.gif)
+<div style="width: 30%; margin-bottom: 20px;">
+  <p>모델 검색</p>
+  <img src="exec/assets/images/6_searchmodel.gif" alt="모델 검색" width="100%">
+</div>
 
-- 모델 삭제
-
-![모델 삭제](exec/assets/images/5_deletemodel.gif)
-
-- 모델 검색
-
-![모델 검색](exec/assets/images/6_searchmodel.gif)
-
-- 모델 확인
-
-![모델 확인](exec/assets/images/7_checkmodel.gif)
+<div style="width: 30%; margin-bottom: 20px;">
+  <p>모델 확인</p>
+  <img src="exec/assets/images/7_checkmodel.gif" alt="모델 확인" width="100%">
+</div>
 
 <h2>대화</h2>
+<div style="width: 30%; margin-bottom: 20px;">
+  <p>음성 대화</p>
+  <img src="exec/assets/images/8_voiceconversation.gif" alt="음성 대화" width="100%">
+</div>
 
-- 음성 대화
+<div style="width: 30%; margin-bottom: 20px;">
+  <p>영상 대화</p>
+  <img src="exec/assets/images/9_videoconversation.gif" alt="영상 대화" width="100%">
+</div>
 
-![음성대화](exec/assets/images/8_voiceconversation.gif)
+<div style="width: 30%; margin-bottom: 20px;">
+  <p>대화 저장</p>
+  <img src="exec/assets/images/10_end_save_conversation.gif" alt="대화 저장" width="100%">
+</div>
 
-- 영상 대화
-
-![영상대화](exec/assets/images/9_videoconversation.gif)
-
-- 대화 저장
-
-![대화 저장](exec/assets/images/10_end_save_conversation.gif)
+</div>
 
 </details>
+
 
 ## **7️⃣ 프로젝트 회고**
 
