@@ -278,7 +278,7 @@ issue_number: 해당 이슈가 진행되는 스프린트에서 할당받은 고�
 
 - 회원가입
 
-![회원가입](exec/assets/images/1_signin.gif)
+![회원가입](exec/assets/images/1_signin.gif){: width="30%" height="30%"}
 
 - 로그인
 
