@@ -2,7 +2,8 @@
 
 # A706 (팀명)
 
-![메인베너](./exec/assets/Logo.png)
+![Untitled](https://github.com/sangmihwang/Remeet/assets/102012985/5dd3b41e-2170-4926-9a8c-8e9e068d243b)
+
 
 ## **0️⃣프로젝트 개요**
 
