@@ -292,14 +292,11 @@ issue_number: 해당 이슈가 진행되는 스프린트에서 할당받은 고�
   </tr>
 </table>
 
-<h2>마이페이지</h2>
+<h2>모델</h2>
 
 <table>
   <tr>
-    <td>
-      <p>프로필 및 로그아웃</p>
-      <img src="exec/assets/images/3_profile,logout.gif" alt="프로필 및 로그아웃" width="100%">
-    </td>
+    
     <td>
       <p>모델 생성</p>
       <img src="exec/assets/images/4_makemodel.gif" alt="모델 생성" width="100%">
@@ -307,6 +304,9 @@ issue_number: 해당 이슈가 진행되는 스프린트에서 할당받은 고�
     <td>
       <p>모델 삭제</p>
       <img src="exec/assets/images/5_deletemodel.gif" alt="모델 삭제" width="100%">
+    </td>
+    <td>
+      <h2>&nbsp;</h2> <!-- 빈 칼럼 -->
     </td>
   </tr>
   <tr>
@@ -318,8 +318,10 @@ issue_number: 해당 이슈가 진행되는 스프린트에서 할당받은 고�
       <p>모델 확인</p>
       <img src="exec/assets/images/7_checkmodel.gif" alt="모델 확인" width="100%">
     </td>
+    
     <td>
-      <h2>&nbsp;</h2> <!-- 빈 칼럼 -->
+      <p>프로필 및 로그아웃</p>
+      <img src="exec/assets/images/3_profile,logout.gif" alt="프로필 및 로그아웃" width="100%">
     </td>
   </tr>
 </table>
