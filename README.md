@@ -330,15 +330,15 @@ issue_number: 해당 이슈가 진행되는 스프린트에서 할당받은 고�
   <tr>
     <td>
       <p>음성 대화</p>
-      <img src="exec/assets/images/8_voiceconversation.gif" alt="음성 대화" width="50%">
+      <img src="exec/assets/images/8_voiceconversation.gif" alt="음성 대화" width="40%">
     </td>
     <td>
       <p>영상 대화</p>
-      <img src="exec/assets/images/9_videoconversation.gif" alt="영상 대화" width="100%">
+      <img src="exec/assets/images/9_videoconversation.gif" alt="영상 대화" width="120%">
     </td>
     <td>
       <p>대화 저장</p>
-      <img src="exec/assets/images/10_end_save_conversation.gif" alt="대화 저장" width="100%">
+      <img src="exec/assets/images/10_end_save_conversation.gif" alt="대화 저장" width="120%">
     </td>
   </tr>
 </table>
