@@ -334,11 +334,11 @@ issue_number: 해당 이슈가 진행되는 스프린트에서 할당받은 고�
     </td>
     <td>
       <p>영상 대화</p>
-      <img src="exec/assets/images/9_videoconversation.gif" alt="영상 대화" width="100%">
+      <img src="exec/assets/images/9_videoconversation.gif" alt="영상 대화" width="150%">
     </td>
     <td>
       <p>대화 저장</p>
-      <img src="exec/assets/images/10_end_save_conversation.gif" alt="대화 저장" width="100%">
+      <img src="exec/assets/images/10_end_save_conversation.gif" alt="대화 저장" width="150%">
     </td>
   </tr>
 </table>
